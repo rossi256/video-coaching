@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WingCoach Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .status-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .status-paid { background: rgba(234,179,8,0.2); color: #fbbf24; }
+    .status-submitted { background: rgba(14,165,233,0.2); color: #38bdf8; }
+    .status-feedback_sent { background: rgba(34,197,94,0.2); color: #4ade80; }
+    tr { cursor: pointer; }
+    tr:hover td { background: rgba(255,255,255,0.04); }
+    .detail-field { margin-bottom: 16px; }
+    .detail-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin-bottom: 4px; }
+    .detail-value { color: #e2e8f0; font-size: 14px; white-space: pre-wrap; }
+  </style>
+</head>
+<body class="bg-[#080f1c] text-white min-h-screen">
+
+<!-- Nav -->
+<nav class="bg-[#0d1b2e] border-b border-white/10 px-6 py-3 flex items-center justify-between">
+  <div class="flex items-center gap-2">
+    <span class="text-[#0ea5e9] font-black">WING</span><span class="text-white font-light">COACH</span>
+    <span class="text-slate-500 text-sm ml-1">Admin</span>
+  </div>
+  <div class="flex items-center gap-4">
+    <span class="text-slate-400 text-sm" id="nav-stats"></span>
+    <button onclick="showList()" class="text-sm text-slate-400 hover:text-white transition-colors">← All Submissions</button>
+  </div>
+</nav>
+
+<!-- List view -->
+<div id="list-view" class="max-w-6xl mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Submissions</h1>
+    <button onclick="loadList()" class="text-sm text-slate-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-lg transition-colors">Refresh</button>
+  </div>
+
+  <div id="list-loading" class="text-slate-400 py-8 text-center">
+    <div class="w-8 h-8 border-2 border-[#0ea5e9]/30 border-t-[#0ea5e9] rounded-full animate-spin mx-auto mb-3"></div>
+    Loading...
+  </div>
+
+  <div id="list-empty" class="hidden text-center py-16 text-slate-500">
+    <p class="text-4xl mb-3">📭</p>
+    <p>No submissions yet.</p>
+  </div>
+
+  <div id="list-table-wrap" class="hidden">
+    <div class="overflow-x-auto rounded-xl border border-white/10">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-white/5 text-slate-400 text-xs uppercase tracking-wider">
+            <th class="text-left px-4 py-3">ID</th>
+            <th class="text-left px-4 py-3">Name</th>
+            <th class="text-left px-4 py-3">Email</th>
+            <th class="text-left px-4 py-3">Level</th>
+            <th class="text-left px-4 py-3">Date</th>
+            <th class="text-left px-4 py-3">Status</th>
+            <th class="text-left px-4 py-3">Action</th>
+          </tr>
+        </thead>
+        <tbody id="list-tbody" class="divide-y divide-white/5"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Detail view -->
+<div id="detail-view" class="hidden max-w-5xl mx-auto px-4 py-8">
+  <button onclick="showList()" class="flex items-center gap-2 text-slate-400 hover:text-white mb-6 transition-colors text-sm">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    All Submissions
+  </button>
+
+  <div id="detail-content"></div>
+</div>
+
+<script>
+const BP = '{{BASE_PATH}}';
+
+// ── List ─────────────────────────────────────────────────────────────────────
+async function loadList() {
+  document.getElementById('list-loading').classList.remove('hidden');
+  document.getElementById('list-table-wrap').classList.add('hidden');
+  document.getElementById('list-empty').classList.add('hidden');
+
+  try {
+    const r = await fetch(`${BP}/api/admin/submissions`);
+    const subs = await r.json();
+
+    const counts = { paid: 0, submitted: 0, feedback_sent: 0 };
+    subs.forEach(s => { if (s.status in counts) counts[s.status]++; });
+    document.getElementById('nav-stats').textContent =
+      `${subs.length} total · ${counts.paid} paid · ${counts.submitted} submitted · ${counts.feedback_sent} sent`;
+
+    document.getElementById('list-loading').classList.add('hidden');
+    if (subs.length === 0) { document.getElementById('list-empty').classList.remove('hidden'); return; }
+
+    document.getElementById('list-table-wrap').classList.remove('hidden');
+    const tbody = document.getElementById('list-tbody');
+    tbody.innerHTML = '';
+    subs.forEach(s => {
+      const tr = document.createElement('tr');
+      const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+      tr.innerHTML = `
+        <td class="px-4 py-3 text-slate-400 font-mono">#${s.id}</td>
+        <td class="px-4 py-3 font-medium">${esc(s.name || '—')}</td>
+        <td class="px-4 py-3 text-slate-300">${esc(s.email || '—')}</td>
+        <td class="px-4 py-3 text-slate-400">${esc(s.level || '—')}</td>
+        <td class="px-4 py-3 text-slate-400">${dateStr}</td>
+        <td class="px-4 py-3"><span class="status-badge status-${s.status}">${s.status}</span></td>
+        <td class="px-4 py-3">
+          <button onclick="event.stopPropagation(); loadDetail(${s.id})" class="text-[#0ea5e9] hover:underline text-xs">View →</button>
+        </td>
+      `;
+      tr.onclick = () => loadDetail(s.id);
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    document.getElementById('list-loading').innerHTML = '<p class="text-red-400">Error loading submissions.</p>';
+  }
+}
+
+function showList() {
+  document.getElementById('detail-view').classList.add('hidden');
+  document.getElementById('list-view').classList.remove('hidden');
+}
+
+// ── Detail ───────────────────────────────────────────────────────────────────
+async function loadDetail(id) {
+  document.getElementById('list-view').classList.add('hidden');
+  document.getElementById('detail-view').classList.remove('hidden');
+  document.getElementById('detail-content').innerHTML = `
+    <div class="text-center py-16">
+      <div class="w-8 h-8 border-2 border-[#0ea5e9]/30 border-t-[#0ea5e9] rounded-full animate-spin mx-auto mb-3"></div>
+      <p class="text-slate-400">Loading...</p>
+    </div>`;
+
+  try {
+    const r = await fetch(`${BP}/api/admin/submission/${id}`);
+    const s = await r.json();
+    renderDetail(s);
+  } catch {
+    document.getElementById('detail-content').innerHTML = '<p class="text-red-400">Error loading submission.</p>';
+  }
+}
+
+function renderDetail(s) {
+  const statusDate = s.submitted_at
+    ? `Submitted ${new Date(s.submitted_at).toLocaleString()}`
+    : `Paid ${new Date(s.created_at).toLocaleString()}`;
+
+  const replyUrl = s.token ? `${BP}/reply/${s.token}` : null;
+
+  document.getElementById('detail-content').innerHTML = `
+    <div class="flex flex-wrap items-start justify-between gap-4 mb-8">
+      <div>
+        <div class="flex items-center gap-3 mb-1">
+          <h1 class="text-2xl font-bold">${esc(s.name || 'No name')}</h1>
+          <span class="status-badge status-${s.status}">${s.status}</span>
+        </div>
+        <p class="text-slate-400">${esc(s.email || '')} · ${statusDate}</p>
+        ${replyUrl ? `<p class="text-xs text-slate-500 mt-1">Reply link: <a href="${esc(replyUrl)}" target="_blank" class="text-[#0ea5e9] hover:underline">${esc(replyUrl)}</a></p>` : ''}
+      </div>
+      <div class="flex flex-wrap gap-2">
+        ${s.status !== 'feedback_sent' ? `
+          <button id="mark-sent-btn" onclick="markFeedbackSent(${s.id})"
+            class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
+            ✓ Mark Feedback Sent
+          </button>
+        ` : `<span class="text-green-400 font-semibold text-sm self-center">✓ Feedback sent ${s.feedback_sent_at ? new Date(s.feedback_sent_at).toLocaleDateString() : ''}</span>`}
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Profile -->
+      <div class="lg:col-span-2 space-y-4">
+        <div class="bg-[#0d1b2e] border border-white/10 rounded-xl p-5">
+          <h3 class="font-bold mb-4 text-slate-200">Rider Profile</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-6">
+            ${field('Age', s.age)}
+            ${field('Location', s.location)}
+            ${field('Ride Frequency', s.ride_frequency)}
+            ${field('Wind Conditions', s.conditions)}
+            ${field('Level', s.level)}
+          </div>
+          ${field('Equipment', s.equipment)}
+          ${field('Stuck On', s.stuck_on)}
+          ${field('Tried So Far', s.tried)}
+          ${field('Success Looks Like', s.success_looks_like)}
+        </div>
+
+        <!-- Uploaded videos -->
+        <div class="bg-[#0d1b2e] border border-white/10 rounded-xl p-5">
+          <h3 class="font-bold mb-4 text-slate-200">Rider Videos (${s.uploaded_files ? s.uploaded_files.length : 0})</h3>
+          ${s.audio_file ? `<div class="mb-4 p-3 bg-white/5 rounded-lg">
+            <p class="text-xs text-slate-400 mb-2 font-medium">Audio recording</p>
+            <audio controls src="${BP}/api/admin/file/${s.id}/${encodeURIComponent(s.audio_file)}" class="w-full" style="accent-color:#0ea5e9;"></audio>
+          </div>` : ''}
+          ${s.uploaded_files && s.uploaded_files.length > 0 ? `
+            <div class="space-y-3">
+              ${s.uploaded_files.map(f => `
+                <div class="flex items-center justify-between gap-3 p-3 bg-white/5 rounded-lg">
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">${esc(f.name)}</p>
+                    <p class="text-xs text-slate-400">${fmtSize(f.size)}</p>
+                  </div>
+                  <div class="flex gap-2 flex-shrink-0">
+                    <a href="${BP}/api/admin/file/${s.id}/${encodeURIComponent(f.name)}" target="_blank"
+                      class="text-xs text-[#0ea5e9] hover:underline">Play</a>
+                    <a href="${BP}/api/admin/file/${s.id}/${encodeURIComponent(f.name)}" download
+                      class="text-xs text-slate-400 hover:text-white">Download</a>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            <div class="mt-4 p-3 bg-[#080f1c] rounded-lg">
+              <p class="text-xs text-slate-400 mb-2 font-medium">Preview videos inline:</p>
+              <div id="inline-players" class="space-y-2">
+                ${s.uploaded_files.map(f => `
+                  <details class="group">
+                    <summary class="cursor-pointer text-sm text-[#0ea5e9] hover:underline list-none">${esc(f.name)}</summary>
+                    <video controls class="w-full mt-2 rounded" style="max-height:300px;"
+                      src="${BP}/api/admin/file/${s.id}/${encodeURIComponent(f.name)}"></video>
+                  </details>
+                `).join('')}
+              </div>
+            </div>
+          ` : '<p class="text-slate-500 text-sm">No videos uploaded yet.</p>'}
+        </div>
+      </div>
+
+      <!-- Right: Reply video upload -->
+      <div class="space-y-4">
+
+        <!-- Reply videos -->
+        <div class="bg-[#0d1b2e] border border-[#0ea5e9]/20 rounded-xl p-5">
+          <h3 class="font-bold mb-4 text-slate-200">Reply Videos (${s.reply_files ? s.reply_files.length : 0})</h3>
+
+          <!-- Upload form -->
+          <div class="mb-4">
+            <label class="block text-xs text-slate-400 mb-2 font-medium">Upload reply video</label>
+            <input type="file" id="reply-file-input" accept="video/*"
+              class="w-full text-sm text-slate-400 bg-white/5 border border-white/10 rounded-lg p-2 cursor-pointer file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-[#0ea5e9] file:text-white file:text-xs file:font-semibold file:cursor-pointer hover:file:bg-[#0284c7]">
+            <div class="mt-2 hidden" id="reply-upload-progress">
+              <div class="w-full bg-white/10 rounded-full h-1.5 mb-1">
+                <div id="reply-progress-bar" class="bg-[#0ea5e9] h-1.5 rounded-full transition-all" style="width:0%"></div>
+              </div>
+              <p id="reply-upload-status" class="text-xs text-slate-400"></p>
+            </div>
+          </div>
+          <button onclick="uploadReplyVideo(${s.id})"
+            class="w-full bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-semibold py-2.5 rounded-lg text-sm transition-colors">
+            Upload Reply Video
+          </button>
+
+          <!-- Existing reply files -->
+          <div id="reply-files-list" class="mt-4 space-y-2">
+            ${s.reply_files && s.reply_files.length > 0 ? s.reply_files.map(f => replyFileHtml(s.id, f.name, f.size)).join('') : '<p class="text-slate-500 text-sm">No reply videos yet.</p>'}
+          </div>
+        </div>
+
+        <!-- Quick info -->
+        <div class="bg-[#0d1b2e] border border-white/10 rounded-xl p-5 text-sm space-y-2">
+          <h3 class="font-bold mb-3 text-slate-200">Details</h3>
+          <div class="text-slate-400 space-y-1.5">
+            <div class="flex justify-between"><span>Submission ID</span><span class="text-white font-mono">#{s.id}</span></div>
+            <div class="flex justify-between"><span>Spots at purchase</span><span class="text-white">${s.spots_at_purchase ?? '—'}</span></div>
+            <div class="flex justify-between"><span>Payment intent</span><span class="text-white font-mono text-xs truncate max-w-[120px]" title="${esc(s.stripe_payment_intent || '')}">${s.stripe_payment_intent ? s.stripe_payment_intent.slice(0, 16) + '…' : '—'}</span></div>
+            <div class="flex justify-between"><span>Created</span><span class="text-white">${s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}</span></div>
+          </div>
+        </div>
+
+        <!-- Mark feedback sent -->
+        ${s.status !== 'feedback_sent' ? `
+          <div class="bg-[#0d1b2e] border border-green-500/20 rounded-xl p-5">
+            <h3 class="font-bold mb-2 text-slate-200">Send Feedback</h3>
+            <p class="text-slate-400 text-xs mb-3">Marks status as "feedback_sent" and emails the rider their reply link.</p>
+            <button id="mark-sent-btn-2" onclick="markFeedbackSent(${s.id})"
+              class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors">
+              ✓ Mark Feedback Sent + Email Rider
+            </button>
+          </div>
+        ` : `
+          <div class="bg-green-900/20 border border-green-500/20 rounded-xl p-4 text-center">
+            <p class="text-green-400 font-semibold text-sm">✓ Feedback sent</p>
+            <p class="text-slate-500 text-xs mt-1">${s.feedback_sent_at ? new Date(s.feedback_sent_at).toLocaleString() : ''}</p>
+            ${replyUrl ? `<a href="${esc(replyUrl)}" target="_blank" class="text-xs text-[#0ea5e9] hover:underline mt-2 inline-block">View reply page</a>` : ''}
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+
+  // Store submission ID for upload
+  document.getElementById('reply-file-input')._submissionId = s.id;
+}
+
+function replyFileHtml(submissionId, filename, size) {
+  return `
+    <div class="flex items-center gap-2 p-2 bg-white/5 rounded-lg" id="reply-file-${encodeURIComponent(filename).replace(/[^a-z0-9]/gi,'_')}">
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-medium truncate">${esc(filename)}</p>
+        <p class="text-xs text-slate-500">${fmtSize(size)}</p>
+      </div>
+      <a href="${BP}/api/admin/file/${submissionId}/reply/${encodeURIComponent(filename)}" target="_blank"
+        class="text-xs text-[#0ea5e9] hover:underline flex-shrink-0">Play</a>
+      <button onclick="deleteReplyFile(${submissionId}, '${esc(filename)}')"
+        class="text-slate-500 hover:text-red-400 flex-shrink-0 transition-colors" title="Delete">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"></path></svg>
+      </button>
+    </div>`;
+}
+
+// ── Reply video upload ────────────────────────────────────────────────────────
+async function uploadReplyVideo(submissionId) {
+  const input = document.getElementById('reply-file-input');
+  if (!input.files || !input.files[0]) { alert('Please select a file first.'); return; }
+  const file = input.files[0];
+
+  const progressWrap = document.getElementById('reply-upload-progress');
+  const progressBar = document.getElementById('reply-progress-bar');
+  const statusEl = document.getElementById('reply-upload-status');
+  progressWrap.classList.remove('hidden');
+  statusEl.textContent = 'Uploading...';
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', `${BP}/api/admin/submission/${submissionId}/reply-upload`);
+
+  xhr.upload.onprogress = e => {
+    if (e.lengthComputable) progressBar.style.width = Math.round((e.loaded / e.total) * 100) + '%';
+  };
+
+  xhr.onload = () => {
+    if (xhr.status === 200) {
+      const d = JSON.parse(xhr.responseText);
+      statusEl.textContent = '✓ Uploaded: ' + d.filename;
+      progressBar.style.width = '100%';
+      input.value = '';
+      // Add to list
+      const list = document.getElementById('reply-files-list');
+      const placeholder = list.querySelector('p');
+      if (placeholder) placeholder.remove();
+      const div = document.createElement('div');
+      div.innerHTML = replyFileHtml(submissionId, d.filename, d.size);
+      list.appendChild(div.firstElementChild);
+    } else {
+      let err = 'Upload failed';
+      try { err = JSON.parse(xhr.responseText).error || err; } catch {}
+      statusEl.textContent = '✗ ' + err;
+    }
+  };
+
+  xhr.onerror = () => { statusEl.textContent = '✗ Network error'; };
+
+  const fd = new FormData();
+  fd.append('video', file);
+  xhr.send(fd);
+}
+
+// ── Delete reply video ────────────────────────────────────────────────────────
+async function deleteReplyFile(submissionId, filename) {
+  if (!confirm(`Delete reply video "${filename}"?`)) return;
+  try {
+    const r = await fetch(`${BP}/api/admin/submission/${submissionId}/reply/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+    if (r.ok) {
+      // Remove from UI
+      loadDetail(submissionId);
+    } else {
+      alert('Delete failed');
+    }
+  } catch { alert('Network error'); }
+}
+
+// ── Mark feedback sent ────────────────────────────────────────────────────────
+async function markFeedbackSent(id) {
+  const btn = document.getElementById('mark-sent-btn') || document.getElementById('mark-sent-btn-2');
+  if (btn) { btn.textContent = 'Sending...'; btn.disabled = true; }
+
+  try {
+    const r = await fetch(`${BP}/api/admin/submission/${id}/feedback-sent`, { method: 'POST' });
+    const d = await r.json();
+    if (r.ok) {
+      alert(`Done! Rider email sent.\n\nReply URL: ${d.replyUrl}`);
+      loadDetail(id);
+    } else {
+      alert('Error: ' + (d.error || 'Unknown'));
+      if (btn) { btn.textContent = '✓ Mark Feedback Sent'; btn.disabled = false; }
+    }
+  } catch {
+    alert('Network error');
+    if (btn) { btn.textContent = '✓ Mark Feedback Sent'; btn.disabled = false; }
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function field(label, value) {
+  if (!value) return '';
+  return `<div class="detail-field"><div class="detail-label">${esc(label)}</div><div class="detail-value">${esc(String(value))}</div></div>`;
+}
+
+function fmtSize(bytes) {
+  if (!bytes) return '—';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+}
+
+function esc(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+loadList();
+</script>
+</body>
+</html>

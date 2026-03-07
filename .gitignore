@@ -1,5 +1,9 @@
 node_modules/
 .env
-uploads/
-*.sqlite
-*.db
+coaching.db
+coaching.db-shm
+coaching.db-wal
+uploads/*
+!uploads/.gitkeep
+*.log
+.DS_Store

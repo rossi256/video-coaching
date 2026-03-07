@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Coaching Feedback — WingCoach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+
+    /* ── Custom video player ── */
+    .vp-wrap {
+      position: relative;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .vp-wrap video {
+      width: 100%;
+      display: block;
+      max-height: 70vh;
+      object-fit: contain;
+    }
+    .vp-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    /* Tap feedback flash */
+    .tap-flash {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 33.3%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+      font-size: 32px;
+      color: white;
+    }
+    .tap-flash.show { opacity: 0.9; }
+    .tap-flash-left { left: 0; background: linear-gradient(to right, rgba(14,165,233,0.25), transparent); }
+    .tap-flash-right { right: 0; background: linear-gradient(to left, rgba(14,165,233,0.25), transparent); }
+
+    /* Controls bar */
+    .vp-controls {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+      padding: 20px 12px 12px;
+      transform: translateY(0);
+      transition: opacity 0.3s;
+    }
+    .vp-wrap.controls-hidden .vp-controls { opacity: 0; pointer-events: none; }
+
+    /* Progress bar */
+    .vp-progress {
+      width: 100%;
+      height: 4px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 2px;
+      cursor: pointer;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .vp-progress-fill {
+      height: 100%;
+      background: #0ea5e9;
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    .vp-progress-thumb {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 14px; height: 14px;
+      background: white;
+      border-radius: 50%;
+      pointer-events: none;
+      box-shadow: 0 0 4px rgba(0,0,0,0.5);
+    }
+
+    /* Control buttons */
+    .vp-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .vp-btn:hover { background: rgba(255,255,255,0.15); }
+
+    /* Top controls (mirror, slow-mo, speed label) */
+    .vp-top {
+      position: absolute;
+      top: 12px; right: 12px;
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+    .vp-pill {
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 5px 12px;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .vp-pill:hover { background: rgba(14,165,233,0.3); border-color: #0ea5e9; }
+    .vp-pill.active { background: #0ea5e9; border-color: #0ea5e9; }
+
+    /* Skip buttons overlay */
+    .vp-skip-zone {
+      position: absolute;
+      top: 0; bottom: 56px;
+      width: 30%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 5;
+    }
+    .vp-skip-zone .skip-label {
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 50px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: white;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .vp-skip-zone:hover .skip-label { opacity: 1; }
+    .vp-skip-left { left: 0; }
+    .vp-skip-right { right: 0; }
+
+    /* Tab styling */
+    .tab-btn { border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .tab-btn.active { border-bottom-color: #0ea5e9; color: #0ea5e9; }
+  </style>
+</head>
+<body class="bg-[#0d1b2e] text-white min-h-screen">
+
+<!-- Nav -->
+<nav class="bg-[#080f1c]/80 backdrop-blur-md border-b border-white/10">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-[#0ea5e9] font-black">WING</span><span class="text-white font-light">COACH</span>
+      <span class="text-slate-500 text-sm ml-2">by Tricktionary</span>
+    </div>
+    <a href="https://tricktionary.com" target="_blank" rel="noopener" class="text-slate-400 hover:text-white text-sm transition-colors">tricktionary.com</a>
+  </div>
+</nav>
+
+<!-- Loading -->
+<div id="loading-screen" class="flex items-center justify-center min-h-[60vh]">
+  <div class="text-center">
+    <div class="w-12 h-12 border-2 border-[#0ea5e9]/30 border-t-[#0ea5e9] rounded-full animate-spin mx-auto mb-4"></div>
+    <p class="text-slate-400">Loading your feedback...</p>
+  </div>
+</div>
+
+<!-- Not found -->
+<div id="not-found" class="hidden items-center justify-center min-h-[60vh] px-4">
+  <div class="text-center max-w-md">
+    <div class="text-5xl mb-4">🏄</div>
+    <h2 class="text-2xl font-bold mb-3">Link not found</h2>
+    <p class="text-slate-400 mb-6">This coaching link doesn't exist or may have expired. Check the email from Michi for the correct link.</p>
+    <a href="https://wa.me/4369913909040" class="bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-semibold px-6 py-3 rounded-lg transition-colors inline-block">Contact Michi</a>
+  </div>
+</div>
+
+<!-- Pending (paid but no feedback yet) -->
+<div id="pending-screen" class="hidden items-center justify-center min-h-[60vh] px-4">
+  <div class="text-center max-w-md">
+    <div class="text-5xl mb-4">⏳</div>
+    <h2 class="text-2xl font-bold mb-3">Feedback coming soon</h2>
+    <p class="text-slate-400 mb-2">Michi is working on your coaching video. You'll get an email as soon as it's ready.</p>
+    <p class="text-slate-400 text-sm">Usually within 48 hours.</p>
+  </div>
+</div>
+
+<!-- Main feedback view -->
+<div id="feedback-screen" class="hidden">
+  <div class="max-w-5xl mx-auto px-4 py-10">
+
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <p class="text-[#0ea5e9] font-semibold text-sm uppercase tracking-widest mb-3">Your coaching feedback</p>
+      <h1 class="text-3xl sm:text-4xl font-black mb-3" id="feedback-title">Your feedback from Michi is ready.</h1>
+      <p class="text-slate-400" id="feedback-subtitle">Personal coaching — recorded just for you.</p>
+    </div>
+
+    <!-- Video tabs (if multiple) -->
+    <div id="video-tabs" class="hidden mb-4 flex gap-2 border-b border-white/10 overflow-x-auto"></div>
+
+    <!-- Video players container -->
+    <div id="players-container" class="space-y-6"></div>
+
+    <!-- Download + actions -->
+    <div id="actions-bar" class="mt-6 flex flex-col sm:flex-row gap-3 items-center justify-between bg-white/5 border border-white/10 rounded-2xl p-5">
+      <div>
+        <p class="font-semibold mb-0.5">Want to continue coaching?</p>
+        <p class="text-slate-400 text-sm">Reply to the email from Michi, or reach out directly.</p>
+      </div>
+      <div class="flex gap-3 flex-wrap">
+        <a id="whatsapp-link" href="https://wa.me/4369913909040" target="_blank" rel="noopener"
+          class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2.5 rounded-xl transition-colors text-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp Michi
+        </a>
+        <a href="mailto:info@tricktionary.com"
+          class="flex items-center gap-2 border border-white/20 hover:bg-white/10 text-white font-medium px-4 py-2.5 rounded-xl transition-colors text-sm">
+          Email Michi
+        </a>
+        <a href="https://tricktionary.com" target="_blank" rel="noopener"
+          class="flex items-center gap-2 border border-[#0ea5e9]/30 hover:bg-[#0ea5e9]/10 text-[#0ea5e9] font-medium px-4 py-2.5 rounded-xl transition-colors text-sm">
+          tricktionary.com
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const BP = '{{BASE_PATH}}';
+
+// Extract token from URL path
+const token = window.location.pathname.split('/').pop();
+
+// ── Load feedback data ───────────────────────────────────────────────────────
+async function loadFeedback() {
+  try {
+    const r = await fetch(`${BP}/api/reply/${encodeURIComponent(token)}`);
+    if (r.status === 404) { showState('not-found'); return; }
+    const d = await r.json();
+
+    document.getElementById('loading-screen').classList.add('hidden');
+
+    if (d.status === 'paid' || !d.replyFiles || d.replyFiles.length === 0) {
+      showState('pending-screen');
+      return;
+    }
+
+    // Personalise
+    if (d.name) {
+      document.getElementById('feedback-title').textContent = `Hey ${d.name.split(' ')[0]} — your feedback is ready!`;
+    }
+
+    showState('feedback-screen');
+    buildPlayers(d.replyFiles, token);
+
+  } catch (err) {
+    showState('not-found');
+  }
+}
+
+function showState(id) {
+  ['loading-screen','not-found','pending-screen','feedback-screen'].forEach(s => {
+    const el = document.getElementById(s);
+    el.classList.add('hidden');
+    el.classList.remove('flex');
+  });
+  const el = document.getElementById(id);
+  el.classList.remove('hidden');
+  if (id !== 'feedback-screen') el.classList.add('flex');
+}
+
+// ── Build video players ──────────────────────────────────────────────────────
+function buildPlayers(files, token) {
+  const container = document.getElementById('players-container');
+  const tabBar = document.getElementById('video-tabs');
+
+  if (files.length > 1) {
+    tabBar.classList.remove('hidden');
+  }
+
+  files.forEach((filename, idx) => {
+    const videoUrl = `${BP}/api/reply/${encodeURIComponent(token)}/video/${encodeURIComponent(filename)}`;
+    const downloadUrl = videoUrl + '?download=1';
+
+    // Tab button
+    if (files.length > 1) {
+      const tab = document.createElement('button');
+      tab.className = `tab-btn pb-3 px-4 text-sm font-medium text-slate-400 hover:text-white whitespace-nowrap ${idx === 0 ? 'active' : ''}`;
+      tab.textContent = `Video ${idx + 1}`;
+      tab.onclick = () => {
+        document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.player-wrap').forEach(p => p.classList.add('hidden'));
+        document.getElementById('player-' + idx).classList.remove('hidden');
+      };
+      tabBar.appendChild(tab);
+    }
+
+    // Player wrapper
+    const wrap = document.createElement('div');
+    wrap.id = 'player-' + idx;
+    wrap.className = 'player-wrap' + (idx > 0 ? ' hidden' : '');
+
+    wrap.innerHTML = `
+      <div class="bg-[#080f1c] border border-white/10 rounded-2xl overflow-hidden">
+        ${files.length > 1 ? `<div class="px-5 py-3 border-b border-white/10 flex items-center justify-between">
+          <span class="text-sm font-medium text-slate-300">Video ${idx + 1}</span>
+        </div>` : ''}
+        <div class="p-4 sm:p-6">
+          <!-- Player -->
+          <div class="vp-wrap" id="vp-${idx}">
+            <video id="vid-${idx}" preload="metadata" playsinline
+              style="background:#000;"></video>
+
+            <!-- Top controls: slow-mo + mirror -->
+            <div class="vp-top">
+              <button class="vp-pill" id="slowmo-${idx}" onclick="toggleSlowMo(${idx})">1x</button>
+              <button class="vp-pill" id="mirror-${idx}" onclick="toggleMirror(${idx})" title="Mirror video">
+                ↔ Mirror
+              </button>
+            </div>
+
+            <!-- Tap flash indicators -->
+            <div class="tap-flash tap-flash-left" id="flash-left-${idx}">-15s</div>
+            <div class="tap-flash tap-flash-right" id="flash-right-${idx}">+15s</div>
+
+            <!-- Skip zones (desktop hover) -->
+            <div class="vp-skip-zone vp-skip-left" onclick="skipVideo(${idx}, -15)">
+              <div class="skip-label">← 15s</div>
+            </div>
+            <div class="vp-skip-zone vp-skip-right" onclick="skipVideo(${idx}, 15)">
+              <div class="skip-label">15s →</div>
+            </div>
+
+            <!-- Controls bar -->
+            <div class="vp-controls" id="ctrl-${idx}">
+              <!-- Progress -->
+              <div class="vp-progress" id="prog-${idx}" onclick="seekVideo(event, ${idx})">
+                <div class="vp-progress-fill" id="prog-fill-${idx}" style="width:0%"></div>
+                <div class="vp-progress-thumb" id="prog-thumb-${idx}" style="left:0%"></div>
+              </div>
+              <!-- Buttons row -->
+              <div class="flex items-center gap-2">
+                <button class="vp-btn" onclick="togglePlay(${idx})" id="playbtn-${idx}">
+                  <svg id="play-icon-${idx}" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </button>
+                <!-- Skip buttons -->
+                <button class="vp-btn" onclick="skipVideo(${idx}, -15)" title="-15 seconds">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-3.21"/></svg>
+                  <span style="font-size:10px;font-weight:700;margin-left:1px">15</span>
+                </button>
+                <button class="vp-btn" onclick="skipVideo(${idx}, 15)" title="+15 seconds">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-.49-3.21"/></svg>
+                  <span style="font-size:10px;font-weight:700;margin-left:1px">15</span>
+                </button>
+                <!-- Time -->
+                <span class="text-white/70 text-xs font-mono ml-1" id="time-${idx}">0:00</span>
+                <div class="flex-1"></div>
+                <!-- Mute -->
+                <button class="vp-btn" onclick="toggleMute(${idx})" id="mute-${idx}">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                </button>
+                <!-- Download -->
+                <a href="${videoUrl}" download class="vp-btn" title="Download">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </a>
+                <!-- Fullscreen -->
+                <button class="vp-btn" onclick="toggleFullscreen(${idx})" title="Fullscreen">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Download button below player -->
+          <div class="mt-3 flex items-center justify-between">
+            <p class="text-slate-500 text-xs">Tip: use slow-mo or mirror to study your technique</p>
+            <a href="${videoUrl}" download
+              class="text-sm text-[#0ea5e9] hover:underline flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download video
+            </a>
+          </div>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(wrap);
+
+    // Set video source and init player
+    const vid = document.getElementById('vid-' + idx);
+    vid.src = videoUrl;
+    initPlayerEvents(idx);
+  });
+}
+
+// ── Player state ─────────────────────────────────────────────────────────────
+const playerState = {};
+
+function initPlayerEvents(idx) {
+  playerState[idx] = {
+    mirrored: false,
+    slowMoIdx: 0, // 0=1x, 1=0.5x, 2=0.25x
+    rates: [1, 0.5, 0.25],
+    rateLabels: ['1x', '0.5x', '0.25x'],
+    controlsTimeout: null,
+  };
+
+  const vid = document.getElementById('vid-' + idx);
+  const wrap = document.getElementById('vp-' + idx);
+
+  // Timeupdate
+  vid.addEventListener('timeupdate', () => updateProgress(idx));
+  vid.addEventListener('ended', () => {
+    const icon = document.getElementById('play-icon-' + idx);
+    icon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+  });
+
+  // Click on video: play/pause + show controls
+  vid.addEventListener('click', e => {
+    togglePlay(idx);
+    showControls(idx);
+  });
+
+  // Touch: double-tap seek
+  let lastTap = 0;
+  let lastTapX = 0;
+  vid.addEventListener('touchend', e => {
+    const now = Date.now();
+    const x = e.changedTouches[0].clientX;
+    if (now - lastTap < 350) {
+      const rect = vid.getBoundingClientRect();
+      const relX = x - rect.left;
+      const third = rect.width / 3;
+      if (relX < third) {
+        skipVideo(idx, -15);
+        flashTap(idx, 'left');
+      } else if (relX > 2 * third) {
+        skipVideo(idx, 15);
+        flashTap(idx, 'right');
+      } else {
+        togglePlay(idx);
+      }
+      e.preventDefault();
+    } else {
+      showControls(idx);
+    }
+    lastTap = now;
+    lastTapX = x;
+  }, { passive: false });
+
+  // Mouse move: show controls
+  wrap.addEventListener('mousemove', () => showControls(idx));
+}
+
+function showControls(idx) {
+  const wrap = document.getElementById('vp-' + idx);
+  wrap.classList.remove('controls-hidden');
+  clearTimeout(playerState[idx].controlsTimeout);
+  playerState[idx].controlsTimeout = setTimeout(() => {
+    const vid = document.getElementById('vid-' + idx);
+    if (!vid.paused) wrap.classList.add('controls-hidden');
+  }, 3000);
+}
+
+function flashTap(idx, side) {
+  const el = document.getElementById(`flash-${side}-${idx}`);
+  if (!el) return;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 500);
+}
+
+function togglePlay(idx) {
+  const vid = document.getElementById('vid-' + idx);
+  const icon = document.getElementById('play-icon-' + idx);
+  if (vid.paused) {
+    vid.play();
+    icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+  } else {
+    vid.pause();
+    icon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+    showControls(idx);
+  }
+}
+
+function skipVideo(idx, seconds) {
+  const vid = document.getElementById('vid-' + idx);
+  vid.currentTime = Math.max(0, Math.min(vid.duration || 0, vid.currentTime + seconds));
+  showControls(idx);
+}
+
+function toggleMute(idx) {
+  const vid = document.getElementById('vid-' + idx);
+  vid.muted = !vid.muted;
+}
+
+function toggleSlowMo(idx) {
+  const state = playerState[idx];
+  state.slowMoIdx = (state.slowMoIdx + 1) % state.rates.length;
+  const vid = document.getElementById('vid-' + idx);
+  vid.playbackRate = state.rates[state.slowMoIdx];
+  const btn = document.getElementById('slowmo-' + idx);
+  btn.textContent = state.rateLabels[state.slowMoIdx];
+  btn.classList.toggle('active', state.slowMoIdx !== 0);
+}
+
+function toggleMirror(idx) {
+  const state = playerState[idx];
+  state.mirrored = !state.mirrored;
+  const vid = document.getElementById('vid-' + idx);
+  vid.style.transform = state.mirrored ? 'scaleX(-1)' : '';
+  document.getElementById('mirror-' + idx).classList.toggle('active', state.mirrored);
+}
+
+function toggleFullscreen(idx) {
+  const wrap = document.getElementById('vp-' + idx);
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  } else {
+    wrap.requestFullscreen().catch(() => {});
+  }
+}
+
+function updateProgress(idx) {
+  const vid = document.getElementById('vid-' + idx);
+  if (!vid.duration) return;
+  const pct = (vid.currentTime / vid.duration) * 100;
+  const fill = document.getElementById('prog-fill-' + idx);
+  const thumb = document.getElementById('prog-thumb-' + idx);
+  if (fill) fill.style.width = pct + '%';
+  if (thumb) thumb.style.left = pct + '%';
+
+  const time = document.getElementById('time-' + idx);
+  if (time) {
+    const cur = fmtTime(vid.currentTime);
+    const dur = fmtTime(vid.duration);
+    time.textContent = `${cur} / ${dur}`;
+  }
+}
+
+function seekVideo(e, idx) {
+  const vid = document.getElementById('vid-' + idx);
+  const bar = document.getElementById('prog-' + idx);
+  if (!vid.duration) return;
+  const rect = bar.getBoundingClientRect();
+  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  vid.currentTime = pct * vid.duration;
+}
+
+function fmtTime(s) {
+  if (isNaN(s)) return '0:00';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${String(sec).padStart(2, '0')}`;
+}
+
+loadFeedback();
+</script>
+</body>
+</html>

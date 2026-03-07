@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You're In — WingCoach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .recording-pulse { animation: rec-pulse 1.4s ease-in-out infinite; }
+    @keyframes rec-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .upload-zone { transition: all 0.2s; }
+    .upload-zone.dragging { border-color: #0ea5e9; background: rgba(14,165,233,0.08); }
+    .progress-bar { transition: width 0.3s ease; }
+    .level-tag { transition: all 0.15s; cursor: pointer; }
+    .level-tag.selected { background: rgba(14,165,233,0.18); border-color: #0ea5e9; color: white; }
+    .tab-active { background: rgba(14,165,233,0.12); color: #0ea5e9; }
+    .tab-inactive { background: transparent; color: #94a3b8; }
+    .tab-inactive:hover { background: rgba(255,255,255,0.04); color: #cbd5e1; }
+    input, select, textarea {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      color: white;
+      padding: 10px 14px;
+      width: 100%;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #0ea5e9; }
+    select option { background: #1e293b; color: white; }
+    label { display: block; font-size: 13px; font-weight: 500; color: #94a3b8; margin-bottom: 6px; }
+    .form-group { margin-bottom: 16px; }
+    textarea { resize: vertical; min-height: 80px; }
+  </style>
+</head>
+<body class="bg-[#0d1b2e] text-white min-h-screen">
+
+<!-- ═══ LOADING OVERLAY ═══════════════════════════════════════════════════════ -->
+<div id="loading-screen" class="fixed inset-0 bg-[#0d1b2e] flex items-center justify-center z-50">
+  <div class="text-center">
+    <div class="w-12 h-12 border-2 border-[#0ea5e9]/30 border-t-[#0ea5e9] rounded-full animate-spin mx-auto mb-4"></div>
+    <p class="text-slate-400">Verifying payment...</p>
+  </div>
+</div>
+
+<!-- ═══ ERROR SCREEN ══════════════════════════════════════════════════════════ -->
+<div id="error-screen" class="hidden fixed inset-0 bg-[#0d1b2e] flex items-center justify-center z-50">
+  <div class="text-center max-w-md px-4">
+    <div class="text-5xl mb-4">⚠️</div>
+    <h2 class="text-2xl font-bold mb-3">Payment not verified</h2>
+    <p class="text-slate-400 mb-6" id="error-msg">We couldn't verify your payment. If you were charged, please contact us.</p>
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+      <button onclick="window.location.reload()" class="bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-semibold px-6 py-3 rounded-lg transition-colors">Try Again</button>
+      <a href="https://wa.me/4369913909040" class="border border-white/20 text-white font-medium px-6 py-3 rounded-lg hover:bg-white/5 transition-colors">WhatsApp Michi</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAIN CONTENT ═══════════════════════════════════════════════════════════ -->
+<div id="main-content" class="hidden">
+
+  <!-- Nav -->
+  <nav class="bg-[#080f1c]/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-2">
+      <span class="text-[#0ea5e9] font-black">WING</span><span class="text-white font-light">COACH</span>
+      <span class="text-slate-500 text-sm ml-2">by Tricktionary</span>
+    </div>
+  </nav>
+
+  <!-- Hero confirmation -->
+  <div class="bg-gradient-to-b from-[#0d2a3e] to-[#0d1b2e] border-b border-white/10 py-12 px-4">
+    <div class="max-w-3xl mx-auto text-center">
+      <div class="text-5xl mb-4">🎉</div>
+      <h1 class="text-3xl sm:text-4xl font-black mb-3">You're in! Spot secured.</h1>
+      <p class="text-slate-300 text-lg mb-2">Now let's get you set up. Fill out your rider profile and upload your videos below.</p>
+      <p class="text-slate-400">I'll review everything and send you a personalized video response within 72 hours.</p>
+    </div>
+  </div>
+
+  <!-- Main layout: form + sidebar questions -->
+  <div class="max-w-6xl mx-auto px-4 py-10">
+
+    <!-- Progress indicator -->
+    <div class="flex items-center gap-4 mb-10 max-w-2xl mx-auto">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-[#0ea5e9] flex items-center justify-center text-sm font-bold">✓</div>
+        <span class="text-sm font-medium text-[#0ea5e9]">Payment</span>
+      </div>
+      <div class="flex-1 h-px bg-[#0ea5e9]/40"></div>
+      <div class="flex items-center gap-2">
+        <div id="step2-indicator" class="w-8 h-8 rounded-full bg-[#0ea5e9] flex items-center justify-center text-sm font-bold">2</div>
+        <span class="text-sm font-medium">Rider Profile</span>
+      </div>
+      <div class="flex-1 h-px bg-white/20"></div>
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-slate-400">3</div>
+        <span class="text-sm font-medium text-slate-400">Done</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+      <!-- ═══ LEFT: Form + Upload ════════════════════════════════════════════ -->
+      <div class="lg:col-span-2 space-y-8">
+
+        <!-- Rider Profile Form -->
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
+          <h2 class="text-xl font-bold mb-6">Your Rider Profile</h2>
+          <p class="text-slate-400 text-sm mb-6">This helps Michi understand your background before watching your videos. <span class="text-[#0ea5e9]">*</span> required</p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
+            <div class="form-group">
+              <label>Full Name <span class="text-[#0ea5e9]">*</span></label>
+              <input type="text" id="name" placeholder="Your name" required>
+            </div>
+            <div class="form-group">
+              <label>Email <span class="text-[#0ea5e9]">*</span></label>
+              <input type="email" id="email" placeholder="your@email.com" required>
+            </div>
+            <div class="form-group">
+              <label>Age</label>
+              <input type="number" id="age" placeholder="e.g. 34" min="10" max="90">
+            </div>
+            <div class="form-group">
+              <label>Where do you ride?</label>
+              <input type="text" id="location" placeholder="e.g. Lake Garda, Italy">
+            </div>
+            <div class="form-group">
+              <label>How often do you ride?</label>
+              <select id="ride_frequency">
+                <option value="">Select...</option>
+                <option value="< 10 days/year">&lt; 10 days/year</option>
+                <option value="10–30 days/year">10–30 days/year</option>
+                <option value="30–60 days/year">30–60 days/year</option>
+                <option value="60+ days/year">60+ days/year</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Usual wind conditions?</label>
+              <input type="text" id="conditions" placeholder="e.g. 15–20 knots, choppy">
+            </div>
+            <div class="form-group sm:col-span-2">
+              <label>Equipment (wing size(s), board, foil)</label>
+              <input type="text" id="equipment" placeholder="e.g. 4m + 5m wing, Cabrinha Tropic 75L, F-One Phantom">
+            </div>
+            <div class="form-group sm:col-span-2">
+              <label>Your current skill level <span class="text-slate-500 font-normal">(select all that apply)</span></label>
+              <div id="level-tags" class="flex flex-wrap gap-2 mt-1">
+                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Just starting to foil">Just starting to foil</button>
+                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Foiling stable">Foiling stable</button>
+                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Starting to jibe">Starting to jibe</button>
+                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Stable jibes and starting to tack">Stable jibes and starting to tack</button>
+                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Jibes and tacks safe">Jibes and tacks safe</button>
+                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Downwind 360s and carving freestyle">Downwind 360s and carving freestyle</button>
+                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="First jumps">First jumps</button>
+                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Frontside 360s and first rotational jumps">Frontside 360s and first rotational jumps</button>
+                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Front/backflips">Front/backflips</button>
+                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Palaos and variations">Palaos and variations</button>
+                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Backmobe">Backmobe</button>
+                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="720s and more">720s and more</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coaching Questions card (tabbed: type or audio) -->
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
+          <h2 class="text-xl font-bold mb-1">Your Coaching Questions</h2>
+          <p class="text-slate-400 text-sm mb-5">These help me understand exactly where you're at before I watch your videos.</p>
+
+          <!-- Tab selector -->
+          <div class="flex border border-white/10 rounded-xl overflow-hidden mb-6">
+            <button id="tab-text" onclick="switchTab('text')" class="tab-active flex-1 py-3 text-sm font-semibold transition-colors">
+              &#9998; Type answers
+            </button>
+            <button id="tab-audio" onclick="switchTab('audio')" class="tab-inactive flex-1 py-3 text-sm font-semibold transition-colors border-l border-white/10">
+              &#9679; Record audio
+            </button>
+          </div>
+
+          <!-- Text panel -->
+          <div id="panel-text" class="space-y-4">
+            <div class="form-group">
+              <label>What specific move or skill are you stuck on? <span class="text-[#0ea5e9]" id="q1-req">*</span></label>
+              <textarea id="stuck_on" placeholder="Describe exactly what you're trying to do and what keeps going wrong..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>What have you already tried to fix it? <span class="text-[#0ea5e9]" id="q2-req">*</span></label>
+              <textarea id="tried" placeholder="YouTube videos, lessons, drills, tips from friends..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>What would success look like for you? <span class="text-[#0ea5e9]" id="q3-req">*</span></label>
+              <textarea id="success_looks_like" placeholder="What does 'this coaching worked' look like to you in 2–4 weeks?"></textarea>
+            </div>
+          </div>
+
+          <!-- Audio panel -->
+          <div id="panel-audio" class="hidden">
+            <p class="text-slate-400 text-sm mb-5">Hit record and answer the three questions out loud — much faster than typing. Keep the question list in the sidebar visible while you record.</p>
+            <div id="recorder-ui">
+              <div class="flex flex-wrap items-center gap-4 mb-4">
+                <button id="record-btn" onclick="startRecording()"
+                  class="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+                  <span class="w-3 h-3 rounded-full bg-white"></span>
+                  Start Recording
+                </button>
+                <span id="rec-status" class="text-slate-400 text-sm"></span>
+                <span id="rec-timer" class="font-mono text-slate-300 text-sm"></span>
+              </div>
+              <div id="audio-preview" class="hidden">
+                <audio id="audio-player" controls class="w-full mb-3" style="accent-color: #0ea5e9;"></audio>
+                <div class="flex gap-3 flex-wrap">
+                  <button onclick="reRecord()" class="text-sm text-slate-400 hover:text-white border border-white/20 px-4 py-2 rounded-lg transition-colors">Re-record</button>
+                  <span id="audio-upload-status" class="text-sm text-slate-400 self-center"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video upload -->
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
+          <h2 class="text-xl font-bold mb-2">Upload Your Riding Videos</h2>
+          <p class="text-slate-400 text-sm mb-6">Any format from your phone — MP4, MOV, HEVC, etc. Multiple clips welcome. Raw unedited footage is fine.</p>
+
+          <!-- Drop zone -->
+          <div id="drop-zone" class="upload-zone border-2 border-dashed border-white/20 rounded-xl p-10 text-center cursor-pointer hover:border-[#0ea5e9]/60 hover:bg-white/5 transition-all">
+            <div class="text-4xl mb-3">📁</div>
+            <p class="font-semibold mb-1">Drop videos here or click to select</p>
+            <p class="text-slate-400 text-sm">MP4, MOV, AVI, MKV, HEVC, WebM — any format from your phone</p>
+            <input type="file" id="video-input" accept="video/*" multiple class="hidden">
+          </div>
+
+          <!-- File list -->
+          <div id="file-list" class="mt-4 space-y-3"></div>
+        </div>
+
+        <!-- Submit -->
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
+          <div id="submit-area">
+            <button id="submit-btn" onclick="submitForm()"
+              class="w-full bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-lg py-4 rounded-xl transition-all hover:scale-[1.01] shadow-lg shadow-[#0ea5e9]/20">
+              Send to Michi →
+            </button>
+            <p id="submit-hint" class="text-center text-slate-400 text-sm mt-3">Upload at least one video before submitting.</p>
+          </div>
+          <div id="success-msg" class="hidden text-center py-4">
+            <div class="text-4xl mb-3">✅</div>
+            <h3 class="text-xl font-bold mb-2">Done! I'm on it.</h3>
+            <p class="text-slate-300">Your videos and profile are in. I'll review everything and send your personalized feedback video within 72 hours. Watch your inbox.</p>
+          </div>
+        </div>
+
+        <!-- Support -->
+        <div class="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <span class="text-2xl">💬</span>
+          <div>
+            <p class="font-medium text-sm">Something not working?</p>
+            <p class="text-slate-400 text-sm">
+              <a href="https://wa.me/4369913909040" class="text-[#0ea5e9] hover:underline">Chat with Michi on WhatsApp</a>
+              &nbsp;or email&nbsp;
+              <a href="mailto:info@tricktionary.com" class="text-[#0ea5e9] hover:underline">info@tricktionary.com</a>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ RIGHT: Sticky questions sidebar ════════════════════════════════ -->
+      <div class="lg:col-span-1">
+        <div class="sticky top-20">
+          <div class="bg-[#0d2235] border border-[#0ea5e9]/20 rounded-2xl p-6">
+            <p class="text-[#0ea5e9] font-semibold text-xs uppercase tracking-widest mb-4">Questions to answer</p>
+            <p class="text-slate-400 text-xs mb-4">Answer these in the form, or use the audio recorder above.</p>
+            <ol class="space-y-4">
+              <li class="flex gap-3">
+                <span class="text-[#0ea5e9] font-bold text-sm mt-0.5 flex-shrink-0">1.</span>
+                <p class="text-slate-300 text-sm">What specific move or skill are you stuck on?</p>
+              </li>
+              <li class="flex gap-3">
+                <span class="text-[#0ea5e9] font-bold text-sm mt-0.5 flex-shrink-0">2.</span>
+                <p class="text-slate-300 text-sm">What have you already tried to fix it?</p>
+              </li>
+              <li class="flex gap-3">
+                <span class="text-[#0ea5e9] font-bold text-sm mt-0.5 flex-shrink-0">3.</span>
+                <p class="text-slate-300 text-sm">What would success look like for you after this coaching?</p>
+              </li>
+              <li class="flex gap-3">
+                <span class="text-[#0ea5e9] font-bold text-sm mt-0.5 flex-shrink-0">4.</span>
+                <p class="text-slate-300 text-sm">What equipment are you riding? (wing, board, foil)</p>
+              </li>
+              <li class="flex gap-3">
+                <span class="text-[#0ea5e9] font-bold text-sm mt-0.5 flex-shrink-0">5.</span>
+                <p class="text-slate-300 text-sm">How often and where do you ride?</p>
+              </li>
+            </ol>
+
+            <div class="mt-6 pt-5 border-t border-white/10">
+              <p class="text-slate-400 text-xs mb-2 font-medium">Tips for good video footage:</p>
+              <ul class="text-slate-500 text-xs space-y-1.5">
+                <li>✓ Film from the side, not head-on</li>
+                <li>✓ Whole body visible, not just head</li>
+                <li>✓ Include the attempt before the crash</li>
+                <li>✓ Multiple short clips &gt; one long one</li>
+                <li>✓ Raw footage is fine — no editing needed</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end grid -->
+  </div><!-- end max-w -->
+</div><!-- end main-content -->
+
+<script>
+const BP = '{{BASE_PATH}}';
+let submissionId = null;
+let audioBlob = null;
+let audioFilename = null;
+let mediaRecorder = null;
+let recTimerInterval = null;
+let recSeconds = 0;
+let uploadedFiles = []; // { serverFilename, originalName, size }
+
+// ── Level multi-select ────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.level-tag').forEach(btn => {
+    btn.addEventListener('click', () => btn.classList.toggle('selected'));
+  });
+});
+
+function getSelectedLevels() {
+  return [...document.querySelectorAll('.level-tag.selected')]
+    .map(b => b.dataset.value).join(', ');
+}
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  const isText = tab === 'text';
+  document.getElementById('panel-text').classList.toggle('hidden', !isText);
+  document.getElementById('panel-audio').classList.toggle('hidden', isText);
+  document.getElementById('tab-text').className = (isText ? 'tab-active' : 'tab-inactive') + ' flex-1 py-3 text-sm font-semibold transition-colors';
+  document.getElementById('tab-audio').className = (isText ? 'tab-inactive' : 'tab-active') + ' flex-1 py-3 text-sm font-semibold transition-colors border-l border-white/10';
+  if (!isText) {
+    // audio tab — text fields become optional
+    document.getElementById('q1-req').style.display = 'none';
+    document.getElementById('q2-req').style.display = 'none';
+    document.getElementById('q3-req').style.display = 'none';
+  } else {
+    // back to text — restore required if no audio recorded yet
+    if (!audioFilename) {
+      document.getElementById('q1-req').style.display = '';
+      document.getElementById('q2-req').style.display = '';
+      document.getElementById('q3-req').style.display = '';
+    }
+  }
+}
+
+// ── Session verification ─────────────────────────────────────────────────────
+async function verifySession() {
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session_id');
+
+  if (!sessionId) {
+    showError('No session ID found. Please complete payment first.');
+    return;
+  }
+
+  let attempts = 0;
+  const maxAttempts = 10;
+
+  while (attempts < maxAttempts) {
+    attempts++;
+    try {
+      const r = await fetch(`${BP}/api/verify-session?session_id=${encodeURIComponent(sessionId)}`);
+      const d = await r.json();
+
+      if (r.status === 202) {
+        // Webhook still processing — wait and retry
+        await new Promise(res => setTimeout(res, 2000));
+        continue;
+      }
+
+      if (!r.ok) {
+        showError(d.error || 'Payment verification failed.');
+        return;
+      }
+
+      submissionId = d.submissionId;
+      // Pre-fill email/name if available
+      if (d.name) document.getElementById('name').value = d.name;
+      if (d.email) document.getElementById('email').value = d.email;
+
+      document.getElementById('loading-screen').classList.add('hidden');
+      document.getElementById('main-content').classList.remove('hidden');
+      return;
+
+    } catch {
+      await new Promise(res => setTimeout(res, 2000));
+    }
+  }
+  showError('Payment verification timed out. Please refresh or contact us.');
+}
+
+function showError(msg) {
+  document.getElementById('loading-screen').classList.add('hidden');
+  document.getElementById('error-msg').textContent = msg;
+  document.getElementById('error-screen').classList.remove('hidden');
+}
+
+verifySession();
+
+// ── Audio recorder ───────────────────────────────────────────────────────────
+let audioChunks = [];
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
+    mediaRecorder = new MediaRecorder(stream, { mimeType });
+
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(audioChunks, { type: mimeType });
+      audioBlob = blob;
+      const ext = mimeType.includes('webm') ? '.webm' : '.ogg';
+      audioFilename = 'audio' + ext;
+
+      const url = URL.createObjectURL(blob);
+      document.getElementById('audio-player').src = url;
+      document.getElementById('audio-preview').classList.remove('hidden');
+      document.getElementById('rec-status').textContent = 'Recording saved.';
+      document.getElementById('record-btn').textContent = '✓ Recorded';
+      document.getElementById('record-btn').classList.remove('bg-red-500','hover:bg-red-600');
+      document.getElementById('record-btn').classList.add('bg-emerald-600','hover:bg-emerald-700');
+
+      // Make text questions optional
+      document.getElementById('q1-req').style.display = 'none';
+      document.getElementById('q2-req').style.display = 'none';
+      document.getElementById('q3-req').style.display = 'none';
+
+      // Auto-upload audio
+      await uploadAudio(blob, ext);
+    };
+
+    mediaRecorder.start();
+    recSeconds = 0;
+    updateTimer();
+    recTimerInterval = setInterval(updateTimer, 1000);
+
+    document.getElementById('record-btn').textContent = '⏹ Stop Recording';
+    document.getElementById('record-btn').onclick = stopRecording;
+    document.getElementById('record-btn').classList.remove('bg-red-500','hover:bg-red-600');
+    document.getElementById('record-btn').classList.add('bg-orange-500','hover:bg-orange-600');
+    document.getElementById('rec-status').innerHTML = '<span class="recording-pulse text-red-400">● REC</span>';
+    document.getElementById('audio-preview').classList.add('hidden');
+
+  } catch (err) {
+    alert('Could not access microphone: ' + err.message);
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    clearInterval(recTimerInterval);
+    mediaRecorder.stop();
+    document.getElementById('record-btn').onclick = startRecording;
+  }
+}
+
+function reRecord() {
+  audioBlob = null;
+  audioFilename = null;
+  document.getElementById('audio-player').src = '';
+  document.getElementById('audio-preview').classList.add('hidden');
+  document.getElementById('record-btn').textContent = 'Start Recording';
+  document.getElementById('record-btn').onclick = startRecording;
+  document.getElementById('record-btn').className = 'flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors';
+  document.getElementById('rec-status').textContent = '';
+  document.getElementById('rec-timer').textContent = '';
+  document.getElementById('q1-req').style.display = '';
+  document.getElementById('q2-req').style.display = '';
+  document.getElementById('q3-req').style.display = '';
+}
+
+function updateTimer() {
+  recSeconds++;
+  const m = String(Math.floor(recSeconds / 60)).padStart(2, '0');
+  const s = String(recSeconds % 60).padStart(2, '0');
+  document.getElementById('rec-timer').textContent = `${m}:${s}`;
+}
+
+async function uploadAudio(blob, ext) {
+  if (!submissionId) return;
+  document.getElementById('audio-upload-status').textContent = 'Uploading audio...';
+  try {
+    const fd = new FormData();
+    fd.append('audio', blob, 'recording' + ext);
+    const r = await fetch(`${BP}/upload/${submissionId}/audio`, { method: 'POST', body: fd });
+    const d = await r.json();
+    if (r.ok) {
+      document.getElementById('audio-upload-status').textContent = '✓ Audio uploaded';
+      audioFilename = d.filename;
+    } else {
+      document.getElementById('audio-upload-status').textContent = 'Upload failed: ' + d.error;
+    }
+  } catch {
+    document.getElementById('audio-upload-status').textContent = 'Upload error';
+  }
+}
+
+// ── Video upload ─────────────────────────────────────────────────────────────
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('video-input');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragging'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragging');
+  uploadFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', () => uploadFiles(fileInput.files));
+
+function formatSize(bytes) {
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function uploadFiles(files) {
+  Array.from(files).forEach(file => uploadFile(file));
+  fileInput.value = '';
+}
+
+function uploadFile(file) {
+  if (!submissionId) { alert('Session not verified yet. Please wait.'); return; }
+
+  const itemId = 'file-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+
+  const el = document.createElement('div');
+  el.id = itemId;
+  el.className = 'flex items-start gap-3 bg-white/5 border border-white/10 rounded-xl p-4';
+  el.innerHTML = `
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 mb-1">
+        <p class="text-sm font-medium truncate">${escHtml(file.name)}</p>
+        <span class="text-xs text-slate-400 flex-shrink-0">${formatSize(file.size)}</span>
+      </div>
+      <div class="w-full bg-white/10 rounded-full h-1.5 mb-1">
+        <div id="${itemId}-bar" class="progress-bar bg-[#0ea5e9] h-1.5 rounded-full" style="width:0%"></div>
+      </div>
+      <p id="${itemId}-status" class="text-xs text-slate-400">Uploading...</p>
+    </div>
+    <button id="${itemId}-del" class="text-slate-500 hover:text-red-400 transition-colors flex-shrink-0 hidden" title="Delete">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"></path></svg>
+    </button>
+  `;
+  document.getElementById('file-list').appendChild(el);
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', `${BP}/upload/${submissionId}`);
+
+  xhr.upload.onprogress = e => {
+    if (e.lengthComputable) {
+      const pct = Math.round((e.loaded / e.total) * 100);
+      const bar = document.getElementById(itemId + '-bar');
+      if (bar) bar.style.width = pct + '%';
+    }
+  };
+
+  xhr.onload = () => {
+    const status = document.getElementById(itemId + '-status');
+    const bar = document.getElementById(itemId + '-bar');
+    const del = document.getElementById(itemId + '-del');
+    if (xhr.status === 200) {
+      const d = JSON.parse(xhr.responseText);
+      if (bar) bar.style.width = '100%';
+      if (status) status.textContent = '✓ Uploaded';
+      if (del) del.classList.remove('hidden');
+
+      uploadedFiles.push({ serverFilename: d.filename, originalName: d.originalName || file.name, size: file.size, itemId });
+      del.onclick = () => deleteFile(d.filename, itemId, uploadedFiles.length - 1);
+      updateSubmitHint();
+    } else {
+      let errMsg = 'Upload failed';
+      try { errMsg = JSON.parse(xhr.responseText).error || errMsg; } catch {}
+      if (status) status.textContent = '✗ ' + errMsg;
+      if (bar) bar.classList.replace('bg-[#0ea5e9]', 'bg-red-500');
+    }
+  };
+
+  xhr.onerror = () => {
+    const status = document.getElementById(itemId + '-status');
+    if (status) status.textContent = '✗ Network error';
+  };
+
+  const fd = new FormData();
+  fd.append('video', file);
+  xhr.send(fd);
+}
+
+async function deleteFile(serverFilename, itemId, idx) {
+  try {
+    const r = await fetch(`${BP}/upload/${submissionId}/${encodeURIComponent(serverFilename)}`, { method: 'DELETE' });
+    if (r.ok) {
+      document.getElementById(itemId)?.remove();
+      uploadedFiles = uploadedFiles.filter(f => f.serverFilename !== serverFilename);
+      updateSubmitHint();
+    }
+  } catch { alert('Delete failed'); }
+}
+
+function updateSubmitHint() {
+  const hint = document.getElementById('submit-hint');
+  if (uploadedFiles.length === 0) {
+    hint.textContent = 'Upload at least one video before submitting.';
+  } else {
+    hint.textContent = `${uploadedFiles.length} video${uploadedFiles.length !== 1 ? 's' : ''} uploaded. Ready to send.`;
+    hint.className = 'text-center text-[#0ea5e9] text-sm mt-3';
+  }
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Submit form ──────────────────────────────────────────────────────────────
+async function submitForm() {
+  if (uploadedFiles.length === 0) {
+    alert('Please upload at least one video before submitting.');
+    return;
+  }
+
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  if (!name) { alert('Please enter your name.'); document.getElementById('name').focus(); return; }
+  if (!email) { alert('Please enter your email.'); document.getElementById('email').focus(); return; }
+
+  const hasAudio = !!audioFilename;
+  const stuck_on = document.getElementById('stuck_on').value.trim();
+  const tried = document.getElementById('tried').value.trim();
+  const success_looks_like = document.getElementById('success_looks_like').value.trim();
+
+  if (!hasAudio && (!stuck_on || !tried || !success_looks_like)) {
+    alert('Please fill in all three coaching questions, or use the audio recorder.');
+    return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    const r = await fetch(`${BP}/api/submit/${submissionId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        email,
+        age: document.getElementById('age').value || null,
+        location: document.getElementById('location').value.trim(),
+        ride_frequency: document.getElementById('ride_frequency').value,
+        conditions: document.getElementById('conditions').value.trim(),
+        equipment: document.getElementById('equipment').value.trim(),
+        level: getSelectedLevels(),
+        stuck_on,
+        tried,
+        success_looks_like,
+        audio_file: audioFilename || null,
+      }),
+    });
+
+    if (r.ok) {
+      document.getElementById('submit-area').classList.add('hidden');
+      document.getElementById('success-msg').classList.remove('hidden');
+      window.scrollTo({ top: document.getElementById('success-msg').offsetTop - 100, behavior: 'smooth' });
+    } else {
+      const d = await r.json();
+      alert('Submission error: ' + (d.error || 'Unknown error'));
+      btn.textContent = 'Send to Michi →';
+      btn.disabled = false;
+    }
+  } catch {
+    alert('Network error. Please try again.');
+    btn.textContent = 'Send to Michi →';
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
