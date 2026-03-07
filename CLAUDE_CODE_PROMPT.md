@@ -301,6 +301,117 @@ tricktionary-coaching/
 
 ---
 
+## Media Assets — Real Photos & Videos (No AI Generated Images)
+
+All images and videos in this app are REAL photos and videos provided by Michi Rossmeier.
+Do NOT use AI-generated imagery. Use Unsplash wingfoil placeholders ONLY during build,
+clearly marked with a `<!-- REPLACE: [description] -->` HTML comment so they're easy to find and swap.
+
+### Asset Slots — What Claude Should Request From Michi
+
+Build the app with these named asset slots. Use placeholder images (Unsplash, 
+search: "wingfoil", "wing foiling", "windsurfing ocean") during development.
+Each slot gets a clear comment in the HTML marking what the real asset should be.
+
+---
+
+#### HERO BACKGROUND (1 asset)
+- Format: Photo or short looping video (MP4, no audio)
+- Size: 1920×1080px minimum, landscape
+- Topic: Wide dramatic shot — rider on foil, ocean, good wind, blue sky
+- Mood: Power and freedom. The "after" state — rider flying, not struggling.
+- Filename: `public/assets/hero-bg.jpg` (or `.mp4` for video loop)
+- Usage: Full-width hero section background
+
+---
+
+#### PROBLEM SLIDESHOW — "Does this sound familiar?" (5 photos)
+These accompany the 5 core plateau problems on the landing page.
+Each photo shows the PROBLEM moment — the struggle, not the solution.
+Real riding photos. Imperfect technique is actually better here — it's relatable.
+
+| Slot | Topic | What the photo shows |
+|------|-------|---------------------|
+| `problem-1.jpg` | **Can't get up on foil consistently** | Rider falling off, board low in water, not yet flying |
+| `problem-2.jpg` | **Pump technique feels wrong** | Rider pumping awkwardly, body position off, wing angle incorrect |
+| `problem-3.jpg` | **Crashes on jibes / tacks** | Transition moment, rider losing balance, foil breaching |
+| `problem-4.jpg` | **Can't control speed / height** | Rider flying too high or nose-diving, panic position |
+| `problem-5.jpg` | **Stuck at the same moves for months** | Rider looking frustrated on the water, or attempting same move repeatedly |
+
+- Format: JPG or WEBP
+- Size: 800×600px minimum, landscape preferred
+- Filename: `public/assets/problems/problem-1.jpg` through `problem-5.jpg`
+
+---
+
+#### CREDIBILITY / ABOUT MICHI (2–3 photos)
+- `coach-action.jpg` — Michi riding / coaching on the water. Action shot. Competence visible.
+- `coach-portrait.jpg` — Michi looking at camera, approachable, outdoors or on water
+- `coach-teaching.jpg` (optional) — Michi with a student, pointing, explaining, beach or water
+- Size: 800×800px minimum (square or landscape both fine)
+- Filename: `public/assets/coach/`
+
+---
+
+#### RESULT / TRANSFORMATION (2 photos)
+The "after" state for a rider who got coaching. Contrast with problem photos.
+- `result-1.jpg` — Clean foiling position, controlled, flying smoothly
+- `result-2.jpg` — Rider landing a move cleanly, stoke visible, fist pump if possible
+- Size: 800×600px minimum, landscape
+- Filename: `public/assets/results/`
+
+---
+
+#### TRICKTIONARY BOOK (1 photo)
+- `book.jpg` — The WingFoil Tricktionary book, physical copy, clean product shot
+- Size: 600×400px minimum
+- Usage: Footer credibility block — "By the author of the Wingfoil Tricktionary"
+- Filename: `public/assets/book.jpg`
+
+---
+
+### Slideshow Implementation
+
+The 5 problem photos power an auto-advancing slideshow on the landing page.
+Each slide shows:
+- The photo as background
+- A short headline (the problem statement — see copy below)
+- A one-liner that twists toward the solution
+
+**Slideshow copy to build into the HTML:**
+
+Slide 1: "You're doing everything right — but you can't get up consistently."
+Slide 2: "Your pump feels like work. It should feel effortless."  
+Slide 3: "Every jibe ends the same way. You know what happens next."
+Slide 4: "One second you're flying. The next you're underwater."
+Slide 5: "You've been stuck on the same level for months. You're not improving — you're just surviving."
+
+Transition line after slideshow: **"Michi sees exactly what's going wrong. One video is enough."**
+
+---
+
+### Video Asset (Optional — Phase 2)
+
+If Michi provides a short intro video (60–90 sec, Michi to camera, personal):
+- Slot: `public/assets/coach-intro.mp4`
+- Usage: Replaces or supplements the credibility section
+- Build a `<video>` element with poster image, autoplay off, controls on
+- Mark in HTML: `<!-- REPLACE: coach intro video -->`
+
+For now: leave this section as a placeholder card with a play button icon and text:
+"Short intro from Michi — coming soon"
+
+---
+
+### Placeholder Strategy During Build
+
+Use these Unsplash search URLs as temporary `src` values:
+- Hero: `https://images.unsplash.com/photo-1559305616-3f99cd43e353?w=1920&h=1080&fit=crop` (wingfoil ocean)
+- Problems: Any wingfoil/windsurfing action shots from Unsplash
+- Mark every placeholder: `<!-- PLACEHOLDER: replace with [slot-name] -->`
+
+---
+
 ## What NOT to Build (Keep It Simple)
 
 - No user accounts / login system
