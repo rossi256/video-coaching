@@ -43,6 +43,9 @@ jobs:
 
             cd $APP_DIR
 
+            # Remove any old static files from public_html that block the Apache proxy
+            rm -rf /home/ari/public_html/projects/video-coaching
+
             # Install/update dependencies (skip dev deps in production)
             npm ci --omit=dev
 
