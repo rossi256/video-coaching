@@ -84,6 +84,7 @@
 
 <script>
 const BP = '{{BASE_PATH}}';
+let currentSubmission = null;
 
 // ── List ─────────────────────────────────────────────────────────────────────
 async function loadList() {
@@ -154,6 +155,7 @@ async function loadDetail(id) {
 }
 
 function renderDetail(s) {
+  currentSubmission = s;
   const statusDate = s.submitted_at
     ? `Submitted ${new Date(s.submitted_at).toLocaleString()}`
     : `Paid ${new Date(s.created_at).toLocaleString()}`;
@@ -191,55 +193,61 @@ function renderDetail(s) {
       <!-- Profile -->
       <div class="lg:col-span-2 space-y-4">
         <div class="bg-[#0d1b2e] border border-white/10 rounded-xl p-5">
-          <h3 class="font-bold mb-4 text-slate-200">Rider Profile</h3>
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-6">
-            ${field('Age', s.age)}
-            ${field('Location', s.location)}
-            ${field('Ride Frequency', s.ride_frequency)}
-            ${field('Wind Conditions', s.conditions)}
-            ${field('Level', s.level)}
+          <h3 class="font-bold mb-5 text-slate-200 flex items-center gap-2">
+            <span style="display:inline-block;width:3px;height:18px;background:#0ea5e9;border-radius:2px;flex-shrink:0"></span>
+            Rider Profile
+          </h3>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+            ${statCard('Age', s.age)}
+            ${statCard('Location', s.location)}
+            ${statCard('Ride Frequency', s.ride_frequency)}
+            ${statCard('Wind Conditions', s.conditions)}
+            ${statCard('Level', s.level)}
           </div>
-          ${field('Equipment', s.equipment)}
-          ${field('Stuck On', s.stuck_on)}
-          ${field('Tried So Far', s.tried)}
-          ${field('Success Looks Like', s.success_looks_like)}
+          ${s.equipment ? `<div class="bg-white/5 rounded-lg px-3 py-2.5 mb-4"><div class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">Equipment</div><div class="text-slate-200 text-sm">${esc(s.equipment)}</div></div>` : ''}
+          <div class="space-y-2">
+            ${s.stuck_on ? `<div class="bg-[#0a1628] border-l-2 border-[#0ea5e9]/60 rounded-r-lg px-3 py-2.5"><div class="text-xs text-[#38bdf8] uppercase tracking-wider font-semibold mb-1">Stuck on</div><div class="text-slate-200 text-sm" style="white-space:pre-wrap">${esc(s.stuck_on)}</div></div>` : ''}
+            ${s.tried ? `<div class="bg-[#0a1628] border-l-2 border-purple-400/50 rounded-r-lg px-3 py-2.5"><div class="text-xs text-purple-300 uppercase tracking-wider font-semibold mb-1">Tried so far</div><div class="text-slate-200 text-sm" style="white-space:pre-wrap">${esc(s.tried)}</div></div>` : ''}
+            ${s.success_looks_like ? `<div class="bg-[#0a1628] border-l-2 border-green-400/50 rounded-r-lg px-3 py-2.5"><div class="text-xs text-green-300 uppercase tracking-wider font-semibold mb-1">Success looks like</div><div class="text-slate-200 text-sm" style="white-space:pre-wrap">${esc(s.success_looks_like)}</div></div>` : ''}
+          </div>
         </div>
 
         <!-- Uploaded videos -->
         <div class="bg-[#0d1b2e] border border-white/10 rounded-xl p-5">
-          <h3 class="font-bold mb-4 text-slate-200">Rider Videos (${s.uploaded_files ? s.uploaded_files.length : 0})</h3>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-slate-200 flex items-center gap-2">
+              <span style="display:inline-block;width:3px;height:18px;background:#0ea5e9;border-radius:2px;flex-shrink:0"></span>
+              Rider Videos (${s.uploaded_files ? s.uploaded_files.length : 0})
+            </h3>
+            ${s.uploaded_files && s.uploaded_files.length > 1 ? `
+              <button onclick="downloadAll()"
+                class="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white border border-white/15 hover:border-white/30 px-3 py-1.5 rounded-lg transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download All
+              </button>` : ''}
+          </div>
           ${s.audio_file ? `<div class="mb-4 p-3 bg-white/5 rounded-lg">
-            <p class="text-xs text-slate-400 mb-2 font-medium">Audio recording</p>
+            <p class="text-xs text-slate-400 mb-2 font-semibold uppercase tracking-wider">Audio recording</p>
             <audio controls src="${BP}/api/admin/file/${s.id}/${encodeURIComponent(s.audio_file)}" class="w-full" style="accent-color:#0ea5e9;"></audio>
           </div>` : ''}
           ${s.uploaded_files && s.uploaded_files.length > 0 ? `
-            <div class="space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               ${s.uploaded_files.map(f => `
-                <div class="flex items-center justify-between gap-3 p-3 bg-white/5 rounded-lg">
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium truncate">${esc(f.name)}</p>
-                    <p class="text-xs text-slate-400">${fmtSize(f.size)}</p>
-                  </div>
-                  <div class="flex gap-2 flex-shrink-0">
-                    <a href="${BP}/api/admin/file/${s.id}/${encodeURIComponent(f.name)}" target="_blank"
-                      class="text-xs text-[#0ea5e9] hover:underline">Play</a>
-                    <a href="${BP}/api/admin/file/${s.id}/${encodeURIComponent(f.name)}" download
-                      class="text-xs text-slate-400 hover:text-white">Download</a>
+                <div class="bg-white/5 rounded-xl overflow-hidden border border-white/5">
+                  <video controls preload="metadata" class="w-full bg-black" style="aspect-ratio:16/9;object-fit:contain;"
+                    src="${BP}/api/admin/file/${s.id}/${encodeURIComponent(f.name)}"></video>
+                  <div class="px-3 py-2.5 flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                      <p class="text-sm font-medium truncate text-slate-200">${esc(f.name)}</p>
+                      <p class="text-xs text-slate-500">${fmtSize(f.size)}</p>
+                    </div>
+                    <a href="${BP}/api/admin/file/${s.id}/${encodeURIComponent(f.name)}" download="${esc(f.name)}"
+                      class="text-slate-400 hover:text-white flex-shrink-0 transition-colors" title="Download">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </a>
                   </div>
                 </div>
               `).join('')}
-            </div>
-            <div class="mt-4 p-3 bg-[#080f1c] rounded-lg">
-              <p class="text-xs text-slate-400 mb-2 font-medium">Preview videos inline:</p>
-              <div id="inline-players" class="space-y-2">
-                ${s.uploaded_files.map(f => `
-                  <details class="group">
-                    <summary class="cursor-pointer text-sm text-[#0ea5e9] hover:underline list-none">${esc(f.name)}</summary>
-                    <video controls class="w-full mt-2 rounded" style="max-height:300px;"
-                      src="${BP}/api/admin/file/${s.id}/${encodeURIComponent(f.name)}"></video>
-                  </details>
-                `).join('')}
-              </div>
             </div>
           ` : '<p class="text-slate-500 text-sm">No videos uploaded yet.</p>'}
         </div>
@@ -572,6 +580,26 @@ async function markFeedbackSent(id) {
 function field(label, value) {
   if (!value) return '';
   return `<div class="detail-field"><div class="detail-label">${esc(label)}</div><div class="detail-value">${esc(String(value))}</div></div>`;
+}
+
+function statCard(label, value) {
+  if (value === null || value === undefined || value === '') return '';
+  return `<div class="bg-white/5 rounded-lg px-3 py-2.5"><div class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">${esc(label)}</div><div class="text-white text-sm font-medium">${esc(String(value))}</div></div>`;
+}
+
+async function downloadAll() {
+  const s = currentSubmission;
+  if (!s || !s.uploaded_files || s.uploaded_files.length === 0) return;
+  for (let i = 0; i < s.uploaded_files.length; i++) {
+    const f = s.uploaded_files[i];
+    const a = document.createElement('a');
+    a.href = `${BP}/api/admin/file/${s.id}/${encodeURIComponent(f.name)}`;
+    a.download = f.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    if (i < s.uploaded_files.length - 1) await new Promise(r => setTimeout(r, 800));
+  }
 }
 
 function fmtSize(bytes) {
