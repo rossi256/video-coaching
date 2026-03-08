@@ -127,7 +127,7 @@
               <label>Full Name <span class="text-[#0ea5e9]">*</span></label>
               <input type="text" id="name" placeholder="Your name" required>
             </div>
-            <div class="form-group">
+            <div class="form-group" id="email-group">
               <label>Email <span class="text-[#0ea5e9]">*</span></label>
               <input type="email" id="email" placeholder="your@email.com" required>
             </div>
@@ -446,7 +446,10 @@ async function verifySession() {
       submissionId = d.submissionId;
       savedEmail = d.email || '';
       // Pre-fill all saved fields
-      if (d.email) document.getElementById('email').value = d.email;
+      if (d.email) {
+        document.getElementById('email').value = d.email;
+        document.getElementById('email-group').classList.add('hidden');
+      }
       if (d.name) document.getElementById('name').value = d.name;
       if (d.age) document.getElementById('age').value = d.age;
       if (d.location) document.getElementById('location').value = d.location;
