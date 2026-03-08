@@ -28,6 +28,13 @@ jobs:
               echo "Pulling latest code..."
               cd $APP_DIR
               git pull origin main
+            elif [ -d "$APP_DIR" ]; then
+              echo "Directory exists but no git repo — initialising..."
+              cd $APP_DIR
+              git init
+              git remote add origin https://x-access-token:${{ secrets.GH_DEPLOY_TOKEN }}@github.com/rossi256/video-coaching.git
+              git fetch origin main
+              git checkout -f -B main origin/main
             else
               echo "First deploy - cloning repo..."
               git clone https://x-access-token:${{ secrets.GH_DEPLOY_TOKEN }}@github.com/rossi256/video-coaching.git $APP_DIR
