@@ -22,13 +22,53 @@ async function sendAdminNotification(name, email) {
   });
 }
 
-async function sendSubmissionNotification(name, email, submissionId) {
+async function sendSubmissionNotification(name, email, submissionId, sub) {
   const transporter = getTransporter();
+  const adminUrl = `${process.env.BASE_URL}/admin#submission-${submissionId}`;
+
+  const riderRows = sub ? `
+    <tr><td style="color:#64748b;padding:6px 12px 6px 0;white-space:nowrap;font-size:13px;">Level</td><td style="padding:6px 0;font-size:13px;">${sub.level || '—'}</td></tr>
+    <tr><td style="color:#64748b;padding:6px 12px 6px 0;white-space:nowrap;font-size:13px;">Location</td><td style="padding:6px 0;font-size:13px;">${sub.location || '—'}</td></tr>
+    <tr><td style="color:#64748b;padding:6px 12px 6px 0;white-space:nowrap;font-size:13px;">Equipment</td><td style="padding:6px 0;font-size:13px;">${sub.equipment || '—'}</td></tr>
+    <tr><td style="color:#64748b;padding:6px 12px 6px 0;white-space:nowrap;font-size:13px;">Ride Frequency</td><td style="padding:6px 0;font-size:13px;">${sub.ride_frequency || '—'}</td></tr>
+  ` : '';
+
+  const coachingRows = sub ? `
+    <div style="margin-top:16px;">
+      <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;margin-bottom:4px;">Stuck on</p>
+      <p style="font-size:13px;color:#e2e8f0;background:#1e293b;padding:10px;border-radius:6px;">${sub.stuck_on || '—'}</p>
+    </div>
+    <div style="margin-top:12px;">
+      <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;margin-bottom:4px;">Tried</p>
+      <p style="font-size:13px;color:#e2e8f0;background:#1e293b;padding:10px;border-radius:6px;">${sub.tried || '—'}</p>
+    </div>
+    <div style="margin-top:12px;">
+      <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;margin-bottom:4px;">Success looks like</p>
+      <p style="font-size:13px;color:#e2e8f0;background:#1e293b;padding:10px;border-radius:6px;">${sub.success_looks_like || '—'}</p>
+    </div>
+  ` : '';
+
   await transporter.sendMail({
     from: `"WingCoach" <${process.env.SMTP_USER}>`,
     to: process.env.NOTIFY_EMAIL,
     subject: `New coaching submission from ${name}`,
-    text: `A rider has submitted their videos and profile.\n\nName: ${name}\nEmail: ${email}\nSubmission ID: ${submissionId}\n\nReview at: ${process.env.BASE_URL}/admin`,
+    html: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#0d1b2e;color:#e2e8f0;padding:32px;border-radius:12px;">
+        <h2 style="color:#0ea5e9;margin:0 0 4px;">New coaching submission</h2>
+        <p style="margin:0 0 20px;color:#94a3b8;font-size:14px;">Submission #${submissionId}</p>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
+          <tr><td style="color:#64748b;padding:6px 12px 6px 0;white-space:nowrap;font-size:13px;">Name</td><td style="padding:6px 0;font-size:13px;font-weight:600;">${name}</td></tr>
+          <tr><td style="color:#64748b;padding:6px 12px 6px 0;white-space:nowrap;font-size:13px;">Email</td><td style="padding:6px 0;font-size:13px;"><a href="mailto:${email}" style="color:#0ea5e9;">${email}</a></td></tr>
+          ${riderRows}
+        </table>
+        ${coachingRows}
+        <div style="margin-top:24px;text-align:center;">
+          <a href="${adminUrl}" style="display:inline-block;background:#0ea5e9;color:white;font-weight:700;padding:12px 28px;border-radius:8px;text-decoration:none;font-size:14px;">
+            View in Admin →
+          </a>
+        </div>
+      </div>
+    `,
   });
 }
 
@@ -98,4 +138,99 @@ async function sendUploadLink(email, name, uploadUrl) {
   });
 }
 
-module.exports = { sendAdminNotification, sendSubmissionNotification, sendFeedbackReady, sendUploadLink };
+async function sendAbandonedCheckoutReminder(email, checkoutUrl) {
+  const transporter = getTransporter();
+  await transporter.sendMail({
+    from: `"WingCoach" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject: 'Your coaching spot is still waiting',
+    html: `
+      <div style="font-family:Inter,sans-serif;max-width:540px;margin:0 auto;background:#0d1b2e;color:#e2e8f0;padding:40px 32px;border-radius:16px">
+        <div style="margin-bottom:28px">
+          <span style="font-weight:900;color:#0ea5e9;font-size:20px">WING</span><span style="font-weight:300;font-size:20px">COACH</span>
+          <span style="color:#475569;font-size:14px;margin-left:8px">by Tricktionary</span>
+        </div>
+        <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">Hey — you were this close.</h2>
+        <p style="color:#94a3b8;line-height:1.6;margin-bottom:16px">
+          Your founding coaching spot with Michi is still available. Once all 10 spots fill up, the price goes to €149.
+        </p>
+        <p style="color:#e2e8f0;line-height:1.6;margin-bottom:28px">
+          Click below to come back and lock it in.
+        </p>
+        <a href="${checkoutUrl}" style="display:inline-block;background:#0ea5e9;color:white;font-weight:700;padding:14px 28px;border-radius:10px;text-decoration:none;font-size:15px;margin-bottom:28px">
+          → Claim my founding spot
+        </a>
+        <p style="color:#475569;font-size:13px;line-height:1.5">
+          Questions? <a href="https://wa.me/4369913909040" style="color:#0ea5e9;">WhatsApp Michi</a> — happy to answer before you buy.
+        </p>
+      </div>
+    `,
+  });
+}
+
+async function sendSubmissionConfirmation(email, name, uploadUrl) {
+  const transporter = getTransporter();
+  await transporter.sendMail({
+    from: `"Michi @ WingCoach" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject: 'Got it — Michi is on it 🎯',
+    html: `
+      <div style="font-family:Inter,sans-serif;max-width:540px;margin:0 auto;background:#0d1b2e;color:#e2e8f0;padding:40px 32px;border-radius:16px">
+        <div style="margin-bottom:28px">
+          <span style="font-weight:900;color:#0ea5e9;font-size:20px">WING</span><span style="font-weight:300;font-size:20px">COACH</span>
+          <span style="color:#475569;font-size:14px;margin-left:8px">by Tricktionary</span>
+        </div>
+        <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">Hey ${name || 'there'} — got it! 🎯</h2>
+        <p style="color:#94a3b8;line-height:1.6;margin-bottom:16px">
+          Your videos and profile are in. I'll review everything and send your personalized coaching video within 72 hours.
+        </p>
+        <p style="color:#e2e8f0;font-weight:600;margin-bottom:24px">
+          Watch your inbox.
+        </p>
+        <a href="${uploadUrl}" style="display:inline-block;background:rgba(14,165,233,0.15);border:1px solid rgba(14,165,233,0.4);color:#38bdf8;font-weight:600;padding:12px 24px;border-radius:10px;text-decoration:none;font-size:14px;margin-bottom:28px">
+          Come back to your submission →
+        </a>
+        <p style="color:#475569;font-size:13px;line-height:1.5">
+          Questions while you wait? <a href="https://wa.me/4369913909040" style="color:#0ea5e9;">WhatsApp Michi</a>
+        </p>
+      </div>
+    `,
+  });
+}
+
+async function sendReceiptConfirmation(email, name) {
+  const transporter = getTransporter();
+  await transporter.sendMail({
+    from: `"Michi @ WingCoach" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject: 'Michi just confirmed your submission is in 👋',
+    html: `
+      <div style="font-family:Inter,sans-serif;max-width:540px;margin:0 auto;background:#0d1b2e;color:#e2e8f0;padding:40px 32px;border-radius:16px">
+        <div style="margin-bottom:28px">
+          <span style="font-weight:900;color:#0ea5e9;font-size:20px">WING</span><span style="font-weight:300;font-size:20px">COACH</span>
+          <span style="color:#475569;font-size:14px;margin-left:8px">by Tricktionary</span>
+        </div>
+        <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">Hey ${name || 'there'} 👋</h2>
+        <p style="color:#94a3b8;line-height:1.6;margin-bottom:16px">
+          Just to let you know — Michi confirmed the receipt of your submission and started working on it.
+        </p>
+        <p style="color:#e2e8f0;line-height:1.6;margin-bottom:28px">
+          Stay tuned for your coaching video — you'll get an email as soon as it's ready.
+        </p>
+        <p style="color:#475569;font-size:13px;line-height:1.5">
+          Got a quick question while you wait? <a href="https://wa.me/4369913909040" style="color:#0ea5e9;">WhatsApp Michi</a>
+        </p>
+      </div>
+    `,
+  });
+}
+
+module.exports = {
+  sendAdminNotification,
+  sendSubmissionNotification,
+  sendFeedbackReady,
+  sendUploadLink,
+  sendAbandonedCheckoutReminder,
+  sendSubmissionConfirmation,
+  sendReceiptConfirmation,
+};

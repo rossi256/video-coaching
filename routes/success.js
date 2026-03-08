@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const { getSubmissionBySessionId, getSubmission, updateSubmission } = require('../db');
 const { stripe } = require('../stripe');
-const { sendSubmissionNotification } = require('../email');
+const { sendSubmissionNotification, sendSubmissionConfirmation } = require('../email');
 
 // GET /api/verify-session?session_id=xxx
 router.get('/api/verify-session', async (req, res) => {
@@ -93,11 +93,22 @@ router.post('/api/submit/:submissionId', async (req, res) => {
     submitted_at: new Date().toISOString(),
   });
 
-  const finalName = name || sub.name || 'Unknown';
-  const finalEmail = email || sub.email || '';
-  sendSubmissionNotification(finalName, finalEmail, id).catch(err =>
+  const finalSub = getSubmission(id);
+  const finalName = finalSub?.name || 'Unknown';
+  const finalEmail = finalSub?.email || '';
+
+  sendSubmissionNotification(finalName, finalEmail, id, finalSub).catch(err =>
     console.error('Submission notification email error:', err)
   );
+
+  if (finalEmail) {
+    const BASE_URL = process.env.BASE_URL ||
+      `http://localhost:${process.env.PORT || 3010}${process.env.BASE_PATH || ''}`;
+    const uploadUrl = `${BASE_URL}/success?session_id=${finalSub?.stripe_session_id || ''}`;
+    sendSubmissionConfirmation(finalEmail, finalName, uploadUrl).catch(err =>
+      console.error('Submission confirmation email error:', err)
+    );
+  }
 
   res.json({ success: true });
 });

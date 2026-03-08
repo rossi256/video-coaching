@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { createCheckoutSession } = require('../stripe');
-const { getSpots } = require('../db');
+const { getSpots, createCheckoutAttempt } = require('../db');
 
 router.post('/create-checkout-session', async (req, res) => {
   if (!process.env.STRIPE_SECRET_KEY) {
@@ -28,6 +28,9 @@ router.post('/create-checkout-session', async (req, res) => {
       remaining,
       email,
     );
+    if (email) {
+      createCheckoutAttempt(email, session.id);
+    }
     res.json({ url: session.url });
   } catch (err) {
     console.error('Stripe error:', err.message);

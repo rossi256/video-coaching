@@ -261,7 +261,9 @@ async function loadFeedback() {
 
     document.getElementById('loading-screen').classList.add('hidden');
 
-    if (d.status === 'paid' || !d.replyFiles || d.replyFiles.length === 0) {
+    const hasItems = d.replyItems && d.replyItems.length > 0;
+    const hasLegacyFiles = d.replyFiles && d.replyFiles.length > 0;
+    if (d.status === 'paid' || (!hasItems && !hasLegacyFiles)) {
       showState('pending-screen');
       return;
     }
@@ -272,7 +274,11 @@ async function loadFeedback() {
     }
 
     showState('feedback-screen');
-    buildPlayers(d.replyFiles, token);
+    if (hasItems) {
+      buildItems(d.replyItems, token);
+    } else {
+      buildPlayers(d.replyFiles, token);
+    }
 
   } catch (err) {
     showState('not-found');
@@ -290,7 +296,124 @@ function showState(id) {
   if (id !== 'feedback-screen') el.classList.add('flex');
 }
 
-// ── Build video players ──────────────────────────────────────────────────────
+// ── Build items (new: video + text, with descriptions) ───────────────────────
+function buildItems(items, token) {
+  const container = document.getElementById('players-container');
+  const tabBar = document.getElementById('video-tabs');
+
+  const videoItems = items.filter(i => i.type === 'video');
+  let videoIdx = 0;
+
+  if (videoItems.length > 1) {
+    tabBar.classList.remove('hidden');
+  }
+
+  items.forEach((item, idx) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'item-wrap';
+
+    if (item.type === 'video') {
+      const vIdx = videoIdx++;
+      const videoUrl = `${BP}/api/reply/${encodeURIComponent(token)}/video/${encodeURIComponent(item.filename)}`;
+
+      // Tab button for multi-video
+      if (videoItems.length > 1) {
+        const tab = document.createElement('button');
+        tab.className = `tab-btn pb-3 px-4 text-sm font-medium text-slate-400 hover:text-white whitespace-nowrap ${vIdx === 0 ? 'active' : ''}`;
+        tab.textContent = item.description || `Video ${vIdx + 1}`;
+        const capturedVIdx = vIdx;
+        tab.onclick = () => {
+          document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          document.querySelectorAll('.video-item-wrap').forEach(p => p.classList.add('hidden'));
+          document.getElementById('video-item-' + capturedVIdx).classList.remove('hidden');
+        };
+        tabBar.appendChild(tab);
+      }
+
+      wrap.id = 'video-item-' + vIdx;
+      wrap.classList.add('video-item-wrap');
+      if (videoItems.length > 1 && vIdx > 0) wrap.classList.add('hidden');
+
+      const descHtml = item.description
+        ? `<div class="px-5 pt-4 pb-2"><p class="text-sm font-semibold text-slate-200">${item.description}</p></div>`
+        : '';
+
+      wrap.innerHTML = `
+        <div class="bg-[#080f1c] border border-white/10 rounded-2xl overflow-hidden">
+          ${descHtml}
+          <div class="${item.description ? 'px-4 pb-4 sm:px-6 sm:pb-6' : 'p-4 sm:p-6'}">
+            <div class="vp-wrap" id="vp-${vIdx}">
+              <video id="vid-${vIdx}" preload="metadata" playsinline style="background:#000;"></video>
+              <div class="vp-top">
+                <button class="vp-pill" id="slowmo-${vIdx}" onclick="toggleSlowMo(${vIdx})">1x</button>
+                <button class="vp-pill" id="mirror-${vIdx}" onclick="toggleMirror(${vIdx})" title="Mirror video">↔ Mirror</button>
+              </div>
+              <div class="tap-flash tap-flash-left" id="flash-left-${vIdx}">-15s</div>
+              <div class="tap-flash tap-flash-right" id="flash-right-${vIdx}">+15s</div>
+              <div class="vp-skip-zone vp-skip-left" onclick="skipVideo(${vIdx}, -15)"><div class="skip-label">← 15s</div></div>
+              <div class="vp-skip-zone vp-skip-right" onclick="skipVideo(${vIdx}, 15)"><div class="skip-label">15s →</div></div>
+              <div class="vp-controls" id="ctrl-${vIdx}">
+                <div class="vp-progress" id="prog-${vIdx}" onclick="seekVideo(event, ${vIdx})">
+                  <div class="vp-progress-fill" id="prog-fill-${vIdx}" style="width:0%"></div>
+                  <div class="vp-progress-thumb" id="prog-thumb-${vIdx}" style="left:0%"></div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button class="vp-btn" onclick="togglePlay(${vIdx})" id="playbtn-${vIdx}">
+                    <svg id="play-icon-${vIdx}" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  </button>
+                  <button class="vp-btn" onclick="skipVideo(${vIdx}, -15)" title="-15 seconds">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-3.21"/></svg>
+                    <span style="font-size:10px;font-weight:700;margin-left:1px">15</span>
+                  </button>
+                  <button class="vp-btn" onclick="skipVideo(${vIdx}, 15)" title="+15 seconds">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-.49-3.21"/></svg>
+                    <span style="font-size:10px;font-weight:700;margin-left:1px">15</span>
+                  </button>
+                  <span class="text-white/70 text-xs font-mono ml-1" id="time-${vIdx}">0:00</span>
+                  <div class="flex-1"></div>
+                  <button class="vp-btn" onclick="toggleMute(${vIdx})" id="mute-${vIdx}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                  </button>
+                  <a href="${videoUrl}" download class="vp-btn" title="Download">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  </a>
+                  <button class="vp-btn" onclick="toggleFullscreen(${vIdx})" title="Fullscreen">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <p class="text-slate-500 text-xs">Tip: use slow-mo or mirror to study your technique</p>
+              <a href="${videoUrl}" download class="text-sm text-[#0ea5e9] hover:underline flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download video
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+      container.appendChild(wrap);
+      const vid = document.getElementById('vid-' + vIdx);
+      vid.src = videoUrl;
+      initPlayerEvents(vIdx);
+
+    } else if (item.type === 'text') {
+      wrap.innerHTML = `
+        <div class="bg-[#080f1c] border border-white/10 rounded-2xl overflow-hidden">
+          ${item.description ? `<div class="px-5 pt-4 pb-2 border-b border-white/10"><p class="text-sm font-semibold text-slate-200">${item.description}</p></div>` : ''}
+          <div class="p-5 sm:p-6">
+            <p class="text-slate-300 leading-relaxed whitespace-pre-wrap">${item.content || ''}</p>
+          </div>
+        </div>
+      `;
+      container.appendChild(wrap);
+    }
+  });
+}
+
+// ── Build video players (legacy) ─────────────────────────────────────────────
 function buildPlayers(files, token) {
   const container = document.getElementById('players-container');
   const tabBar = document.getElementById('video-tabs');

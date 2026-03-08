@@ -42,7 +42,30 @@ function initDb() {
 
     INSERT OR IGNORE INTO config VALUES ('total_spots', '10');
     INSERT OR IGNORE INTO config VALUES ('spots_taken', '0');
+
+    CREATE TABLE IF NOT EXISTS checkout_attempts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL,
+      stripe_session_id TEXT UNIQUE,
+      created_at TEXT DEFAULT (datetime('now')),
+      reminded_at TEXT,
+      converted INTEGER DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS reply_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      submission_id INTEGER NOT NULL,
+      type TEXT NOT NULL DEFAULT 'video',
+      filename TEXT,
+      description TEXT,
+      content TEXT,
+      order_index INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
   `);
+
+  // Migration: add confirmed_at column if it doesn't exist
+  try { db.exec(`ALTER TABLE submissions ADD COLUMN confirmed_at TEXT`); } catch {}
 
   console.log('Database initialized');
 }
@@ -91,6 +114,70 @@ function getSubmissionBySessionId(sessionId) {
   return db.prepare('SELECT * FROM submissions WHERE stripe_session_id = ?').get(sessionId);
 }
 
+// ── Checkout Attempts ─────────────────────────────────────────────────────────
+
+function createCheckoutAttempt(email, stripeSessionId) {
+  db.prepare(
+    'INSERT OR IGNORE INTO checkout_attempts (email, stripe_session_id) VALUES (?, ?)'
+  ).run(email, stripeSessionId);
+}
+
+function markAttemptConverted(stripeSessionId) {
+  db.prepare(
+    'UPDATE checkout_attempts SET converted = 1 WHERE stripe_session_id = ?'
+  ).run(stripeSessionId);
+}
+
+function getUnremindedAttempts(olderThanMinutes) {
+  const cutoff = new Date(Date.now() - olderThanMinutes * 60 * 1000).toISOString();
+  return db.prepare(
+    `SELECT * FROM checkout_attempts
+     WHERE converted = 0 AND reminded_at IS NULL AND created_at < ?`
+  ).all(cutoff);
+}
+
+function markAttemptReminded(id) {
+  db.prepare(
+    'UPDATE checkout_attempts SET reminded_at = ? WHERE id = ?'
+  ).run(new Date().toISOString(), id);
+}
+
+// ── Reply Items ───────────────────────────────────────────────────────────────
+
+function addReplyItem(submissionId, type, filename, description, content) {
+  const maxOrder = db.prepare(
+    'SELECT MAX(order_index) as max FROM reply_items WHERE submission_id = ?'
+  ).get(submissionId);
+  const nextOrder = (maxOrder?.max ?? -1) + 1;
+  const result = db.prepare(
+    'INSERT INTO reply_items (submission_id, type, filename, description, content, order_index) VALUES (?, ?, ?, ?, ?, ?)'
+  ).run(submissionId, type, filename || null, description || null, content || null, nextOrder);
+  return result.lastInsertRowid;
+}
+
+function getReplyItems(submissionId) {
+  return db.prepare(
+    'SELECT * FROM reply_items WHERE submission_id = ? ORDER BY order_index ASC'
+  ).all(submissionId);
+}
+
+function deleteReplyItem(itemId) {
+  db.prepare('DELETE FROM reply_items WHERE id = ?').run(itemId);
+}
+
+function moveReplyItem(itemId, direction) {
+  const item = db.prepare('SELECT * FROM reply_items WHERE id = ?').get(itemId);
+  if (!item) return;
+  const targetOrder = direction === 'up' ? item.order_index - 1 : item.order_index + 1;
+  const sibling = db.prepare(
+    'SELECT * FROM reply_items WHERE submission_id = ? AND order_index = ?'
+  ).get(item.submission_id, targetOrder);
+  if (sibling) {
+    db.prepare('UPDATE reply_items SET order_index = ? WHERE id = ?').run(targetOrder, item.id);
+    db.prepare('UPDATE reply_items SET order_index = ? WHERE id = ?').run(item.order_index, sibling.id);
+  }
+}
+
 module.exports = {
   initDb,
   getSpots,
@@ -101,4 +188,12 @@ module.exports = {
   getAllSubmissions,
   getSubmissionByToken,
   getSubmissionBySessionId,
+  createCheckoutAttempt,
+  markAttemptConverted,
+  getUnremindedAttempts,
+  markAttemptReminded,
+  addReplyItem,
+  getReplyItems,
+  deleteReplyItem,
+  moveReplyItem,
 };

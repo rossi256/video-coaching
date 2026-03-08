@@ -5,6 +5,7 @@ const {
   decrementSpots,
   getSubmissionBySessionId,
   updateSubmission,
+  markAttemptConverted,
 } = require('../db');
 const { sendAdminNotification, sendUploadLink } = require('../email');
 
@@ -22,6 +23,9 @@ router.post('/', (req, res) => {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
+
+    // Mark checkout attempt as converted (if one exists)
+    markAttemptConverted(session.id);
 
     // Idempotency: skip if already processed
     const existing = getSubmissionBySessionId(session.id);

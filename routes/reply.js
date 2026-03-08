@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const path = require('path');
 const fs = require('fs');
-const { getSubmissionByToken } = require('../db');
+const { getSubmissionByToken, getReplyItems } = require('../db');
 
 const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
 
@@ -16,10 +16,13 @@ router.get('/api/reply/:token', (req, res) => {
     replyFiles = fs.readdirSync(replyDir).filter(f => !f.startsWith('.'));
   }
 
+  const replyItems = getReplyItems(sub.id);
+
   res.json({
     name: sub.name,
     status: sub.status,
     replyFiles,
+    replyItems,
     token: sub.token,
     feedbackSentAt: sub.feedback_sent_at,
   });

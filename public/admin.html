@@ -12,6 +12,7 @@
     .status-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
     .status-paid { background: rgba(234,179,8,0.2); color: #fbbf24; }
     .status-submitted { background: rgba(14,165,233,0.2); color: #38bdf8; }
+    .status-in_progress { background: rgba(168,85,247,0.2); color: #c084fc; }
     .status-feedback_sent { background: rgba(34,197,94,0.2); color: #4ade80; }
     tr { cursor: pointer; }
     tr:hover td { background: rgba(255,255,255,0.04); }
@@ -94,10 +95,10 @@ async function loadList() {
     const r = await fetch(`${BP}/api/admin/submissions`);
     const subs = await r.json();
 
-    const counts = { paid: 0, submitted: 0, feedback_sent: 0 };
+    const counts = { paid: 0, submitted: 0, in_progress: 0, feedback_sent: 0 };
     subs.forEach(s => { if (s.status in counts) counts[s.status]++; });
     document.getElementById('nav-stats').textContent =
-      `${subs.length} total · ${counts.paid} paid · ${counts.submitted} submitted · ${counts.feedback_sent} sent`;
+      `${subs.length} total · ${counts.paid} paid · ${counts.submitted} submitted · ${counts.in_progress} in progress · ${counts.feedback_sent} sent`;
 
     document.getElementById('list-loading').classList.add('hidden');
     if (subs.length === 0) { document.getElementById('list-empty').classList.remove('hidden'); return; }
@@ -170,6 +171,12 @@ function renderDetail(s) {
         ${replyUrl ? `<p class="text-xs text-slate-500 mt-1">Reply link: <a href="${esc(replyUrl)}" target="_blank" class="text-[#0ea5e9] hover:underline">${esc(replyUrl)}</a></p>` : ''}
       </div>
       <div class="flex flex-wrap gap-2">
+        ${s.status === 'submitted' ? `
+          <button id="confirm-receipt-btn" onclick="confirmReceipt(${s.id})"
+            class="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
+            ✓ Confirm Receipt
+          </button>
+        ` : ''}
         ${s.status !== 'feedback_sent' ? `
           <button id="mark-sent-btn" onclick="markFeedbackSent(${s.id})"
             class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
@@ -241,13 +248,15 @@ function renderDetail(s) {
       <!-- Right: Reply video upload -->
       <div class="space-y-4">
 
-        <!-- Reply videos -->
+        <!-- Coaching Reply Builder -->
         <div class="bg-[#0d1b2e] border border-[#0ea5e9]/20 rounded-xl p-5">
-          <h3 class="font-bold mb-4 text-slate-200">Reply Videos (${s.reply_files ? s.reply_files.length : 0})</h3>
+          <h3 class="font-bold mb-4 text-slate-200">Coaching Reply Builder</h3>
 
-          <!-- Upload form -->
-          <div class="mb-4">
-            <label class="block text-xs text-slate-400 mb-2 font-medium">Upload reply video</label>
+          <!-- Add Video Reply -->
+          <div class="mb-3">
+            <label class="block text-xs text-slate-500 mb-1 font-semibold uppercase tracking-wide">Add Video Reply</label>
+            <input type="text" id="video-desc-input" placeholder="Description (e.g. Main coaching video)"
+              class="w-full text-sm text-slate-300 bg-white/5 border border-white/10 rounded-lg px-3 py-2 mb-2 focus:outline-none focus:border-[#0ea5e9]/50">
             <input type="file" id="reply-file-input" accept="video/*"
               class="w-full text-sm text-slate-400 bg-white/5 border border-white/10 rounded-lg p-2 cursor-pointer file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-[#0ea5e9] file:text-white file:text-xs file:font-semibold file:cursor-pointer hover:file:bg-[#0284c7]">
             <div class="mt-2 hidden" id="reply-upload-progress">
@@ -256,16 +265,42 @@ function renderDetail(s) {
               </div>
               <p id="reply-upload-status" class="text-xs text-slate-400"></p>
             </div>
+            <button onclick="addVideoReply(${s.id})"
+              class="w-full mt-2 bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-semibold py-2 rounded-lg text-sm transition-colors">
+              Upload Video Reply
+            </button>
           </div>
-          <button onclick="uploadReplyVideo(${s.id})"
-            class="w-full bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-semibold py-2.5 rounded-lg text-sm transition-colors">
-            Upload Reply Video
-          </button>
 
-          <!-- Existing reply files -->
-          <div id="reply-files-list" class="mt-4 space-y-2">
-            ${s.reply_files && s.reply_files.length > 0 ? s.reply_files.map(f => replyFileHtml(s.id, f.name, f.size)).join('') : '<p class="text-slate-500 text-sm">No reply videos yet.</p>'}
+          <div class="border-t border-white/10 my-4"></div>
+
+          <!-- Add Text Reply -->
+          <div class="mb-3">
+            <label class="block text-xs text-slate-500 mb-1 font-semibold uppercase tracking-wide">Add Text Reply</label>
+            <input type="text" id="text-desc-input" placeholder="Description (e.g. Key takeaways)"
+              class="w-full text-sm text-slate-300 bg-white/5 border border-white/10 rounded-lg px-3 py-2 mb-2 focus:outline-none focus:border-[#0ea5e9]/50">
+            <textarea id="text-content-input" rows="3" placeholder="Write your coaching notes here..."
+              class="w-full text-sm text-slate-300 bg-white/5 border border-white/10 rounded-lg px-3 py-2 mb-2 focus:outline-none focus:border-[#0ea5e9]/50 resize-none"></textarea>
+            <button onclick="addTextReply(${s.id})"
+              class="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-2 rounded-lg text-sm transition-colors">
+              Add Text Reply
+            </button>
           </div>
+
+          <div class="border-t border-white/10 my-4"></div>
+
+          <!-- Reply Items List -->
+          <div id="reply-items-list" class="space-y-2">
+            ${replyItemsHtml(s.id, s.reply_items || [])}
+          </div>
+
+          ${s.reply_files && s.reply_files.length > 0 ? `
+            <div class="mt-4 border-t border-white/10 pt-4">
+              <p class="text-xs text-slate-500 mb-2 font-medium uppercase tracking-wide">Legacy videos (reply_video_path)</p>
+              <div class="space-y-2">
+                ${s.reply_files.map(f => replyFileHtml(s.id, f.name, f.size)).join('')}
+              </div>
+            </div>
+          ` : ''}
         </div>
 
         <!-- Quick info -->
@@ -278,6 +313,18 @@ function renderDetail(s) {
             <div class="flex justify-between"><span>Created</span><span class="text-white">${s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}</span></div>
           </div>
         </div>
+
+        <!-- Confirm Receipt (submitted only) -->
+        ${s.status === 'submitted' ? `
+          <div class="bg-[#0d1b2e] border border-purple-500/20 rounded-xl p-5">
+            <h3 class="font-bold mb-2 text-slate-200">Confirm Receipt</h3>
+            <p class="text-slate-400 text-xs mb-3">Emails the rider that you've confirmed their submission and started working.</p>
+            <button id="confirm-receipt-btn-2" onclick="confirmReceipt(${s.id})"
+              class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors">
+              ✓ Confirm Receipt + Notify Rider
+            </button>
+          </div>
+        ` : ''}
 
         <!-- Mark feedback sent -->
         ${s.status !== 'feedback_sent' ? `
@@ -320,11 +367,50 @@ function replyFileHtml(submissionId, filename, size) {
     </div>`;
 }
 
-// ── Reply video upload ────────────────────────────────────────────────────────
-async function uploadReplyVideo(submissionId) {
+// ── Reply item helpers ────────────────────────────────────────────────────────
+function replyItemsHtml(submissionId, items) {
+  if (!items || items.length === 0) {
+    return '<p class="text-slate-500 text-sm">No reply items yet. Add a video or text above.</p>';
+  }
+  return items.map(item => replyItemHtml(submissionId, item)).join('');
+}
+
+function replyItemHtml(submissionId, item) {
+  const icon = item.type === 'video' ? '🎥' : '📝';
+  const label = esc(item.description || (item.type === 'video' ? item.filename : 'Text reply'));
+  const meta = item.type === 'video'
+    ? `<p class="text-xs text-slate-500 truncate">${esc(item.filename || '')}</p>`
+    : `<p class="text-xs text-slate-400 line-clamp-2 mt-0.5">${esc((item.content || '').slice(0, 80))}${(item.content || '').length > 80 ? '…' : ''}</p>`;
+  const playLink = item.type === 'video' && item.filename
+    ? `<a href="${BP}/api/admin/file/${submissionId}/reply/${encodeURIComponent(item.filename)}" target="_blank" class="text-xs text-[#0ea5e9] hover:underline flex-shrink-0">Play</a>`
+    : '';
+  return `
+    <div class="flex items-start gap-2 p-2.5 bg-white/5 rounded-lg" id="reply-item-${item.id}">
+      <span class="text-base flex-shrink-0 mt-0.5">${icon}</span>
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-semibold text-slate-200 truncate">${label}</p>
+        ${meta}
+      </div>
+      <div class="flex items-center gap-1 flex-shrink-0">
+        ${playLink}
+        <button onclick="moveReplyItemOrder(${submissionId}, ${item.id}, 'up')" title="Move up"
+          class="text-slate-500 hover:text-white transition-colors px-1">▲</button>
+        <button onclick="moveReplyItemOrder(${submissionId}, ${item.id}, 'down')" title="Move down"
+          class="text-slate-500 hover:text-white transition-colors px-1">▼</button>
+        <button onclick="deleteReplyItemNew(${submissionId}, ${item.id})"
+          class="text-slate-500 hover:text-red-400 transition-colors" title="Delete">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"></path></svg>
+        </button>
+      </div>
+    </div>`;
+}
+
+// ── Add video reply ───────────────────────────────────────────────────────────
+async function addVideoReply(submissionId) {
   const input = document.getElementById('reply-file-input');
-  if (!input.files || !input.files[0]) { alert('Please select a file first.'); return; }
+  if (!input.files || !input.files[0]) { alert('Please select a video file first.'); return; }
   const file = input.files[0];
+  const desc = document.getElementById('video-desc-input').value.trim();
 
   const progressWrap = document.getElementById('reply-upload-progress');
   const progressBar = document.getElementById('reply-progress-bar');
@@ -333,7 +419,7 @@ async function uploadReplyVideo(submissionId) {
   statusEl.textContent = 'Uploading...';
 
   const xhr = new XMLHttpRequest();
-  xhr.open('POST', `${BP}/api/admin/submission/${submissionId}/reply-upload`);
+  xhr.open('POST', `${BP}/api/admin/submission/${submissionId}/reply-item`);
 
   xhr.upload.onprogress = e => {
     if (e.lengthComputable) progressBar.style.width = Math.round((e.loaded / e.total) * 100) + '%';
@@ -342,15 +428,15 @@ async function uploadReplyVideo(submissionId) {
   xhr.onload = () => {
     if (xhr.status === 200) {
       const d = JSON.parse(xhr.responseText);
-      statusEl.textContent = '✓ Uploaded: ' + d.filename;
+      statusEl.textContent = '✓ Uploaded';
       progressBar.style.width = '100%';
       input.value = '';
-      // Add to list
-      const list = document.getElementById('reply-files-list');
+      document.getElementById('video-desc-input').value = '';
+      const list = document.getElementById('reply-items-list');
       const placeholder = list.querySelector('p');
       if (placeholder) placeholder.remove();
       const div = document.createElement('div');
-      div.innerHTML = replyFileHtml(submissionId, d.filename, d.size);
+      div.innerHTML = replyItemHtml(submissionId, d);
       list.appendChild(div.firstElementChild);
     } else {
       let err = 'Upload failed';
@@ -363,16 +449,97 @@ async function uploadReplyVideo(submissionId) {
 
   const fd = new FormData();
   fd.append('video', file);
+  fd.append('type', 'video');
+  fd.append('description', desc);
   xhr.send(fd);
 }
 
-// ── Delete reply video ────────────────────────────────────────────────────────
+// ── Add text reply ────────────────────────────────────────────────────────────
+async function addTextReply(submissionId) {
+  const content = document.getElementById('text-content-input').value.trim();
+  const desc = document.getElementById('text-desc-input').value.trim();
+  if (!content) { alert('Please enter some content for the text reply.'); return; }
+
+  try {
+    const fd = new FormData();
+    fd.append('type', 'text');
+    fd.append('description', desc);
+    fd.append('content', content);
+    const r = await fetch(`${BP}/api/admin/submission/${submissionId}/reply-item`, { method: 'POST', body: fd });
+    if (!r.ok) { const d = await r.json(); alert('Error: ' + (d.error || 'Unknown')); return; }
+    const item = await r.json();
+    document.getElementById('text-content-input').value = '';
+    document.getElementById('text-desc-input').value = '';
+    const list = document.getElementById('reply-items-list');
+    const placeholder = list.querySelector('p');
+    if (placeholder) placeholder.remove();
+    const div = document.createElement('div');
+    div.innerHTML = replyItemHtml(submissionId, item);
+    list.appendChild(div.firstElementChild);
+  } catch { alert('Network error'); }
+}
+
+// ── Delete reply item (new) ───────────────────────────────────────────────────
+async function deleteReplyItemNew(submissionId, itemId) {
+  if (!confirm('Delete this reply item?')) return;
+  try {
+    const r = await fetch(`${BP}/api/admin/submission/${submissionId}/reply-item/${itemId}`, { method: 'DELETE' });
+    if (r.ok) {
+      const el = document.getElementById('reply-item-' + itemId);
+      if (el) el.remove();
+      // Show placeholder if list is now empty
+      const list = document.getElementById('reply-items-list');
+      if (list && list.children.length === 0) {
+        list.innerHTML = '<p class="text-slate-500 text-sm">No reply items yet. Add a video or text above.</p>';
+      }
+    } else { alert('Delete failed'); }
+  } catch { alert('Network error'); }
+}
+
+// ── Move reply item ───────────────────────────────────────────────────────────
+async function moveReplyItemOrder(submissionId, itemId, direction) {
+  try {
+    await fetch(`${BP}/api/admin/submission/${submissionId}/reply-item/${itemId}/order`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ direction }),
+    });
+    loadDetail(submissionId); // Reload to reflect new order
+  } catch { alert('Network error'); }
+}
+
+// ── Confirm Receipt ───────────────────────────────────────────────────────────
+async function confirmReceipt(id) {
+  const btn = document.getElementById('confirm-receipt-btn') || document.getElementById('confirm-receipt-btn-2');
+  if (btn) { btn.textContent = 'Sending...'; btn.disabled = true; }
+  try {
+    const r = await fetch(`${BP}/api/admin/submission/${id}/confirm-receipt`, { method: 'POST' });
+    if (r.ok) {
+      loadDetail(id);
+    } else {
+      const d = await r.json();
+      alert('Error: ' + (d.error || 'Unknown'));
+      if (btn) { btn.textContent = '✓ Confirm Receipt'; btn.disabled = false; }
+    }
+  } catch {
+    alert('Network error');
+    if (btn) { btn.textContent = '✓ Confirm Receipt'; btn.disabled = false; }
+  }
+}
+
+// ── Reply video upload (legacy) ───────────────────────────────────────────────
+async function uploadReplyVideo(submissionId) {
+  const input = document.getElementById('reply-file-input');
+  if (!input.files || !input.files[0]) { alert('Please select a file first.'); return; }
+  addVideoReply(submissionId);
+}
+
+// ── Delete reply video (legacy) ───────────────────────────────────────────────
 async function deleteReplyFile(submissionId, filename) {
   if (!confirm(`Delete reply video "${filename}"?`)) return;
   try {
     const r = await fetch(`${BP}/api/admin/submission/${submissionId}/reply/${encodeURIComponent(filename)}`, { method: 'DELETE' });
     if (r.ok) {
-      // Remove from UI
       loadDetail(submissionId);
     } else {
       alert('Delete failed');
