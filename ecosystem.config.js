@@ -11,6 +11,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3010,
+        BASE_PATH: '/projects/video-coaching',
         DEV_BYPASS: 'true',
       },
       error_file: '/home/ari/logs/wingcoach-error.log',
