@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'wingcoach',
       script: 'server.js',
-      cwd: '/home/ari/apps/tricktionary-coaching',
+      cwd: '/home/ari/apps/video-coaching',
       instances: 1,
       autorestart: true,
       watch: false,
