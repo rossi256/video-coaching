@@ -11,6 +11,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3010,
+        DEV_BYPASS: 'true',
       },
       error_file: '/home/ari/logs/wingcoach-error.log',
       out_file: '/home/ari/logs/wingcoach-out.log',
