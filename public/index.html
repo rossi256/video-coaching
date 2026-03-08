@@ -550,19 +550,20 @@ async function loadSpots() {
 loadSpots();
 
 // ── CTA handler — Step 1: show email capture ─────────────────────────────────
+const _ctaOriginals = {};
+
 function handleCTA(containerId) {
   const container = document.getElementById(containerId);
   const isPayment = containerId === 'cta-container-payment';
-  const originalHTML = container.innerHTML;
+  _ctaOriginals[containerId] = container.innerHTML;
 
   container.innerHTML = `
     <div class="flex flex-col sm:flex-row gap-3 justify-center items-center max-w-sm mx-auto">
       <input type="email" id="cta-email-${containerId}" placeholder="your@email.com"
         class="w-full sm:flex-1 px-4 py-3 rounded-xl bg-white/10 border border-white/20
                text-white placeholder-slate-400 focus:outline-none focus:border-[#0ea5e9]
-               focus:bg-white/15 transition-all text-sm"
-        autofocus>
-      <button onclick="proceedToCheckout('${containerId}', ${JSON.stringify(originalHTML)})"
+               focus:bg-white/15 transition-all text-sm">
+      <button onclick="proceedToCheckout('${containerId}')"
         class="${isPayment ? 'w-full ' : ''}sm:w-auto bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold
                px-6 py-3 rounded-xl transition-colors text-sm whitespace-nowrap">
         Go to checkout →
@@ -573,22 +574,20 @@ function handleCTA(containerId) {
     </p>
   `;
   setTimeout(() => {
-    document.getElementById('cta-email-' + containerId)?.addEventListener('keydown', e => {
-      if (e.key === 'Enter') proceedToCheckout(containerId, originalHTML);
-    });
-    document.getElementById('cta-email-' + containerId)?.focus();
+    const el = document.getElementById('cta-email-' + containerId);
+    if (el) {
+      el.focus();
+      el.addEventListener('keydown', e => { if (e.key === 'Enter') proceedToCheckout(containerId); });
+    }
   }, 0);
 }
 
 // ── CTA handler — Step 2: POST with email, redirect to Stripe ─────────────────
-async function proceedToCheckout(containerId, originalHTML) {
+async function proceedToCheckout(containerId) {
   const emailEl = document.getElementById('cta-email-' + containerId);
   const email = emailEl ? emailEl.value.trim() : '';
   if (!email || !email.includes('@')) {
-    if (emailEl) {
-      emailEl.focus();
-      emailEl.classList.add('border-red-400');
-    }
+    if (emailEl) { emailEl.focus(); emailEl.classList.add('border-red-400'); }
     return;
   }
   if (emailEl) emailEl.disabled = true;
@@ -603,11 +602,11 @@ async function proceedToCheckout(containerId, originalHTML) {
     if (d.url) {
       window.location.href = d.url;
     } else {
-      document.getElementById(containerId).innerHTML = originalHTML;
+      document.getElementById(containerId).innerHTML = _ctaOriginals[containerId];
       alert(d.error || 'Something went wrong. Please try again.');
     }
   } catch {
-    document.getElementById(containerId).innerHTML = originalHTML;
+    document.getElementById(containerId).innerHTML = _ctaOriginals[containerId];
     alert('Network error. Please try again.');
   }
 }
