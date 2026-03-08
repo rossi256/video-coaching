@@ -21,41 +21,27 @@ jobs:
           script: |
             set -e
 
-            APP_DIR="/home/ari/apps/video-coaching"
-
-            # Clone or pull latest code
+            APP_DIR="/home/ari/public_html/projects/video-coaching"
             REPO_URL="https://x-access-token:${{ secrets.GH_DEPLOY_TOKEN }}@github.com/rossi256/video-coaching.git"
+
+            # Clone or update
             if [ ! -d "$APP_DIR/.git" ]; then
               rm -rf "$APP_DIR"
               git clone "$REPO_URL" "$APP_DIR"
             fi
-            cd $APP_DIR
+            cd "$APP_DIR"
             git remote set-url origin "$REPO_URL"
             git fetch origin main
             git reset --hard origin/main
-            echo "Code updated to $(git rev-parse --short HEAD)"
+            echo "Code at $(git rev-parse --short HEAD)"
 
-            cd $APP_DIR
-
-            # Install/update dependencies (skip dev deps in production)
+            # Install dependencies
             npm ci --omit=dev
 
             # Ensure uploads directory exists
             mkdir -p uploads
 
-            # Deploy static files to public_html (Apache serves them directly)
-            PUBDEST="/home/ari/public_html/projects/video-coaching"
-            mkdir -p "$PUBDEST"
-            # Copy assets as-is
-            rsync -a --delete "$APP_DIR/public/assets/" "$PUBDEST/assets/" 2>/dev/null || true
-            cp "$APP_DIR/public/assets/"* "$PUBDEST/" 2>/dev/null || true
-            # Process HTML: substitute {{BASE_PATH}} with the live subpath
-            for f in "$APP_DIR/public/"*.html; do
-              sed 's|{{BASE_PATH}}|/projects/video-coaching|g' "$f" > "$PUBDEST/$(basename $f)"
-            done
-            echo "Static files deployed to $PUBDEST"
-
-            # Reload PM2 from config (picks up any cwd/env changes)
+            # Reload PM2
             pm2 delete wingcoach 2>/dev/null || true
             pm2 start ecosystem.config.js
             pm2 save
