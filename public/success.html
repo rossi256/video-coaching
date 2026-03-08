@@ -128,10 +128,6 @@
               <input type="text" id="name" placeholder="Your name" required>
             </div>
             <div class="form-group">
-              <label>Email <span class="text-[#0ea5e9]">*</span></label>
-              <input type="email" id="email" placeholder="your@email.com" required>
-            </div>
-            <div class="form-group">
               <label>Age</label>
               <input type="number" id="age" placeholder="e.g. 34" min="10" max="90">
             </div>
@@ -286,6 +282,10 @@
         <!-- Submit -->
         <div class="card">
           <div id="submit-area">
+            <p class="text-center text-slate-400 text-sm mb-4">
+              💌 <strong class="text-slate-300">Your progress is saved automatically.</strong>
+              Can't finish now? Check your email — we sent you a link to come back anytime.
+            </p>
             <button id="submit-btn" onclick="submitForm()"
               class="w-full bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-lg py-4 rounded-xl transition-all hover:scale-[1.01] shadow-lg shadow-[#0ea5e9]/20">
               Send to Michi →
@@ -321,12 +321,43 @@
 <script>
 const BP = '{{BASE_PATH}}';
 let submissionId = null;
+let savedEmail = '';
 let audioBlob = null;
 let audioFilename = null;
 let mediaRecorder = null;
 let recTimerInterval = null;
 let recSeconds = 0;
 let uploadedFiles = []; // { serverFilename, originalName, size }
+let saveTimer = null;
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(autoSave, 1500);
+}
+
+async function autoSave() {
+  if (!submissionId) return;
+  const payload = {
+    name: document.getElementById('name').value.trim(),
+    email: savedEmail,
+    age: document.getElementById('age').value || null,
+    location: document.getElementById('location').value.trim(),
+    ride_frequency: document.getElementById('ride_frequency').value,
+    conditions: document.getElementById('conditions').value.trim(),
+    equipment: document.getElementById('equipment').value.trim(),
+    level: getSelectedLevels(),
+    stuck_on: document.getElementById('stuck_on').value.trim(),
+    tried: document.getElementById('tried').value.trim(),
+    success_looks_like: document.getElementById('success_looks_like').value.trim(),
+  };
+  try {
+    await fetch(`${BP}/api/submission/${submissionId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch {} // silent — not critical
+}
 
 // ── Level cascade-select ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -346,6 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       }
+      scheduleSave();
     });
   });
 });
@@ -408,12 +440,31 @@ async function verifySession() {
       }
 
       submissionId = d.submissionId;
-      // Pre-fill email/name if available
+      savedEmail = d.email || '';
+      // Pre-fill all saved fields
       if (d.name) document.getElementById('name').value = d.name;
-      if (d.email) document.getElementById('email').value = d.email;
+      if (d.age) document.getElementById('age').value = d.age;
+      if (d.location) document.getElementById('location').value = d.location;
+      if (d.ride_frequency) document.getElementById('ride_frequency').value = d.ride_frequency;
+      if (d.conditions) document.getElementById('conditions').value = d.conditions;
+      if (d.equipment) document.getElementById('equipment').value = d.equipment;
+      if (d.stuck_on) document.getElementById('stuck_on').value = d.stuck_on;
+      if (d.tried) document.getElementById('tried').value = d.tried;
+      if (d.success_looks_like) document.getElementById('success_looks_like').value = d.success_looks_like;
+      if (d.level) {
+        const levels = d.level.split(', ');
+        document.querySelectorAll('.level-tag').forEach(tag => {
+          if (levels.includes(tag.dataset.value)) tag.classList.add('selected');
+        });
+      }
 
       document.getElementById('loading-screen').classList.add('hidden');
       document.getElementById('main-content').classList.remove('hidden');
+
+      // Attach auto-save to all inputs
+      document.querySelectorAll('input, select, textarea').forEach(el => {
+        el.addEventListener('input', scheduleSave);
+      });
       return;
 
     } catch {
@@ -656,9 +707,9 @@ async function submitForm() {
   }
 
   const name = document.getElementById('name').value.trim();
-  const email = document.getElementById('email').value.trim();
+  const email = savedEmail;
   if (!name) { alert('Please enter your name.'); document.getElementById('name').focus(); return; }
-  if (!email) { alert('Please enter your email.'); document.getElementById('email').focus(); return; }
+  if (!email) { alert('Your email could not be loaded. Please contact us.'); return; }
 
   const hasAudio = !!audioFilename;
   const stuck_on = document.getElementById('stuck_on').value.trim();

@@ -12,7 +12,15 @@ router.get('/api/verify-session', async (req, res) => {
   if (session_id.startsWith('dev_test_') && process.env.DEV_BYPASS === 'true') {
     const submission = getSubmissionBySessionId(session_id);
     if (!submission) return res.status(404).json({ error: 'Dev session not found' });
-    return res.json({ submissionId: submission.id, status: submission.status, name: submission.name, email: submission.email });
+    return res.json({
+      submissionId: submission.id, status: submission.status,
+      name: submission.name, email: submission.email,
+      age: submission.age, location: submission.location,
+      ride_frequency: submission.ride_frequency, conditions: submission.conditions,
+      equipment: submission.equipment, level: submission.level,
+      stuck_on: submission.stuck_on, tried: submission.tried,
+      success_looks_like: submission.success_looks_like, audio_file: submission.audio_file,
+    });
   }
 
   let submission = getSubmissionBySessionId(session_id);
@@ -35,10 +43,13 @@ router.get('/api/verify-session', async (req, res) => {
   }
 
   res.json({
-    submissionId: submission.id,
-    status: submission.status,
-    name: submission.name,
-    email: submission.email,
+    submissionId: submission.id, status: submission.status,
+    name: submission.name, email: submission.email,
+    age: submission.age, location: submission.location,
+    ride_frequency: submission.ride_frequency, conditions: submission.conditions,
+    equipment: submission.equipment, level: submission.level,
+    stuck_on: submission.stuck_on, tried: submission.tried,
+    success_looks_like: submission.success_looks_like, audio_file: submission.audio_file,
   });
 });
 
@@ -89,6 +100,23 @@ router.post('/api/submit/:submissionId', async (req, res) => {
   );
 
   res.json({ success: true });
+});
+
+// PATCH /api/submission/:id — auto-save profile fields (does NOT change status)
+router.patch('/api/submission/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: 'Invalid ID' });
+
+  const allowed = ['name', 'email', 'age', 'location', 'ride_frequency', 'conditions',
+                   'equipment', 'level', 'stuck_on', 'tried', 'success_looks_like'];
+  const fields = {};
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) fields[key] = req.body[key];
+  }
+  if (Object.keys(fields).length === 0) return res.json({ ok: true });
+
+  updateSubmission(id, fields);
+  res.json({ ok: true });
 });
 
 module.exports = router;

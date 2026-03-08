@@ -70,4 +70,32 @@ async function sendFeedbackReady(email, name, replyUrl) {
   });
 }
 
-module.exports = { sendAdminNotification, sendSubmissionNotification, sendFeedbackReady };
+async function sendUploadLink(email, name, uploadUrl) {
+  const transporter = getTransporter();
+  await transporter.sendMail({
+    from: `"WingCoach" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject: 'Your WingCoach upload link — come back anytime',
+    html: `
+      <div style="font-family:Inter,sans-serif;max-width:540px;margin:0 auto;background:#0d1b2e;color:#e2e8f0;padding:40px 32px;border-radius:16px">
+        <div style="margin-bottom:28px">
+          <span style="font-weight:900;color:#0ea5e9;font-size:20px">WING</span><span style="font-weight:300;font-size:20px">COACH</span>
+          <span style="color:#475569;font-size:14px;margin-left:8px">by Tricktionary</span>
+        </div>
+        <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">Hey ${name || 'there'} 👋</h2>
+        <p style="color:#94a3b8;line-height:1.6;margin-bottom:24px">
+          Your coaching spot is secured. Use the link below to upload your riding videos and fill out your rider profile — you can come back to it any time, your progress is saved automatically.
+        </p>
+        <a href="${uploadUrl}" style="display:inline-block;background:#0ea5e9;color:white;font-weight:700;padding:14px 28px;border-radius:10px;text-decoration:none;font-size:15px;margin-bottom:28px">
+          → Go to my upload page
+        </a>
+        <p style="color:#475569;font-size:13px;line-height:1.5">
+          Bookmark this email or save the link — it's your personal access to this coaching session.<br><br>
+          Questions? <a href="https://wa.me/4369913909040" style="color:#0ea5e9;">WhatsApp Michi</a> or <a href="mailto:info@tricktionary.com" style="color:#0ea5e9;">info@tricktionary.com</a>
+        </p>
+      </div>
+    `,
+  });
+}
+
+module.exports = { sendAdminNotification, sendSubmissionNotification, sendFeedbackReady, sendUploadLink };

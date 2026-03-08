@@ -2,9 +2,10 @@ const Stripe = require('stripe');
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-async function createCheckoutSession(successUrl, cancelUrl, spotsAtPurchase) {
+async function createCheckoutSession(successUrl, cancelUrl, spotsAtPurchase, customerEmail) {
   return stripe.checkout.sessions.create({
     mode: 'payment',
+    customer_email: customerEmail || undefined,
     line_items: [
       {
         price_data: {

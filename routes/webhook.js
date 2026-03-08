@@ -6,7 +6,7 @@ const {
   getSubmissionBySessionId,
   updateSubmission,
 } = require('../db');
-const { sendAdminNotification } = require('../email');
+const { sendAdminNotification, sendUploadLink } = require('../email');
 
 // Route is mounted at BASE_PATH/webhook/stripe with express.raw middleware
 router.post('/', (req, res) => {
@@ -48,6 +48,13 @@ router.post('/', (req, res) => {
       sendAdminNotification(name || 'Unknown', email).catch(err =>
         console.error('Admin notification email error:', err)
       );
+
+      if (email) {
+        const uploadUrl = `${process.env.BASE_URL}/success?session_id=${session.id}`;
+        sendUploadLink(email, name, uploadUrl).catch(err =>
+          console.error('Upload link email error:', err)
+        );
+      }
 
       console.log(`New submission created: #${submissionId} for ${email}`);
     }
