@@ -92,10 +92,12 @@ if (process.env.DEV_BYPASS === 'true') {
   // GET /dev/bypass — create a fake submission (step 1: just paid)
   app.get(BASE_PATH + '/dev/bypass', (req, res) => {
     const { total, taken } = getSpots();
+    const email = (req.query.email || 'test@example.com').trim();
     const fakeSessionId = 'dev_test_' + Date.now();
+    createCheckoutAttempt(email, fakeSessionId); // simulate landing page email capture
     const submissionId = createSubmission(fakeSessionId, total - taken);
     const redirectUrl = PUBLIC_PATH + '/success?session_id=' + fakeSessionId;
-    res.send(`<p style="font:16px sans-serif;padding:20px">Dev bypass — submission #${submissionId} created.<br><a href="${redirectUrl}">→ Go to success page</a></p>`);
+    res.send(`<p style="font:16px sans-serif;padding:20px">Dev bypass — submission #${submissionId} created for <strong>${email}</strong>.<br><a href="${redirectUrl}">→ Go to success page</a></p>`);
   });
 
   // GET /dev/test — full test flow dashboard with email tester
@@ -189,7 +191,7 @@ if (process.env.DEV_BYPASS === 'true') {
   <h3>Step 1 — Checkout (Rider)</h3>
   <p class="note">Real landing page. Or skip Stripe with the bypass.</p>
   <a class="link" href="${base}/" target="_blank">→ Landing page</a>
-  <a class="link" href="${base}/dev/bypass" target="_blank">→ Dev bypass: create fake paid submission</a>
+  <a class="link" href="${base}/dev/bypass?email=test@tricktionary.com" target="_blank">→ Dev bypass: create fake paid submission (test@tricktionary.com)</a>
 </div>
 
 <div class="section">

@@ -44,6 +44,11 @@ router.get('/api/verify-session', async (req, res) => {
 
   const email = submission.email || getCheckoutAttemptBySessionId(session_id)?.email || null;
 
+  // Heal the DB: if we got email from checkout_attempts, persist it so admin sees it too
+  if (email && !submission.email) {
+    updateSubmission(submission.id, { email });
+  }
+
   res.json({
     submissionId: submission.id, status: submission.status,
     name: submission.name, email,
