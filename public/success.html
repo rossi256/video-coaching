@@ -128,6 +128,10 @@
               <input type="text" id="name" placeholder="Your name" required>
             </div>
             <div class="form-group">
+              <label>Email <span class="text-[#0ea5e9]">*</span></label>
+              <input type="email" id="email" placeholder="your@email.com" required>
+            </div>
+            <div class="form-group">
               <label>Age</label>
               <input type="number" id="age" placeholder="e.g. 34" min="10" max="90">
             </div>
@@ -339,7 +343,7 @@ async function autoSave() {
   if (!submissionId) return;
   const payload = {
     name: document.getElementById('name').value.trim(),
-    email: savedEmail,
+    email: document.getElementById('email').value.trim() || savedEmail,
     age: document.getElementById('age').value || null,
     location: document.getElementById('location').value.trim(),
     ride_frequency: document.getElementById('ride_frequency').value,
@@ -442,6 +446,7 @@ async function verifySession() {
       submissionId = d.submissionId;
       savedEmail = d.email || '';
       // Pre-fill all saved fields
+      if (d.email) document.getElementById('email').value = d.email;
       if (d.name) document.getElementById('name').value = d.name;
       if (d.age) document.getElementById('age').value = d.age;
       if (d.location) document.getElementById('location').value = d.location;
@@ -707,9 +712,9 @@ async function submitForm() {
   }
 
   const name = document.getElementById('name').value.trim();
-  const email = savedEmail;
+  const email = document.getElementById('email').value.trim() || savedEmail;
   if (!name) { alert('Please enter your name.'); document.getElementById('name').focus(); return; }
-  if (!email) { alert('Your email could not be loaded. Please contact us.'); return; }
+  if (!email || !email.includes('@')) { alert('Please enter your email address.'); document.getElementById('email').focus(); return; }
 
   const hasAudio = !!audioFilename;
   const stuck_on = document.getElementById('stuck_on').value.trim();
