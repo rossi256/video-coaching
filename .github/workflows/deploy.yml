@@ -24,27 +24,18 @@ jobs:
             APP_DIR="/home/ari/apps/video-coaching"
 
             # Clone or pull latest code
-            if [ -d "$APP_DIR/.git" ]; then
-              echo "Pulling latest code..."
-              cd $APP_DIR
-              git pull origin main
-            elif [ -d "$APP_DIR" ]; then
-              echo "Directory exists but no git repo — initialising..."
-              cd $APP_DIR
-              git init
-              git remote add origin https://x-access-token:${{ secrets.GH_DEPLOY_TOKEN }}@github.com/rossi256/video-coaching.git
-              git fetch origin main
-              git checkout -f -B main origin/main
-            else
-              echo "First deploy - cloning repo..."
-              git clone https://x-access-token:${{ secrets.GH_DEPLOY_TOKEN }}@github.com/rossi256/video-coaching.git $APP_DIR
-              cd $APP_DIR
+            REPO_URL="https://x-access-token:${{ secrets.GH_DEPLOY_TOKEN }}@github.com/rossi256/video-coaching.git"
+            if [ ! -d "$APP_DIR/.git" ]; then
+              rm -rf "$APP_DIR"
+              git clone "$REPO_URL" "$APP_DIR"
             fi
+            cd $APP_DIR
+            git remote set-url origin "$REPO_URL"
+            git fetch origin main
+            git reset --hard origin/main
+            echo "Code updated to $(git rev-parse --short HEAD)"
 
             cd $APP_DIR
-
-            # Remove any old static files from public_html that block the Apache proxy
-            rm -rf /home/ari/public_html/projects/video-coaching
 
             # Install/update dependencies (skip dev deps in production)
             npm ci --omit=dev
@@ -52,7 +43,19 @@ jobs:
             # Ensure uploads directory exists
             mkdir -p uploads
 
-            # Restart or start with PM2
+            # Deploy static files to public_html (Apache serves them directly)
+            PUBDEST="/home/ari/public_html/projects/video-coaching"
+            mkdir -p "$PUBDEST"
+            # Copy assets as-is
+            rsync -a --delete "$APP_DIR/public/assets/" "$PUBDEST/assets/" 2>/dev/null || true
+            cp "$APP_DIR/public/assets/"* "$PUBDEST/" 2>/dev/null || true
+            # Process HTML: substitute {{BASE_PATH}} with the live subpath
+            for f in "$APP_DIR/public/"*.html; do
+              sed 's|{{BASE_PATH}}|/projects/video-coaching|g' "$f" > "$PUBDEST/$(basename $f)"
+            done
+            echo "Static files deployed to $PUBDEST"
+
+            # Restart or start with PM2 (Node handles API / upload routes)
             if pm2 list | grep -q 'wingcoach'; then
               echo "Restarting wingcoach..."
               pm2 restart wingcoach
@@ -62,4 +65,4 @@ jobs:
               pm2 save
             fi
 
-            echo "Deploy complete. App running on port 3010."
+            echo "Deploy complete."
