@@ -6,6 +6,7 @@ const {
   getSubmissionBySessionId,
   updateSubmission,
   markAttemptConverted,
+  getCheckoutAttemptBySessionId,
 } = require('../db');
 const { sendAdminNotification, sendUploadLink } = require('../email');
 
@@ -35,7 +36,8 @@ router.post('/', (req, res) => {
       decrementSpots();
 
       const name = session.customer_details?.name || '';
-      const email = session.customer_details?.email || '';
+      const attemptEmail = getCheckoutAttemptBySessionId(session.id)?.email || '';
+      const email = session.customer_details?.email || attemptEmail;
 
       if (name || email) {
         updateSubmission(submissionId, {

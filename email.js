@@ -151,7 +151,7 @@ async function sendAbandonedCheckoutReminder(email, checkoutUrl) {
           <span style="color:#475569;font-size:14px;margin-left:8px">by Tricktionary</span>
         </div>
         <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">Hey — you were this close.</h2>
-        <p style="color:#94a3b8;line-height:1.6;margin-bottom:16px">
+        <p style="color:#cbd5e1;line-height:1.6;margin-bottom:16px">
           Your founding coaching spot with Michi is still available. Once all 10 spots fill up, the price goes to €149.
         </p>
         <p style="color:#e2e8f0;line-height:1.6;margin-bottom:28px">

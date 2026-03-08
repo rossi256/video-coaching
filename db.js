@@ -90,6 +90,15 @@ function createSubmission(stripeSessionId, spotsAtPurchase) {
   return result.lastInsertRowid;
 }
 
+// Pre-create submission at checkout initiation (before payment confirms)
+function createPendingSubmission(stripeSessionId, email, spotsAtPurchase) {
+  const token = uuidv4();
+  const result = db
+    .prepare('INSERT INTO submissions (stripe_session_id, token, status, email, spots_at_purchase) VALUES (?, ?, ?, ?, ?)')
+    .run(stripeSessionId, token, 'pending_payment', email || null, spotsAtPurchase);
+  return result.lastInsertRowid;
+}
+
 function updateSubmission(id, fields) {
   const keys = Object.keys(fields);
   if (keys.length === 0) return;
@@ -142,6 +151,10 @@ function markAttemptReminded(id) {
   ).run(new Date().toISOString(), id);
 }
 
+function getCheckoutAttemptBySessionId(sessionId) {
+  return db.prepare('SELECT * FROM checkout_attempts WHERE stripe_session_id = ?').get(sessionId);
+}
+
 // ── Reply Items ───────────────────────────────────────────────────────────────
 
 function addReplyItem(submissionId, type, filename, description, content) {
@@ -192,6 +205,7 @@ module.exports = {
   markAttemptConverted,
   getUnremindedAttempts,
   markAttemptReminded,
+  getCheckoutAttemptBySessionId,
   addReplyItem,
   getReplyItems,
   deleteReplyItem,
