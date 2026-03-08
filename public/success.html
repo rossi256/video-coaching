@@ -111,7 +111,7 @@
       <!-- ═══ LEFT: Form + Upload ════════════════════════════════════════════ -->
       <div class="lg:col-span-2 space-y-8">
 
-        <!-- Rider Profile Form -->
+        <!-- Rider Profile Form: Personal Details -->
         <div class="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
           <h2 class="text-xl font-bold mb-6">Your Rider Profile</h2>
           <p class="text-slate-400 text-sm mb-6">This helps Michi understand your background before watching your videos. <span class="text-[#0ea5e9]">*</span> required</p>
@@ -151,23 +151,30 @@
               <label>Equipment (wing size(s), board, foil)</label>
               <input type="text" id="equipment" placeholder="e.g. 4m + 5m wing, Cabrinha Tropic 75L, F-One Phantom">
             </div>
-            <div class="form-group sm:col-span-2">
-              <label>Your current skill level <span class="text-slate-500 font-normal">(select all that apply)</span></label>
-              <div id="level-tags" class="flex flex-wrap gap-2 mt-1">
-                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Just starting to foil">Just starting to foil</button>
-                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Foiling stable">Foiling stable</button>
-                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Starting to jibe">Starting to jibe</button>
-                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Stable jibes and starting to tack">Stable jibes and starting to tack</button>
-                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Jibes and tacks safe">Jibes and tacks safe</button>
-                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Downwind 360s and carving freestyle">Downwind 360s and carving freestyle</button>
-                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="First jumps">First jumps</button>
-                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Frontside 360s and first rotational jumps">Frontside 360s and first rotational jumps</button>
-                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Front/backflips">Front/backflips</button>
-                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Palaos and variations">Palaos and variations</button>
-                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="Backmobe">Backmobe</button>
-                <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-value="720s and more">720s and more</button>
-              </div>
-            </div>
+          </div>
+        </div>
+
+        <!-- Current Level: Move Picker -->
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
+          <h2 class="text-xl font-bold mb-2">Your Current Level</h2>
+          <p class="text-slate-400 text-sm mb-5">Tap the highest move you can do consistently — everything before it will be marked too. You can uncheck any that don't apply.</p>
+          <div id="level-tags" class="flex flex-wrap gap-2">
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="0" data-value="Getting up on the board">Getting up on the board</button>
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="1" data-value="First flights">First flights</button>
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="2" data-value="Stable foiling">Stable foiling</button>
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="3" data-value="Toeside jibes">Toeside jibes</button>
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="4" data-value="Heelside jibes">Heelside jibes</button>
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="5" data-value="Toeside tack">Toeside tack</button>
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="6" data-value="Heelside tack">Heelside tack</button>
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="7" data-value="Downwind 360s">Downwind 360s</button>
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="8" data-value="First jumps">First jumps</button>
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="9" data-value="Railey">Railey</button>
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="10" data-value="Frontside 360">Frontside 360</button>
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="11" data-value="Palao">Palao</button>
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="12" data-value="Backflip">Backflip</button>
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="13" data-value="Frontflip">Frontflip</button>
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="14" data-value="FS 720">FS 720</button>
+            <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="15" data-value="Double Palao">Double Palao</button>
           </div>
         </div>
 
@@ -182,7 +189,7 @@
               &#9998; Type answers
             </button>
             <button id="tab-audio" onclick="switchTab('audio')" class="tab-inactive flex-1 py-3 text-sm font-semibold transition-colors border-l border-white/10">
-              &#9679; Record audio
+              &#9679; Talk to me
             </button>
           </div>
 
@@ -204,7 +211,27 @@
 
           <!-- Audio panel -->
           <div id="panel-audio" class="hidden">
-            <p class="text-slate-400 text-sm mb-5">Hit record and answer the three questions out loud — much faster than typing. Keep the question list in the sidebar visible while you record.</p>
+            <p class="text-slate-400 text-sm mb-5">Hit record and talk through the questions below — much faster than typing.</p>
+
+            <!-- Inline questions -->
+            <div class="bg-[#0d2235] border border-[#0ea5e9]/20 rounded-xl p-4 mb-5">
+              <p class="text-[#0ea5e9] font-semibold text-xs uppercase tracking-widest mb-3">Answer these out loud</p>
+              <ol class="space-y-2.5">
+                <li class="flex gap-2.5">
+                  <span class="text-[#0ea5e9] font-bold text-sm flex-shrink-0">1.</span>
+                  <p class="text-slate-300 text-sm">What specific move or skill are you stuck on?</p>
+                </li>
+                <li class="flex gap-2.5">
+                  <span class="text-[#0ea5e9] font-bold text-sm flex-shrink-0">2.</span>
+                  <p class="text-slate-300 text-sm">What have you already tried to fix it?</p>
+                </li>
+                <li class="flex gap-2.5">
+                  <span class="text-[#0ea5e9] font-bold text-sm flex-shrink-0">3.</span>
+                  <p class="text-slate-300 text-sm">What would success look like for you after this coaching?</p>
+                </li>
+              </ol>
+            </div>
+
             <div id="recorder-ui">
               <div class="flex flex-wrap items-center gap-4 mb-4">
                 <button id="record-btn" onclick="startRecording()"
@@ -330,10 +357,25 @@ let recTimerInterval = null;
 let recSeconds = 0;
 let uploadedFiles = []; // { serverFilename, originalName, size }
 
-// ── Level multi-select ────────────────────────────────────────────────────────
+// ── Level cascade-select ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.level-tag').forEach(btn => {
-    btn.addEventListener('click', () => btn.classList.toggle('selected'));
+  const tags = [...document.querySelectorAll('.level-tag')];
+  tags.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.index, 10);
+      const alreadySelected = btn.classList.contains('selected');
+      if (alreadySelected) {
+        // Just toggle this one off
+        btn.classList.remove('selected');
+      } else {
+        // Select this one + all before it
+        tags.forEach(t => {
+          if (parseInt(t.dataset.index, 10) <= idx) {
+            t.classList.add('selected');
+          }
+        });
+      }
+    });
   });
 });
 
