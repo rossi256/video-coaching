@@ -55,14 +55,9 @@ jobs:
             done
             echo "Static files deployed to $PUBDEST"
 
-            # Restart or start with PM2 (Node handles API / upload routes)
-            if pm2 list | grep -q 'wingcoach'; then
-              echo "Restarting wingcoach..."
-              pm2 restart wingcoach
-            else
-              echo "Starting wingcoach for the first time..."
-              pm2 start ecosystem.config.js
-              pm2 save
-            fi
+            # Reload PM2 from config (picks up any cwd/env changes)
+            pm2 delete wingcoach 2>/dev/null || true
+            pm2 start ecosystem.config.js
+            pm2 save
 
             echo "Deploy complete."
