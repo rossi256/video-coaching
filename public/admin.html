@@ -202,8 +202,13 @@ function renderDetail(s) {
             ${statCard('Location', s.location)}
             ${statCard('Ride Frequency', s.ride_frequency)}
             ${statCard('Wind Conditions', s.conditions)}
-            ${statCard('Level', s.level)}
           </div>
+          ${s.level ? `<div class="bg-white/5 rounded-lg px-3 py-2.5 mb-4">
+            <div class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Level</div>
+            <ul class="space-y-0.5">
+              ${s.level.split(', ').map(l => `<li class="text-slate-200 text-sm flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#0ea5e9] flex-shrink-0"></span>${esc(l.trim())}</li>`).join('')}
+            </ul>
+          </div>` : ''}
           ${s.equipment ? `<div class="bg-white/5 rounded-lg px-3 py-2.5 mb-4"><div class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">Equipment</div><div class="text-slate-200 text-sm">${esc(s.equipment)}</div></div>` : ''}
           <div class="space-y-2">
             ${s.stuck_on ? `<div class="bg-[#0a1628] border-l-2 border-[#0ea5e9]/60 rounded-r-lg px-3 py-2.5"><div class="text-xs text-[#38bdf8] uppercase tracking-wider font-semibold mb-1">Stuck on</div><div class="text-slate-200 text-sm" style="white-space:pre-wrap">${esc(s.stuck_on)}</div></div>` : ''}
