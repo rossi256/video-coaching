@@ -18,27 +18,34 @@
     .upload-zone.dragging { border-color: #0ea5e9; background: rgba(14,165,233,0.08); }
     .progress-bar { transition: width 0.3s ease; }
     .level-tag { transition: all 0.15s; cursor: pointer; }
-    .level-tag.selected { background: rgba(14,165,233,0.18); border-color: #0ea5e9; color: white; }
-    .tab-active { background: rgba(14,165,233,0.12); color: #0ea5e9; }
-    .tab-inactive { background: transparent; color: #94a3b8; }
-    .tab-inactive:hover { background: rgba(255,255,255,0.04); color: #cbd5e1; }
+    .level-tag.selected { background: rgba(14,165,233,0.22); border-color: #0ea5e9; color: #7dd3fc; font-weight: 600; }
+    .level-tag:hover:not(.selected) { border-color: rgba(255,255,255,0.3); color: white; }
+    .tab-active { background: linear-gradient(135deg, rgba(14,165,233,0.18), rgba(14,165,233,0.08)); color: #38bdf8; border-bottom: 2px solid #0ea5e9; }
+    .tab-inactive { background: transparent; color: #64748b; }
+    .tab-inactive:hover { background: rgba(255,255,255,0.04); color: #94a3b8; }
+    .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 20px; padding: 28px 32px; }
+    @media (max-width: 640px) { .card { padding: 20px; } }
+    .card-title { font-size: 1.15rem; font-weight: 700; color: white; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .card-title::before { content: ''; display: block; width: 4px; height: 1.2em; border-radius: 2px; background: #0ea5e9; flex-shrink: 0; }
     input, select, textarea {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 10px;
       color: white;
-      padding: 10px 14px;
+      padding: 13px 16px;
       width: 100%;
       font-family: inherit;
       font-size: 14px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, background 0.2s;
     }
-    input:focus, select:focus, textarea:focus { border-color: #0ea5e9; }
+    input:focus, select:focus, textarea:focus { border-color: #0ea5e9; background: rgba(14,165,233,0.06); }
+    input::placeholder, textarea::placeholder { color: #475569; }
     select option { background: #1e293b; color: white; }
-    label { display: block; font-size: 13px; font-weight: 500; color: #94a3b8; margin-bottom: 6px; }
-    .form-group { margin-bottom: 16px; }
-    textarea { resize: vertical; min-height: 80px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #7dd3fc; margin-bottom: 7px; letter-spacing: 0.03em; text-transform: uppercase; }
+    .form-group { margin-bottom: 20px; }
+    textarea { resize: vertical; min-height: 90px; }
+    .tip-pill { display: inline-flex; align-items: center; gap: 5px; background: rgba(14,165,233,0.08); border: 1px solid rgba(14,165,233,0.2); border-radius: 20px; padding: 5px 12px; font-size: 12px; color: #7dd3fc; }
   </style>
 </head>
 <body class="bg-[#0d1b2e] text-white min-h-screen">
@@ -111,9 +118,9 @@
       <div class="space-y-8">
 
         <!-- Rider Profile Form: Personal Details -->
-        <div class="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
-          <h2 class="text-xl font-bold mb-6">Your Rider Profile</h2>
-          <p class="text-slate-400 text-sm mb-6">This helps Michi understand your background before watching your videos. <span class="text-[#0ea5e9]">*</span> required</p>
+        <div class="card">
+          <h2 class="card-title">Your Rider Profile</h2>
+          <p class="text-slate-400 text-sm mb-6 mt-2">This helps Michi understand your background before watching your videos. <span class="text-[#0ea5e9]">*</span> required</p>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
             <div class="form-group">
@@ -154,9 +161,9 @@
         </div>
 
         <!-- Current Level: Move Picker -->
-        <div class="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
-          <h2 class="text-xl font-bold mb-2">Your Current Level</h2>
-          <p class="text-slate-400 text-sm mb-5">Tap the highest move you can do consistently — everything before it will be marked too. You can uncheck any that don't apply.</p>
+        <div class="card">
+          <h2 class="card-title">Your Current Level</h2>
+          <p class="text-slate-400 text-sm mb-5 mt-2">Tap the highest move you can do consistently — everything before it will be marked too. Uncheck any that don't apply.</p>
           <div id="level-tags" class="flex flex-wrap gap-2">
             <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="0" data-value="Getting up on the board">Getting up on the board</button>
             <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="1" data-value="First flights">First flights</button>
@@ -178,17 +185,17 @@
         </div>
 
         <!-- Coaching Questions card (tabbed: type or audio) -->
-        <div class="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
-          <h2 class="text-xl font-bold mb-1">Your Coaching Questions</h2>
-          <p class="text-slate-400 text-sm mb-5">These help me understand exactly where you're at before I watch your videos.</p>
+        <div class="card">
+          <h2 class="card-title">Your Coaching Questions</h2>
+          <p class="text-slate-400 text-sm mb-5 mt-2">These help me understand exactly where you're at before I watch your videos.</p>
 
           <!-- Tab selector -->
           <div class="flex border border-white/10 rounded-xl overflow-hidden mb-6">
-            <button id="tab-text" onclick="switchTab('text')" class="tab-active flex-1 py-3 text-sm font-semibold transition-colors">
-              &#9998; Type answers
+            <button id="tab-text" onclick="switchTab('text')" class="tab-active flex-1 py-3 text-sm font-semibold transition-all">
+              ✏️ Type your answers
             </button>
-            <button id="tab-audio" onclick="switchTab('audio')" class="tab-inactive flex-1 py-3 text-sm font-semibold transition-colors border-l border-white/10">
-              &#9679; Talk to me
+            <button id="tab-audio" onclick="switchTab('audio')" class="tab-inactive flex-1 py-3 text-sm font-semibold transition-all border-l border-white/10">
+              🎙️ Talk to me
             </button>
           </div>
 
@@ -253,32 +260,31 @@
         </div>
 
         <!-- Video upload -->
-        <div class="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
-          <h2 class="text-xl font-bold mb-2">Upload Your Riding Videos</h2>
-          <p class="text-slate-400 text-sm mb-6">Any format from your phone — MP4, MOV, HEVC, etc. Multiple clips welcome. Raw unedited footage is fine.</p>
+        <div class="card">
+          <h2 class="card-title">Upload Your Riding Videos</h2>
+          <p class="text-slate-400 text-sm mt-2 mb-4">Any format from your phone — MP4, MOV, HEVC, etc. Multiple clips welcome.</p>
+
+          <!-- Tips as pills above drop zone -->
+          <div class="flex flex-wrap gap-2 mb-5">
+            <span class="tip-pill">📐 Film from the side</span>
+            <span class="tip-pill">🎬 Short clips &gt; one long one</span>
+            <span class="tip-pill">✅ Raw footage, no editing needed</span>
+          </div>
 
           <!-- Drop zone -->
-          <div id="drop-zone" class="upload-zone border-2 border-dashed border-white/20 rounded-xl p-10 text-center cursor-pointer hover:border-[#0ea5e9]/60 hover:bg-white/5 transition-all">
+          <div id="drop-zone" class="upload-zone border-2 border-dashed border-white/20 rounded-xl p-10 text-center cursor-pointer hover:border-[#0ea5e9]/60 hover:bg-[#0ea5e9]/5 transition-all">
             <div class="text-4xl mb-3">📁</div>
             <p class="font-semibold mb-1">Drop videos here or click to select</p>
-            <p class="text-slate-400 text-sm">MP4, MOV, AVI, MKV, HEVC, WebM — any format from your phone</p>
+            <p class="text-slate-400 text-sm">MP4, MOV, AVI, MKV, HEVC, WebM</p>
             <input type="file" id="video-input" accept="video/*" multiple class="hidden">
           </div>
 
           <!-- File list -->
           <div id="file-list" class="mt-4 space-y-3"></div>
-
-          <!-- Tips -->
-          <div class="mt-5 pt-5 border-t border-white/10 flex flex-wrap gap-x-6 gap-y-1.5">
-            <p class="w-full text-slate-400 text-xs font-medium mb-1">Tips for good footage:</p>
-            <span class="text-slate-500 text-xs">✓ Film from the side, not head-on</span>
-            <span class="text-slate-500 text-xs">✓ Multiple short clips &gt; one long one</span>
-            <span class="text-slate-500 text-xs">✓ Raw footage is fine — no editing needed</span>
-          </div>
         </div>
 
         <!-- Submit -->
-        <div class="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
+        <div class="card">
           <div id="submit-area">
             <button id="submit-btn" onclick="submitForm()"
               class="w-full bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-lg py-4 rounded-xl transition-all hover:scale-[1.01] shadow-lg shadow-[#0ea5e9]/20">
