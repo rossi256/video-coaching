@@ -98,63 +98,218 @@ if (process.env.DEV_BYPASS === 'true') {
     res.send(`<p style="font:16px sans-serif;padding:20px">Dev bypass — submission #${submissionId} created.<br><a href="${redirectUrl}">→ Go to success page</a></p>`);
   });
 
-  // GET /dev/test — full test flow dashboard with all URLs
+  // GET /dev/test — full test flow dashboard with email tester
   app.get(BASE_PATH + '/dev/test', (req, res) => {
     const { total, taken } = getSpots();
+    const { getAllSubmissions } = require('./db');
+    const subs = getAllSubmissions();
     const base = PUBLIC_PATH;
-    const api = PUBLIC_PATH;
-    res.send(`<!DOCTYPE html><html><head><title>WingCoach Test Flow</title>
-    <style>body{font:14px/1.6 sans-serif;padding:32px;max-width:760px;background:#0d1b2e;color:#e2e8f0;}
-    h1{color:#0ea5e9;margin-bottom:4px;}h2{color:#94a3b8;font-size:12px;font-weight:normal;margin-top:0 0 24px;}
-    .section{background:#1e293b;border-radius:8px;padding:20px;margin:16px 0;}
-    .section h3{margin:0 0 12px;color:#38bdf8;font-size:13px;text-transform:uppercase;letter-spacing:.06em;}
-    a{color:#0ea5e9;text-decoration:none;display:block;margin:6px 0;padding:8px 12px;background:rgba(14,165,233,0.1);border-radius:6px;border:1px solid rgba(14,165,233,0.3);}
-    a:hover{background:rgba(14,165,233,0.2);}
-    .note{color:#64748b;font-size:12px;margin:4px 0 8px;}</style></head>
-    <body>
-    <h1>WingCoach Test Flow</h1>
-    <h2>Spots: ${taken}/${total} taken</h2>
 
-    <div class="section">
-      <h3>Step 1 — Checkout (Rider side)</h3>
-      <p class="note">Landing page — rider enters email and clicks "Claim my spot"</p>
-      <a href="${base}/" target="_blank">→ Landing page (${base}/)</a>
-      <p class="note">Or skip Stripe entirely (creates a fake paid submission):</p>
-      <a href="${base}/dev/bypass" target="_blank">→ Dev bypass: create fake submission</a>
-    </div>
+    const subOptions = subs.map(s =>
+      `<option value="${s.id}" data-email="${(s.email||'').replace(/"/g,'')}" data-name="${(s.name||'').replace(/"/g,'')}">
+        #${s.id} — ${s.name || 'No name'} (${s.email || 'no email'}) [${s.status}]
+      </option>`
+    ).join('');
 
-    <div class="section">
-      <h3>Step 2 — Abandoned Checkout (test immediately)</h3>
-      <p class="note">Creates a checkout attempt 31 min old, then triggers the reminder check now</p>
-      <a href="${api}/dev/abandoned-checkout-test" target="_blank">→ Trigger abandoned checkout test</a>
-    </div>
+    const emails = [
+      { type: 'upload-link',              label: '1. Upload Link',              desc: 'Sent after payment — links rider to success page' },
+      { type: 'submission-confirmation',  label: '2. Submission Confirmation',  desc: 'Sent to rider after they click "Send to Michi"' },
+      { type: 'receipt-confirmation',     label: '3. Receipt Confirmation',     desc: 'Sent to rider when admin clicks "Confirm Receipt"' },
+      { type: 'feedback-ready',           label: '4. Feedback Ready',           desc: 'Sent to rider when admin clicks "Mark Feedback Sent"' },
+      { type: 'abandoned-checkout',       label: '5. Abandoned Checkout',       desc: 'Sent 30min after entering email without paying' },
+      { type: 'admin-payment',            label: '6. Admin: New Payment',       desc: 'Sent to admin (NOTIFY_EMAIL) on payment' },
+      { type: 'admin-submission',         label: '7. Admin: New Submission',    desc: 'Sent to admin when rider submits their videos' },
+    ];
 
-    <div class="section">
-      <h3>Step 3 — Upload & Submit (Rider side)</h3>
-      <p class="note">After bypass, go to the success page. Fill in profile, upload videos, click Submit.</p>
-      <p class="note">For a specific submission ID, append ?session_id=dev_test_... from the bypass URL.</p>
-    </div>
+    const emailRows = emails.map(e => `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <div style="flex:1;">
+          <div style="font-weight:600;font-size:13px;">${e.label}</div>
+          <div style="color:#64748b;font-size:12px;margin-top:2px;">${e.desc}</div>
+        </div>
+        <button onclick="sendTestEmail('${e.type}')"
+          style="background:rgba(14,165,233,0.15);border:1px solid rgba(14,165,233,0.4);color:#38bdf8;font-size:12px;font-weight:700;padding:7px 14px;border-radius:6px;cursor:pointer;white-space:nowrap;transition:background 0.15s;"
+          onmouseover="this.style.background='rgba(14,165,233,0.3)'" onmouseout="this.style.background='rgba(14,165,233,0.15)'">
+          Send →
+        </button>
+      </div>`).join('');
 
-    <div class="section">
-      <h3>Step 4 — Admin Review</h3>
-      <a href="${base}/admin" target="_blank">→ Admin panel (${base}/admin)</a>
-      <p class="note">Login with ADMIN_PASSWORD. View submissions, click one to see details.</p>
-      <p class="note">Test "Confirm Receipt" button (status: submitted → in_progress).</p>
-      <p class="note">Add a video reply + text reply via Coaching Reply Builder.</p>
-    </div>
+    res.send(`<!DOCTYPE html>
+<html><head><title>WingCoach Dev — Test Flow</title>
+<style>
+  *{box-sizing:border-box;}
+  body{font:14px/1.6 Inter,sans-serif;padding:28px;max-width:820px;background:#0d1b2e;color:#e2e8f0;margin:0 auto;}
+  h1{color:#0ea5e9;margin:0 0 2px;font-size:22px;}
+  .subtitle{color:#475569;font-size:13px;margin:0 0 24px;}
+  .section{background:#1e293b;border-radius:10px;padding:20px 24px;margin:16px 0;}
+  .section h3{margin:0 0 14px;color:#38bdf8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
+  a.link{color:#0ea5e9;text-decoration:none;display:block;margin:6px 0;padding:8px 12px;background:rgba(14,165,233,0.08);border-radius:6px;border:1px solid rgba(14,165,233,0.25);font-size:13px;}
+  a.link:hover{background:rgba(14,165,233,0.18);}
+  .note{color:#64748b;font-size:12px;margin:4px 0 10px;}
+  input,select{width:100%;background:#0d1b2e;border:1px solid rgba(255,255,255,0.15);color:#e2e8f0;border-radius:6px;padding:8px 10px;font-size:13px;margin-bottom:10px;outline:none;}
+  input:focus,select:focus{border-color:#0ea5e9;}
+  #result{margin-top:12px;padding:10px 14px;border-radius:6px;font-size:13px;display:none;}
+  .ok{background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#4ade80;}
+  .err{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:600px){.grid2{grid-template-columns:1fr;}}
+</style></head>
+<body>
+<h1>WingCoach Dev — Test Dashboard</h1>
+<p class="subtitle">Spots: ${taken}/${total} taken &nbsp;·&nbsp; DEV_BYPASS=true</p>
 
-    <div class="section">
-      <h3>Step 5 — Reply Page (Rider side)</h3>
-      <p class="note">After marking "Feedback Sent", a reply URL is shown. Open it.</p>
-      <a href="${api}/dev/latest-reply" target="_blank">→ Open latest submission's reply page</a>
-    </div>
+<!-- ── Email Tester ── -->
+<div class="section">
+  <h3>Email Tester</h3>
+  <p class="note">Pick a submission to auto-fill, or enter any email/name manually. Then fire any email.</p>
 
-    <div class="section">
-      <h3>API Shortcuts</h3>
-      <a href="${api}/api/spots" target="_blank">→ GET /api/spots</a>
-      <a href="${api}/api/admin/submissions" target="_blank">→ GET /api/admin/submissions (needs auth)</a>
+  <label style="font-size:12px;color:#64748b;font-weight:600;">Pick a submission</label>
+  <select id="sub-select" onchange="fillFromSub(this)">
+    <option value="">— custom email/name —</option>
+    ${subOptions}
+  </select>
+
+  <div class="grid2">
+    <div>
+      <label style="font-size:12px;color:#64748b;font-weight:600;">Email</label>
+      <input type="email" id="test-email" placeholder="rider@example.com">
     </div>
-    </body></html>`);
+    <div>
+      <label style="font-size:12px;color:#64748b;font-weight:600;">Name</label>
+      <input type="text" id="test-name" placeholder="Rider Name">
+    </div>
+  </div>
+
+  <div id="email-rows">${emailRows}</div>
+  <div id="result"></div>
+</div>
+
+<!-- ── Flow Steps ── -->
+<div class="section">
+  <h3>Step 1 — Checkout (Rider)</h3>
+  <p class="note">Real landing page. Or skip Stripe with the bypass.</p>
+  <a class="link" href="${base}/" target="_blank">→ Landing page</a>
+  <a class="link" href="${base}/dev/bypass" target="_blank">→ Dev bypass: create fake paid submission</a>
+</div>
+
+<div class="section">
+  <h3>Step 2 — Abandoned Checkout</h3>
+  <p class="note">Injects a 31-min-old attempt for the email above, fires reminder immediately.</p>
+  <a class="link" href="#" onclick="triggerAbandoned(); return false;">→ Trigger abandoned checkout reminder</a>
+</div>
+
+<div class="section">
+  <h3>Step 3 — Upload & Submit (Rider)</h3>
+  <p class="note">Go to the success page link from the bypass, fill the form, upload a video, submit.</p>
+</div>
+
+<div class="section">
+  <h3>Step 4 — Admin</h3>
+  <a class="link" href="${base}/admin" target="_blank">→ Admin panel (pass: ${process.env.ADMIN_PASSWORD})</a>
+  <p class="note">Confirm Receipt → add reply video + text → Mark Feedback Sent.</p>
+</div>
+
+<div class="section">
+  <h3>Step 5 — Reply page (Rider)</h3>
+  <a class="link" href="${base}/dev/latest-reply" target="_blank">→ Latest submission reply page</a>
+</div>
+
+<script>
+const BP = '${base}';
+
+function fillFromSub(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  document.getElementById('test-email').value = opt.dataset.email || '';
+  document.getElementById('test-name').value = opt.dataset.name || '';
+}
+
+async function sendTestEmail(type) {
+  const email = document.getElementById('test-email').value.trim();
+  const name  = document.getElementById('test-name').value.trim() || 'Test Rider';
+  const subId = document.getElementById('sub-select').value;
+  const result = document.getElementById('result');
+  if (!email) { showResult('Enter an email address first.', false); return; }
+
+  result.style.display = 'none';
+  try {
+    const r = await fetch(BP + '/dev/email-test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, email, name, submissionId: subId || null }),
+    });
+    const d = await r.json();
+    showResult(d.ok ? '✓ Email sent to ' + email : '✗ ' + (d.error || 'Unknown error'), d.ok);
+  } catch (e) {
+    showResult('✗ Network error: ' + e.message, false);
+  }
+}
+
+async function triggerAbandoned() {
+  const email = document.getElementById('test-email').value.trim();
+  const url = BP + '/dev/abandoned-checkout-test' + (email ? '?email=' + encodeURIComponent(email) : '');
+  const r = await fetch(url);
+  const text = await r.text();
+  showResult('✓ Abandoned checkout triggered' + (email ? ' for ' + email : ''), true);
+}
+
+function showResult(msg, ok) {
+  const el = document.getElementById('result');
+  el.textContent = msg;
+  el.className = ok ? 'ok' : 'err';
+  el.style.display = 'block';
+}
+</script>
+</body></html>`);
+  });
+
+  // POST /dev/email-test — send any email type to a given address
+  app.post(BASE_PATH + '/dev/email-test', async (req, res) => {
+    const { type, email, name, submissionId } = req.body;
+    if (!email) return res.json({ ok: false, error: 'email required' });
+
+    const {
+      sendUploadLink, sendSubmissionConfirmation, sendReceiptConfirmation,
+      sendFeedbackReady, sendAbandonedCheckoutReminder,
+      sendAdminNotification, sendSubmissionNotification,
+    } = require('./email');
+    const { getSubmission } = require('./db');
+
+    const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}${BASE_PATH || ''}`;
+    const sub = submissionId ? getSubmission(parseInt(submissionId)) : null;
+    const riderName = name || sub?.name || 'Test Rider';
+
+    try {
+      switch (type) {
+        case 'upload-link':
+          await sendUploadLink(email, riderName, `${BASE_URL}/success?session_id=dev_test_preview`);
+          break;
+        case 'submission-confirmation':
+          await sendSubmissionConfirmation(email, riderName, `${BASE_URL}/success?session_id=dev_test_preview`);
+          break;
+        case 'receipt-confirmation':
+          await sendReceiptConfirmation(email, riderName);
+          break;
+        case 'feedback-ready':
+          const token = sub?.token || 'preview-token';
+          await sendFeedbackReady(email, riderName, `${BASE_URL}/reply/${token}`);
+          break;
+        case 'abandoned-checkout':
+          await sendAbandonedCheckoutReminder(email, `${BASE_URL}/`);
+          break;
+        case 'admin-payment':
+          await sendAdminNotification(riderName, email);
+          break;
+        case 'admin-submission':
+          await sendSubmissionNotification(riderName, email, submissionId || 'test', sub || null);
+          break;
+        default:
+          return res.json({ ok: false, error: 'Unknown type: ' + type });
+      }
+      res.json({ ok: true });
+    } catch (err) {
+      console.error('Dev email test error:', err);
+      res.json({ ok: false, error: err.message });
+    }
   });
 
   // GET /dev/abandoned-checkout-test — inject a fake old attempt and trigger check immediately
