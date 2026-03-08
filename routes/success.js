@@ -12,9 +12,11 @@ router.get('/api/verify-session', async (req, res) => {
   if (session_id.startsWith('dev_test_') && process.env.DEV_BYPASS === 'true') {
     const submission = getSubmissionBySessionId(session_id);
     if (!submission) return res.status(404).json({ error: 'Dev session not found' });
+    const devEmail = submission.email || getCheckoutAttemptBySessionId(session_id)?.email || null;
+    if (devEmail && !submission.email) updateSubmission(submission.id, { email: devEmail });
     return res.json({
       submissionId: submission.id, status: submission.status,
-      name: submission.name, email: submission.email,
+      name: submission.name, email: devEmail,
       age: submission.age, location: submission.location,
       ride_frequency: submission.ride_frequency, conditions: submission.conditions,
       equipment: submission.equipment, level: submission.level,
