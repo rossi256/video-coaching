@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { getSubmissionBySessionId, getSubmission, updateSubmission } = require('../db');
+const { getSubmissionBySessionId, getSubmission, updateSubmission, getCheckoutAttemptBySessionId } = require('../db');
 const { stripe } = require('../stripe');
 const { sendSubmissionNotification, sendSubmissionConfirmation } = require('../email');
 
@@ -42,9 +42,11 @@ router.get('/api/verify-session', async (req, res) => {
     }
   }
 
+  const email = submission.email || getCheckoutAttemptBySessionId(session_id)?.email || null;
+
   res.json({
     submissionId: submission.id, status: submission.status,
-    name: submission.name, email: submission.email,
+    name: submission.name, email,
     age: submission.age, location: submission.location,
     ride_frequency: submission.ride_frequency, conditions: submission.conditions,
     equipment: submission.equipment, level: submission.level,
