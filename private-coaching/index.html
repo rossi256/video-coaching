@@ -2,10 +2,729 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=/vip-coaching/">
-<title>Redirecting...</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Private Coaching - Michi Rossmeier</title>
+<meta name="description" content="Private wingfoil coaching sessions with Michi Rossmeier in Tarifa or Lake Garda. One-on-one coaching focused on your progression.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Private Coaching - Michi Rossmeier">
+<meta property="og:description" content="Private wingfoil coaching sessions with Michi Rossmeier in Tarifa or Lake Garda.">
+<meta property="og:url" content="https://coaching.tricktionary.com/private-coaching/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #060a14;
+    --navy-card: #111827;
+    --gold: #d4a843;
+    --gold-light: #f0d078;
+    --teal: #2dd4bf;
+    --white: #f1f5f9;
+    --white-dim: #cbd5e1;
+    --gray: #94a3b8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    padding: 100px 24px 80px;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120%;
+    height: 80%;
+    background: radial-gradient(ellipse at center, rgba(45, 212, 191, 0.06) 0%, rgba(45, 212, 191, 0.02) 35%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--teal);
+    border: 1px solid rgba(45, 212, 191, 0.35);
+    padding: 6px 18px;
+    border-radius: 100px;
+    margin-bottom: 2rem;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4.5vw, 3.2rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 1.2rem;
+    color: var(--white);
+  }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    font-weight: 300;
+    color: var(--white-dim);
+    margin-bottom: 1.5rem;
+    line-height: 1.7;
+  }
+
+  .hero-price {
+    font-size: 0.9rem;
+    color: var(--teal);
+    font-weight: 500;
+    margin-bottom: 2.5rem;
+  }
+
+  .cta-btn {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--navy);
+    background: linear-gradient(135deg, var(--teal) 0%, #5eead4 100%);
+    padding: 14px 36px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+  }
+
+  .cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(45, 212, 191, 0.25);
+  }
+
+  .cta-btn--gold {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+    box-shadow: none;
+  }
+
+  .cta-btn--gold:hover {
+    box-shadow: 0 12px 40px rgba(212, 168, 67, 0.25);
+  }
+
+  /* ─── SECTIONS ─── */
+  section {
+    padding: 80px 24px;
+    position: relative;
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+  }
+
+  .section-prose p {
+    font-size: 1rem;
+    color: var(--white-dim);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    max-width: 680px;
+  }
+
+  /* ─── FEATURE GRID ─── */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .feature-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+
+  .feature-card h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--teal);
+    margin-bottom: 0.5rem;
+  }
+
+  .feature-card p {
+    font-size: 0.85rem;
+    color: var(--white-dim);
+    line-height: 1.7;
+  }
+
+  /* ─── LOCATION CARDS ─── */
+  .location-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .location-card {
+    background: var(--navy-card);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+  }
+
+  .location-card:hover {
+    border-color: rgba(45, 212, 191, 0.2);
+    transform: translateY(-3px);
+  }
+
+  .location-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.3rem;
+  }
+
+  .location-card .location-country {
+    font-size: 0.8rem;
+    color: var(--teal);
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+
+  .location-card p {
+    font-size: 0.88rem;
+    color: var(--white-dim);
+    line-height: 1.7;
+  }
+
+  /* ─── PRICING ─── */
+  .pricing-block {
+    text-align: center;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .pricing-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.3rem;
+  }
+
+  .pricing-unit {
+    font-size: 0.9rem;
+    color: var(--teal);
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+  }
+
+  .pricing-note {
+    font-size: 0.9rem;
+    color: var(--white-dim);
+    line-height: 1.7;
+  }
+
+  /* ─── COACH ─── */
+  .coach-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  .coach-portrait {
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .coach-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.3rem;
+  }
+
+  .coach-role {
+    font-size: 0.85rem;
+    color: var(--teal);
+    font-weight: 500;
+    margin-bottom: 1.2rem;
+  }
+
+  .coach-bio p {
+    font-size: 0.9rem;
+    color: var(--white-dim);
+    line-height: 1.75;
+    margin-bottom: 1rem;
+  }
+
+  /* ─── CONTACT ─── */
+  .contact-section {
+    position: relative;
+  }
+
+  .contact-wrap {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .contact-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .contact-subtitle {
+    font-size: 0.95rem;
+    color: var(--white-dim);
+    margin-bottom: 2rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.2rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--teal);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.4rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--white);
+    padding: 12px 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: var(--teal);
+    background: rgba(45, 212, 191, 0.04);
+  }
+
+  .form-group input::placeholder,
+  .form-group textarea::placeholder {
+    color: #475569;
+  }
+
+  .form-group select option {
+    background: var(--navy-card);
+    color: var(--white);
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .ohnohoney {
+    position: absolute;
+    left: -9999px;
+    opacity: 0;
+    height: 0;
+    width: 0;
+    overflow: hidden;
+  }
+
+  .submit-btn {
+    display: block;
+    width: 100%;
+    margin-top: 1.5rem;
+  }
+
+  .submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .success-message {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+
+  .success-message h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--teal);
+    margin-bottom: 1rem;
+  }
+
+  .success-message p {
+    font-size: 0.95rem;
+    color: var(--white-dim);
+    line-height: 1.7;
+  }
+
+  /* WhatsApp link */
+  .wa-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--white-dim);
+    text-decoration: none;
+    padding: 10px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  .wa-link:hover {
+    border-color: rgba(37, 211, 102, 0.4);
+    color: #25d366;
+  }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    padding: 2rem 24px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.8rem;
+  }
+
+  .footer-links a {
+    font-size: 0.78rem;
+    color: var(--gray);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--white); }
+
+  .footer-copy {
+    font-size: 0.72rem;
+    color: #475569;
+  }
+
+  /* ─── SCROLL FADE ─── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    section { padding: 60px 20px; }
+    .feature-grid, .location-grid { grid-template-columns: 1fr; }
+    .coach-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .coach-portrait { max-width: 200px; margin: 0 auto; }
+    .form-row { grid-template-columns: 1fr; }
+    .contact-actions { flex-direction: column; }
+  }
+
+  @media (max-width: 480px) {
+    section { padding: 50px 16px; }
+    .hero { padding: 80px 16px 60px; }
+  }
+</style>
 </head>
 <body>
-<p>Redirecting to <a href="/vip-coaching/">VIP Coaching</a>...</p>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-content fade-in">
+    <span class="hero-badge">Private Coaching</span>
+    <h1>Come Train With Michi</h1>
+    <p class="hero-sub">Private one-on-one wingfoil coaching in Tarifa or at Lake Garda. Bring your gear, bring your goals - leave riding at a different level.</p>
+    <p class="hero-price">&euro;250 per session</p>
+    <a href="#book" class="cta-btn">Book a Session</a>
+  </div>
+</section>
+
+<!-- ═══ WHAT TO EXPECT ═══ -->
+<section>
+  <div class="container fade-in">
+    <p class="section-label">What to Expect</p>
+    <h2 class="section-title">Focused Coaching, Real Progress</h2>
+    <div class="section-prose">
+      <p>Every session is built around your riding. Michi works with you on the water in real time, then reviews video together after. You'll leave each session with a clear picture of what changed and what to work on next.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <h4>On-Water Coaching</h4>
+        <p>Michi is on the water with you - real-time feedback on technique, positioning, and timing as it happens.</p>
+      </div>
+      <div class="feature-card">
+        <h4>Video Analysis</h4>
+        <p>Frame-by-frame review of your sessions. See exactly what's happening and what to change on your next run.</p>
+      </div>
+      <div class="feature-card">
+        <h4>Gear Advice</h4>
+        <p>Equipment setup optimized for your weight, style, and conditions. Bring your gear - Michi will help you get the most from it.</p>
+      </div>
+      <div class="feature-card">
+        <h4>Progression Focus</h4>
+        <p>You invest in your progress, not in hours. Each session is designed to unlock specific breakthroughs in your riding.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ LOCATIONS ═══ -->
+<section>
+  <div class="container fade-in">
+    <p class="section-label">Locations</p>
+    <h2 class="section-title">Where to Find Michi</h2>
+    <div class="location-grid">
+      <div class="location-card">
+        <h3>Tarifa</h3>
+        <p class="location-country">Spain</p>
+        <p>Europe's wind capital. Consistent conditions, warm water, and the perfect training ground for progression at any level. Michi's home base and where Pro Gear Service is headquartered.</p>
+      </div>
+      <div class="location-card">
+        <h3>Lake Garda</h3>
+        <p class="location-country">Italy</p>
+        <p>Reliable thermal winds, flat water, and stunning alpine scenery. Ideal for focused technique work and perfect for riders who prefer lake conditions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRICING ═══ -->
+<section>
+  <div class="container fade-in">
+    <div class="pricing-block">
+      <p class="section-label">Investment</p>
+      <h2 class="section-title">Your Progression, Your Pace</h2>
+      <p class="pricing-amount">&euro;250</p>
+      <p class="pricing-unit">per session</p>
+      <p class="pricing-note">You're investing in breakthroughs, not in clock time. Each session is as long as it needs to be for you to progress. Multi-session packages available - ask Michi directly.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ YOUR COACH ═══ -->
+<section>
+  <div class="container fade-in">
+    <p class="section-label">Your Coach</p>
+    <div class="coach-grid">
+      <img src="/assets/coach-portrait.jpg" alt="Michi Rossmeier" class="coach-portrait" loading="lazy">
+      <div>
+        <h2 class="coach-name">Michi Rossmeier</h2>
+        <p class="coach-role">Founder, Tricktionary &middot; Pro Gear Service Tarifa</p>
+        <div class="coach-bio">
+          <p>Two decades of action sports coaching distilled into one person. Michi authored the Tricktionary book series - the definitive reference for kiteboarding and wingfoil technique - and has coached hundreds of riders from first flights to competition podiums.</p>
+          <p>His coaching is precise, intuitive, and deeply personal. He sees what others miss, explains it in a way that clicks, and gives you the tools to change it on your next session.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BOOK / CONTACT ═══ -->
+<section class="contact-section" id="book">
+  <div class="container fade-in">
+    <div class="contact-wrap">
+      <p class="section-label">Book a Session</p>
+      <h2 class="section-title">Ready to Train?</h2>
+
+      <div class="contact-actions">
+        <a href="https://tidycal.com/michirossmeier/free-consultation-call-1" target="_blank" rel="noopener" class="cta-btn">Schedule a Call</a>
+        <a href="https://wa.me/4369913909040?text=Hi%20Michi%2C%20I%27m%20interested%20in%20private%20coaching." target="_blank" rel="noopener" class="wa-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Message on WhatsApp
+        </a>
+      </div>
+
+      <p class="contact-subtitle">Or send Michi a message and he'll get back to you:</p>
+
+      <form id="inquiry-form" onsubmit="submitInquiry(event)">
+        <div class="ohnohoney">
+          <input type="text" name="website" id="hp-website" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name *</label>
+            <input type="text" id="inq-name" required placeholder="Your name">
+          </div>
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="inq-email" required placeholder="Your email">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Preferred Location</label>
+            <select id="inq-location">
+              <option value="">Select...</option>
+              <option value="Tarifa">Tarifa, Spain</option>
+              <option value="Lake Garda">Lake Garda, Italy</option>
+              <option value="Either">Either / flexible</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Riding Level</label>
+            <select id="inq-level">
+              <option value="">Select...</option>
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Message</label>
+          <textarea id="inq-message" placeholder="When are you planning to come? What are your goals?"></textarea>
+        </div>
+
+        <button type="submit" id="submit-btn" class="cta-btn cta-btn--gold submit-btn">Send Message</button>
+      </form>
+
+      <div id="success-state" class="success-message" style="display:none;">
+        <h3>Message sent!</h3>
+        <p>Michi will get back to you soon to arrange your session.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  <div class="footer-links">
+    <a href="/">Tricktionary Coaching</a>
+    <a href="/vip-coaching/">VIP Experience</a>
+    <a href="https://tricktionary.com" target="_blank" rel="noopener">tricktionary.com</a>
+    <a href="https://progearservice.com" target="_blank" rel="noopener">progearservice.com</a>
+  </div>
+  <p class="footer-copy">&copy; 2026 Tricktionary GmbH</p>
+</footer>
+
+<script>
+async function submitInquiry(e) {
+  e.preventDefault();
+  if (document.getElementById('hp-website').value) return;
+
+  var name = document.getElementById('inq-name').value.trim();
+  var email = document.getElementById('inq-email').value.trim();
+  if (!name || !email) return;
+
+  var btn = document.getElementById('submit-btn');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    var r = await fetch('/video-coaching/api/private-inquiry.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: name,
+        email: email,
+        location: document.getElementById('inq-location').value,
+        riding_level: document.getElementById('inq-level').value,
+        message: document.getElementById('inq-message').value.trim()
+      })
+    });
+
+    var d = await r.json();
+    if (d.ok) {
+      document.getElementById('inquiry-form').style.display = 'none';
+      document.getElementById('success-state').style.display = 'block';
+    } else {
+      alert('Something went wrong. Please try again.');
+      btn.textContent = 'Send Message';
+      btn.disabled = false;
+    }
+  } catch (err) {
+    alert('Network error. Please try again.');
+    btn.textContent = 'Send Message';
+    btn.disabled = false;
+  }
+}
+
+// Scroll fade
+var observer = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-in').forEach(function(el) { observer.observe(el); });
+</script>
 </body>
 </html>
