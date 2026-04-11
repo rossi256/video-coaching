@@ -56,7 +56,7 @@ jobs:
             # Install PHP dependencies
             if [ -f backend-php/composer.json ]; then
               cp backend-php/composer.json composer.json
-              composer install --no-dev --no-interaction 2>&1 || true
+              /usr/bin/php8.4 /usr/local/bin/composer install --no-dev --no-interaction 2>&1 || true
             fi
 
             echo "Staging deploy complete."
@@ -117,7 +117,7 @@ jobs:
             if [ -f backend-php/composer.json ]; then
               cp backend-php/composer.json "$WEB_ROOT/video-coaching/composer.json"
               cd "$WEB_ROOT/video-coaching"
-              composer install --no-dev --no-interaction 2>&1 || true
+              /usr/bin/php8.4 /usr/local/bin/composer install --no-dev --no-interaction 2>&1 || true
             fi
 
             echo "Production deploy complete."
