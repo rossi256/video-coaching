@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tricktionary Coaching - Your Path to the Next Level</title>
+<meta name="description" content="Expert wingfoil coaching by Michi Rossmeier. We analyze your riding, build your progression plan, and coach you to the next level - from video feedback to private sessions to on-water camps.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Tricktionary Coaching - Your Path to the Next Level">
+<meta property="og:description" content="Expert wingfoil coaching by Michi Rossmeier. We analyze your riding, build your progression plan, and coach you to the next level.">
+<meta property="og:url" content="https://coaching.tricktionary.com/">
+<meta property="og:image" content="https://coaching.tricktionary.com/assets/og-image.jpg">
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+   --base: #0d1b2e;
+   --base-deep: #091422;
+   --base-light: #132640;
+   --teal: #0ea5e9;
+   --teal-glow: #38bdf8;
+   --gold: #d4a843;
+   --gold-light: #f0d078;
+   --white: #f1f5f9;
+   --white-dim: #cbd5e1;
+   --gray: #64748b;
+   --glass: rgba(13, 27, 46, 0.75);
+   --glass-border: rgba(255, 255, 255, 0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--base);
+    color: var(--white);
+    line-height: 1.6;
+    overflow-x: hidden;
+   -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── HEADER / NAVIGATION ─── */
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(9, 20, 34, 0.85);
+    backdrop-filter: blur(20px);
+   -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    z-index: 1000;
+    padding: 0.75rem 24px;
+  }
+
+  .header-nav {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--white);
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+
+  .logo:hover { color: var(--white); }
+  .logo span { color: var(--teal); }
+
+  .nav-links {
+    display: none;
+    list-style: none;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .nav-links a {
+    color: var(--white-dim);
+    font-weight: 500;
+    font-size: 0.85rem;
+    letter-spacing: 0.3px;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .nav-links a:hover { color: var(--teal); }
+
+  .nav-links .nav-hub {
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .nav-links .nav-hub:hover { color: var(--gold-light); }
+
+  .mobile-menu-btn {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+  }
+
+  .mobile-menu-btn span {
+    width: 22px;
+    height: 2px;
+    background: var(--white);
+    transition: all 0.3s ease;
+    border-radius: 1px;
+  }
+
+  .mobile-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--base-deep);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 1rem 24px;
+  }
+
+  .mobile-nav.active { display: block; }
+
+  .mobile-nav a {
+    display: block;
+    padding: 0.75rem 0;
+    color: var(--white-dim);
+    border-bottom: 1px solid var(--glass-border);
+    font-size: 0.92rem;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .mobile-nav a:last-child { border-bottom: none; }
+  .mobile-nav a:hover { color: var(--teal); }
+
+  .mobile-nav .ecosystem-links {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .mobile-nav .ecosystem-links a {
+    font-size: 0.8rem;
+    color: var(--gray);
+    padding: 0.5rem 0;
+    border-bottom: none;
+  }
+
+  .mobile-nav .ecosystem-links a.hub-link {
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  @media (min-width: 768px) {
+    .nav-links { display: flex; }
+    .mobile-menu-btn { display: none; }
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    padding-top: 60px;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url('assets/hero3-bg%20michi%20mid-railey%20in%20intersection%20upper%20third%20right%20third%20of%20image%20-rest%20free.jpg');
+    background-size: cover;
+    background-position: right 30% top 30%;
+    transform: scale(1.05);
+    animation: heroZoom 20s ease-in-out infinite alternate;
+  }
+
+  @keyframes heroZoom {
+    from { transform: scale(1.05); }
+    to { transform: scale(1.12); }
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to right,
+      rgba(13,27,46,0.88) 0%,
+      rgba(13,27,46,0.7) 45%,
+      rgba(13,27,46,0.4) 70%,
+      rgba(13,27,46,0.55) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(13,27,46,0.3) 0%,
+      rgba(13,27,46,0.1) 50%,
+      rgba(13,27,46,1) 100%
+    );
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: left;
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 48px;
+    animation: fadeUp 1s ease-out 0.3s both;
+  }
+
+  .hero-content-inner {
+    max-width: 560px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(2.8rem, 6vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1.08;
+    margin-bottom: 1.2rem;
+    color: #fff;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: var(--white-dim);
+    font-weight: 300;
+    max-width: 480px;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 36px;
+    background: linear-gradient(135deg, var(--teal), #0284c7);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 60px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 24px rgba(14, 165, 233, 0.3);
+  }
+
+  .hero-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(14, 165, 233, 0.45);
+  }
+
+  .hero-cta svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s;
+  }
+
+  .hero-cta:hover svg {
+    transform: translateY(4px);
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    animation: fadeUp 1s ease-out 1.2s both;
+  }
+
+  .scroll-hint span {
+    display: block;
+    width: 24px;
+    height: 38px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    position: relative;
+    margin: 0 auto;
+  }
+
+  .scroll-hint span::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    width: 4px;
+    height: 8px;
+    margin-left: -2px;
+    background: var(--teal);
+    border-radius: 2px;
+    animation: scrollDot 2s ease-in-out infinite;
+  }
+
+  @keyframes scrollDot {
+    0%, 100% { opacity: 1; transform: translateY(0); }
+    50% { opacity: 0.3; transform: translateY(12px); }
+  }
+
+  /* ─── SECTIONS ─── */
+  section {
+    padding: 100px 24px;
+    position: relative;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 1rem;
+  }
+
+  .section-label--gold {
+    color: var(--gold);
+  }
+
+  .section-title {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 0.5em;
+  }
+
+  .section-sub {
+    font-size: 1.05rem;
+    color: var(--white-dim);
+    font-weight: 300;
+    max-width: 600px;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+  }
+
+  .divider-line {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--teal));
+    border-radius: 2px;
+    margin-bottom: 2rem;
+  }
+
+  /* ─── COACHING CARD (shared layout) ─── */
+  .coaching-section {
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(14, 165, 233, 0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 30%, rgba(212, 168, 67, 0.04) 0%, transparent 60%);
+  }
+
+  .coaching-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
+    transition: border-color 0.4s;
+  }
+
+  .coaching-card:hover {
+    border-color: rgba(14, 165, 233, 0.2);
+  }
+
+  .coaching-card--reversed {
+    direction: rtl;
+  }
+
+  .coaching-card--reversed > * {
+    direction: ltr;
+  }
+
+  .coaching-visual {
+    position: relative;
+    min-height: 400px;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .coaching-visual--video {
+    background-image: url('assets/coach-action-TRCK7644.jpg');
+  }
+
+  .coaching-visual--1on1 {
+    background-image: url('assets/coach-action-20250805_4326-1.jpg');
+  }
+
+  .coaching-visual--monthly {
+    background-image: url('assets/coach-action-TRCK7317.jpg');
+  }
+
+  .coaching-visual--masterclass {
+    background-image: url('assets/coach-action-TRCK7644.jpg');
+  }
+
+  .coaching-visual::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 60%, var(--glass) 100%);
+  }
+
+  .coaching-card--reversed .coaching-visual::after {
+    background: linear-gradient(270deg, transparent 60%, var(--glass) 100%);
+  }
+
+  .coaching-badge {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 2;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    backdrop-filter: blur(8px);
+  }
+
+  .coaching-badge--live {
+    background: rgba(14, 165, 233, 0.9);
+  }
+
+  .coaching-badge--soon {
+    background: rgba(212, 168, 67, 0.85);
+  }
+
+  .coaching-info {
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .coaching-info h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5em;
+    color: var(--white);
+  }
+
+  .coaching-info p {
+    color: var(--white-dim);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+
+  .coaching-features {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 2rem;
+  }
+
+  .coaching-features li {
+    padding: 0.45em 0;
+    padding-left: 1.6em;
+    position: relative;
+    color: var(--white-dim);
+    font-size: 0.9rem;
+  }
+
+  .coaching-features li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.75em;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--teal);
+    box-shadow: 0 0 8px rgba(14, 165, 233, 0.4);
+  }
+
+  .pricing-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .price-main {
+    font-family: 'Inter', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--gold-light);
+  }
+
+  .price-label {
+    font-size: 0.8rem;
+    color: var(--gray);
+    font-weight: 500;
+  }
+
+  .price-regular {
+    font-size: 0.85rem;
+    color: var(--gray);
+    text-decoration: line-through;
+  }
+
+  .price-tbd {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-coaching {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, var(--teal), #0284c7);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.3);
+  }
+
+  .btn-coaching:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(14, 165, 233, 0.45);
+  }
+
+  .btn-waitlist {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 32px;
+    background: rgba(212, 168, 67, 0.15);
+    border: 1px solid rgba(212, 168, 67, 0.3);
+    color: var(--gold-light);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .btn-waitlist:hover {
+    background: rgba(212, 168, 67, 0.25);
+    border-color: rgba(212, 168, 67, 0.5);
+  }
+
+  /* ─── SCROLL FADE ─── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── WAITLIST FORM ─── */
+  .waitlist-form {
+    display: none;
+    opacity: 0;
+    margin-top: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .waitlist-form.active {
+    display: block;
+    opacity: 1;
+    margin-top: 1rem;
+  }
+
+  .waitlist-form-inner {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+    flex-wrap: wrap;
+    max-width: 420px;
+  }
+
+  .waitlist-form input {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    color: var(--white);
+    font-size: 0.88rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+  }
+
+  .waitlist-form input:focus {
+    border-color: var(--gold);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
+  }
+
+  .waitlist-form input::placeholder {
+    color: var(--gray);
+  }
+
+  .waitlist-form input.error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  }
+
+  .waitlist-form button {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--base-deep);
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(212, 168, 67, 0.2);
+    white-space: nowrap;
+  }
+
+  .waitlist-form button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(212, 168, 67, 0.35);
+  }
+
+  .waitlist-success {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.4s ease 0.15s,
+                margin-top 0.4s ease;
+    margin-top: 0;
+  }
+
+  .waitlist-success.active {
+    max-height: 80px;
+    opacity: 1;
+    margin-top: 1rem;
+    padding: 14px 20px;
+    background: rgba(14, 165, 233, 0.08);
+    border: 1px solid rgba(14, 165, 233, 0.2);
+    border-radius: 12px;
+    color: var(--teal-glow);
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  /* ─── COMING SOON SECTIONS ─── */
+  .coming-section {
+    background:
+      radial-gradient(ellipse at 70% 80%, rgba(212, 168, 67, 0.05) 0%, transparent 60%);
+  }
+
+  .coming-section-alt {
+    background:
+      radial-gradient(ellipse at 30% 30%, rgba(14, 165, 233, 0.05) 0%, transparent 60%);
+  }
+
+  /* ─── CARD GRID (Camps + VIP) ─── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .program-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .program-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--teal));
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .program-card:hover {
+    border-color: rgba(212, 168, 67, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+  }
+
+  .program-card:hover::before {
+    opacity: 1;
+  }
+
+  .program-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1.2rem;
+    display: block;
+  }
+
+  .program-card h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.6em;
+    color: var(--white);
+  }
+
+  .program-card p {
+    font-size: 0.92rem;
+    color: var(--white-dim);
+    line-height: 1.7;
+    margin-bottom: 1.2rem;
+  }
+
+  .program-card .detail-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .program-card .detail-list li {
+    padding: 0.3em 0;
+    padding-left: 1.4em;
+    position: relative;
+    color: var(--white-dim);
+    font-size: 0.85rem;
+  }
+
+  .program-card .detail-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.65em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+
+  .program-tag {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .program-tag--live {
+    background: rgba(14, 165, 233, 0.15);
+    color: var(--teal);
+  }
+
+  .program-tag--inquiry {
+    background: rgba(212, 168, 67, 0.12);
+    color: var(--gold);
+  }
+
+  /* ─── VIP CARD (premium styling) ─── */
+  .vip-card {
+    background: linear-gradient(160deg, #1a1a0e 0%, #0d1321 40%, #111827 100%);
+    border: 1px solid rgba(212, 168, 67, 0.25);
+    border-radius: 20px;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    display: block;
+  }
+
+  .vip-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+  }
+
+  .vip-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -30%;
+    width: 60%;
+    height: 200%;
+    background: radial-gradient(ellipse, rgba(212, 168, 67, 0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .vip-card:hover {
+    border-color: rgba(212, 168, 67, 0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(212, 168, 67, 0.12), 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  .vip-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.2rem;
+  }
+
+  .vip-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold-light);
+    background: rgba(212, 168, 67, 0.12);
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: 1px solid rgba(212, 168, 67, 0.2);
+  }
+
+  .vip-card h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--gold-light);
+    margin-bottom: 0.6em;
+    letter-spacing: -0.01em;
+    position: relative;
+    z-index: 1;
+  }
+
+  .vip-card p {
+    font-size: 0.92rem;
+    color: var(--white-dim);
+    line-height: 1.7;
+    margin-bottom: 1.2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .vip-card .detail-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .vip-card .detail-list li {
+    padding: 0.35em 0;
+    padding-left: 1.4em;
+    position: relative;
+    color: var(--white-dim);
+    font-size: 0.85rem;
+  }
+
+  .vip-card .detail-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.65em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold-light);
+    box-shadow: 0 0 6px rgba(212, 168, 67, 0.4);
+  }
+
+  .vip-inquiry-tag {
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--base-deep);
+    position: relative;
+    z-index: 1;
+  }
+
+  .pgs-banner {
+    margin-top: 1.5rem;
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    text-align: center;
+  }
+
+  .pgs-banner a {
+    color: var(--teal);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .pgs-banner a:hover {
+    color: var(--teal-glow);
+  }
+
+  /* ─── FAQ ─── */
+  .faq-section {
+    background:
+      radial-gradient(ellipse at 50% 50%, rgba(14, 165, 233, 0.04) 0%, transparent 60%);
+  }
+
+  .faq-list {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .faq-item {
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .faq-item summary {
+    padding: 1.5rem 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--white);
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    transition: color 0.2s;
+  }
+
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-item summary::after {
+    content: '+';
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: var(--teal);
+    flex-shrink: 0;
+    transition: transform 0.3s;
+  }
+
+  .faq-item[open] summary::after {
+    transform: rotate(45deg);
+  }
+
+  .faq-item summary:hover {
+    color: var(--teal-glow);
+  }
+
+  .faq-answer {
+    padding: 0 0 1.5rem;
+    color: var(--white-dim);
+    font-size: 0.95rem;
+    line-height: 1.8;
+    max-width: 700px;
+  }
+
+  .faq-answer a {
+    color: var(--teal);
+    text-decoration: none;
+  }
+
+  .faq-answer a:hover {
+    text-decoration: underline;
+  }
+
+  /* ─── ABOUT MICHI ─── */
+  .about-section {
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(14, 165, 233, 0.04) 0%, transparent 50%);
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 3.5rem;
+    align-items: center;
+  }
+
+  .about-portrait {
+    position: relative;
+  }
+
+  .about-portrait img {
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  }
+
+  .about-portrait::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 20px;
+    border: 1px solid rgba(14, 165, 233, 0.15);
+    pointer-events: none;
+  }
+
+  .about-text h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 0.3em;
+    color: var(--white);
+  }
+
+  .about-role {
+    font-size: 0.85rem;
+    color: var(--teal);
+    font-weight: 500;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+  }
+
+  .about-text p {
+    color: var(--white-dim);
+    font-size: 0.95rem;
+    line-height: 1.8;
+    margin-bottom: 1rem;
+  }
+
+  .credentials {
+    list-style: none;
+    padding: 0;
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .credentials li {
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    font-size: 0.78rem;
+    color: var(--white-dim);
+    font-weight: 500;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    padding: 60px 24px 40px;
+    border-top: 1px solid var(--glass-border);
+    background: var(--base-deep);
+  }
+
+  .footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+  }
+
+  .footer-brand {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.5em;
+  }
+
+  .footer-tagline {
+    font-size: 0.82rem;
+    color: var(--gray);
+    max-width: 280px;
+    line-height: 1.6;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 2.5rem;
+  }
+
+  .footer-col h5 {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 0.8em;
+  }
+
+  .footer-col a {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--white-dim);
+    text-decoration: none;
+    padding: 0.3em 0;
+    transition: color 0.2s;
+  }
+
+  .footer-col a:hover {
+    color: var(--teal);
+  }
+
+  .footer-bottom {
+    max-width: 1100px;
+    margin: 2rem auto 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--glass-border);
+    font-size: 0.75rem;
+    color: var(--gray);
+    text-align: center;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .hero-content {
+      padding: 0 24px;
+      text-align: center;
+    }
+    .hero-content-inner {
+      max-width: 100%;
+    }
+    .hero-sub {
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .coaching-card,
+    .coaching-card--reversed {
+      grid-template-columns: 1fr;
+      direction: ltr;
+    }
+    .coaching-card--reversed > * {
+      direction: ltr;
+    }
+    .coaching-visual {
+      min-height: 260px;
+    }
+    .coaching-visual::after {
+      background: linear-gradient(180deg, transparent 50%, var(--glass) 100%);
+    }
+    .coaching-card--reversed .coaching-visual::after {
+      background: linear-gradient(180deg, transparent 50%, var(--glass) 100%);
+    }
+    .card-grid {
+      grid-template-columns: 1fr;
+    }
+    .about-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    .about-portrait {
+      max-width: 260px;
+      margin: 0 auto;
+    }
+    .footer-inner {
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .footer-links {
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    section {
+      padding: 70px 16px;
+    }
+    .coaching-info {
+      padding: 2rem 1.5rem;
+    }
+    .price-main {
+      font-size: 2rem;
+    }
+    .program-card {
+      padding: 2rem 1.5rem;
+    }
+  }
+</style>
+
+<!-- FAQ Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What level do I need to be for video coaching?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Any level from beginner to advanced. Whether you're working on your first waterstart or trying to land a frontside 360, Michi tailors his feedback to exactly where you are in your progression. The most common riders are intermediate foilers working on jibes, tacks, and transitions."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does the video coaching process work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It's simple: you purchase a session, upload your riding clips (any format from your phone or camera), and fill out a quick rider profile. Michi personally reviews your footage, identifies the key issues, and records a detailed video response with frame-by-frame analysis and specific drills. You'll receive your coaching video within 72 hours."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What equipment do I need to film my session?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A smartphone is enough. Ideally, have someone film you from the shore or a boat - side-angle shots are most useful. If you have friends around, let them film you with a GoPro. That would be helpful."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I book coaching in person?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes! Michi runs group coaching camps at Lake Garda and Tarifa through events.tricktionary.com. For private 1:1 coaching packages and monthly coaching programs, these are coming soon - join the waitlist to be notified when they launch."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What's included in the founding price?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The founding price of 49 euros includes unlimited video uploads per session, a personal video response from Michi with frame-by-frame technique breakdown, a custom progression roadmap, and follow-up Q&A."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How long until I get my feedback?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Michi delivers your personal coaching video within 72 hours of receiving your upload. Most responses come within 48 hours. You'll get an email with a private link to your coaching video that you can rewatch anytime."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What makes this different from YouTube tutorials?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "YouTube tutorials are generic - they show what perfect technique looks like. Michi's coaching shows you what YOUR technique looks like and exactly what to change. He identifies the specific body position, timing, or equipment issue that's holding you back, and gives you targeted drills to fix it."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need to be in Europe for coaching?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Not for video coaching - it's 100% remote and works from anywhere in the world. For in-person camps and events, Michi is primarily based between Lake Garda (Italy) and Tarifa (Spain). Private coaching trips to other locations can be arranged on request."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<!-- ═══ HEADER / NAVIGATION ═══ -->
+<header>
+  <div class="header-nav">
+    <a href="/" class="logo">Tricktionary <span>Coaching</span></a>
+    <ul class="nav-links">
+      <li><a href="https://events.tricktionary.com">Events</a></li>
+      <li><a href="/">Coaching</a></li>
+      <li><a href="https://events.tricktionary.com/live-qa/">Q&A Meetups</a></li>
+      <li><a href="https://events.tricktionary.com/about/">About Michi</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="https://tricktionary.com" target="_blank" class="nav-hub">tricktionary.com</a></li>
+    </ul>
+    <button class="mobile-menu-btn" aria-label="Menu" onclick="toggleMobileNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="mobile-nav" id="mobileNav">
+    <a href="https://events.tricktionary.com">Events</a>
+    <a href="/">Coaching</a>
+    <a href="https://events.tricktionary.com/live-qa/">Q&A Meetups</a>
+    <a href="https://events.tricktionary.com/about/">About Michi</a>
+    <a href="#contact">Contact</a>
+    <div class="ecosystem-links">
+      <a href="https://tricktionary.com" target="_blank" class="hub-link">tricktionary.com</a>
+      <a href="https://progearservice.com" target="_blank">progearservice.com</a>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-content-inner">
+      <p class="hero-label">Tricktionary Coaching</p>
+      <h1>Your Path to the Next Level</h1>
+      <p class="hero-sub">We analyze your riding, build your progression plan, and coach you to the next level - from personalized video feedback to private on-water sessions.</p>
+      <a href="#coaching" class="hero-cta">
+        Explore Coaching Options
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      </a>
+    </div>
+  </div>
+  <div class="scroll-hint"><span></span></div>
+</section>
+
+<!-- ═══ VIDEO COACHING (LIVE) ═══ -->
+<section class="coaching-section" id="coaching">
+  <div class="container fade-in">
+    <p class="section-label">Now Live</p>
+    <h2 class="section-title">WingCoach <span style="color: var(--teal);">Video Coaching</span></h2>
+    <div class="divider-line"></div>
+    <p class="section-sub">Send your riding videos, get detailed personal feedback from Michi with frame-by-frame analysis and a custom progression plan.</p>
+
+    <div class="coaching-card">
+      <div class="coaching-visual coaching-visual--video">
+        <span class="coaching-badge coaching-badge--live">Now Live</span>
+      </div>
+      <div class="coaching-info">
+        <h3>Personal Video Analysis</h3>
+        <p>Upload your sessions. Michi reviews your technique, identifies what's holding you back, and records a personalized video response with actionable drills.</p>
+        <ul class="coaching-features">
+          <li>Upload your riding video clips</li>
+          <li>Detailed video response from Michi</li>
+          <li>Frame-by-frame technique breakdown</li>
+          <li>Custom progression roadmap</li>
+          <li>Follow-up Q&amp;A included</li>
+        </ul>
+        <div class="pricing-row">
+          <span class="price-main">&euro;49</span>
+          <span class="price-label">founding price</span>
+          <span class="price-regular">&euro;149</span>
+        </div>
+        <a href="/video-coaching/" class="btn-coaching">
+          Get Your Coaching
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ GUIDED MASTERCLASSES (Coming Soon) ═══ -->
+<section class="coming-section-alt" id="masterclass">
+  <div class="container fade-in">
+    <p class="section-label section-label--gold">Coming Soon</p>
+    <h2 class="section-title">Guided <span style="color: var(--gold);">Masterclasses</span></h2>
+    <div class="divider-line"></div>
+    <p class="section-sub">Want to learn a specific move from scratch? Pre-recorded video masterclasses that take you from zero to landing - at your own pace, with Michi's proven progression method.</p>
+
+    <div class="coaching-card coaching-card--reversed">
+      <div class="coaching-visual coaching-visual--masterclass">
+        <span class="coaching-badge coaching-badge--soon">Coming Soon</span>
+      </div>
+      <div class="coaching-info">
+        <h3>Learn Any Move From Scratch</h3>
+        <p>Each masterclass is a complete, structured video course for one specific trick or technique. Michi breaks it down into progressive steps - from prerequisites and drills to the full move - so you can learn at your own pace.</p>
+        <ul class="coaching-features">
+          <li>Step-by-step video breakdowns by Michi</li>
+          <li>Progressive drills from beginner to landing</li>
+          <li>Common mistakes and how to fix them</li>
+          <li>Practice checklists for on-the-water sessions</li>
+          <li>New moves added regularly</li>
+        </ul>
+        <p class="price-tbd">Pricing TBD</p>
+        <div id="waitlist-masterclass-container">
+          <button class="btn-waitlist" onclick="showWaitlistForm('masterclass')">
+            Join the Waitlist
+          </button>
+          <div class="waitlist-form" id="waitlist-form-masterclass">
+            <div class="waitlist-form-inner">
+              <input type="text" id="waitlist-name-masterclass" placeholder="Your name">
+              <input type="email" id="waitlist-email-masterclass" placeholder="Your email">
+              <button onclick="submitWaitlist('masterclass')">Notify me</button>
+            </div>
+          </div>
+          <div class="waitlist-success" id="waitlist-success-masterclass">
+            Thanks! Michi will be in touch when guided masterclasses launch.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 1:1 COACHING PACKAGE (Coming Soon) ═══ -->
+<section class="coming-section" id="one-on-one">
+  <div class="container fade-in">
+    <p class="section-label section-label--gold">Coming Soon</p>
+    <h2 class="section-title">1:1 Coaching <span style="color: var(--gold);">Package</span></h2>
+    <div class="divider-line"></div>
+    <p class="section-sub">A structured coaching program with Michi - designed to take you from where you are to where you want to be, with accountability and expert guidance at every step.</p>
+
+    <div class="coaching-card">
+      <div class="coaching-visual coaching-visual--1on1">
+        <span class="coaching-badge coaching-badge--soon">Coming Soon</span>
+      </div>
+      <div class="coaching-info">
+        <h3>Structured Progression Program</h3>
+        <p>Four video call sessions with Michi, spread over 8 weeks. Between sessions, you'll work through targeted exercises and send progress videos. Michi tracks your development and adjusts your plan in real time.</p>
+        <ul class="coaching-features">
+          <li>4 personal video call sessions with Michi</li>
+          <li>Structured progression plan tailored to your goals</li>
+          <li>Between-session homework and drills</li>
+          <li>Direct WhatsApp access to Michi</li>
+          <li>Video review of your progress between calls</li>
+        </ul>
+        <p class="price-tbd">Pricing TBD</p>
+        <div id="waitlist-1on1-container">
+          <button class="btn-waitlist" onclick="showWaitlistForm('1on1')">
+            Join the Waitlist
+          </button>
+          <div class="waitlist-form" id="waitlist-form-1on1">
+            <div class="waitlist-form-inner">
+              <input type="text" id="waitlist-name-1on1" placeholder="Your name">
+              <input type="email" id="waitlist-email-1on1" placeholder="Your email">
+              <button onclick="submitWaitlist('1on1')">Notify me</button>
+            </div>
+          </div>
+          <div class="waitlist-success" id="waitlist-success-1on1">
+            Thanks! Michi will be in touch when 1:1 coaching launches.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MONTHLY COACHING (Coming Soon) ═══ -->
+<section class="coming-section-alt" id="monthly">
+  <div class="container fade-in">
+    <p class="section-label section-label--gold">Coming Soon</p>
+    <h2 class="section-title">Monthly <span style="color: var(--gold);">Coaching</span></h2>
+    <div class="divider-line"></div>
+    <p class="section-sub">Ongoing support for riders who want continuous improvement. Regular check-ins, monthly video reviews, and a coach who knows your riding inside out.</p>
+
+    <div class="coaching-card coaching-card--reversed">
+      <div class="coaching-visual coaching-visual--monthly">
+        <span class="coaching-badge coaching-badge--soon">Coming Soon</span>
+      </div>
+      <div class="coaching-info">
+        <h3>Continuous Progression</h3>
+        <p>Subscribe for ongoing coaching with monthly video reviews, regular check-ins, and a progression plan that evolves as you improve. Michi tracks your riding over time and knows exactly what to work on next.</p>
+        <ul class="coaching-features">
+          <li>Monthly video coaching session</li>
+          <li>Regular progression check-ins</li>
+          <li>Ongoing technique tracking over time</li>
+          <li>Priority access to new features and programs</li>
+          <li>Community of fellow progression-focused riders</li>
+        </ul>
+        <p class="price-tbd">Pricing TBD</p>
+        <div id="waitlist-monthly-container">
+          <button class="btn-waitlist" onclick="showWaitlistForm('monthly')">
+            Join the Waitlist
+          </button>
+          <div class="waitlist-form" id="waitlist-form-monthly">
+            <div class="waitlist-form-inner">
+              <input type="text" id="waitlist-name-monthly" placeholder="Your name">
+              <input type="email" id="waitlist-email-monthly" placeholder="Your email">
+              <button onclick="submitWaitlist('monthly')">Notify me</button>
+            </div>
+          </div>
+          <div class="waitlist-success" id="waitlist-success-monthly">
+            Thanks! Michi will be in touch when monthly coaching launches.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CAMPS & EVENTS + VIP ═══ -->
+<section class="coming-section" id="programs">
+  <div class="container fade-in">
+    <p class="section-label">On the Water</p>
+    <h2 class="section-title">Camps &amp; <span style="color: var(--gold);">Experiences</span></h2>
+    <div class="divider-line"></div>
+    <p class="section-sub">Train with Michi in person - from group coaching camps to fully private VIP experiences at the best wingfoil spots in Europe.</p>
+
+    <div class="card-grid">
+      <!-- Camps & Events -->
+      <a href="https://events.tricktionary.com" target="_blank" rel="noopener" class="program-card">
+        <span class="program-icon">&#127754;</span>
+        <h4>Camps &amp; Events</h4>
+        <p>Group coaching camps at Lake Garda and Tarifa. Small groups, world-class conditions, and Michi coaching you on the water. Multi-day programs with video analysis, technique sessions, and real-time feedback.</p>
+        <ul class="detail-list">
+          <li>Small group sizes (max 6-8 riders)</li>
+          <li>Daily on-water coaching sessions</li>
+          <li>Video analysis each evening</li>
+          <li>Equipment testing and advice</li>
+        </ul>
+        <span class="program-tag program-tag--live">View Events</span>
+      </a>
+
+      <!-- Private Coaching Experience -->
+      <a href="/private-coaching/" class="vip-card" style="text-decoration: none; color: inherit;">
+        <div class="vip-header">
+          <span class="vip-label">VIP Experience</span>
+        </div>
+        <h4>Private Coaching Experience</h4>
+        <p>A fully customized coaching immersion at a destination of your choice. Michi travels to you for private on-water coaching, video analysis, equipment optimization, and peak performance techniques.</p>
+        <ul class="detail-list">
+          <li>Private 1:1 or small group coaching</li>
+          <li>Your location, your schedule</li>
+          <li>Full immersion - technical, mental, equipment</li>
+          <li>Before, during, and after support</li>
+        </ul>
+        <span class="vip-inquiry-tag">By Application Only</span>
+        <span class="vip-cta" style="display: inline-block; margin-top: 1.2rem; font-size: 0.85rem; font-weight: 600; padding: 10px 24px; border-radius: 8px; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%); color: var(--base-deep); position: relative; z-index: 1;">Apply Now</span>
+      </a>
+    </div>
+
+    <!-- Pro Gear Service cross-sell -->
+    <div class="pgs-banner">
+      <a href="https://progearservice.com" target="_blank" rel="noopener">
+        Need gear for your trip to Tarifa or Lake Garda? Check out Pro Gear Service &rarr;
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ LIVE Q&A SESSIONS ═══ -->
+<section class="coaching-section" id="live-sessions">
+  <div class="container fade-in">
+    <p class="section-label">Live Sessions</p>
+    <h2 class="section-title">Monthly Q&amp;A <span style="color: var(--teal);">with Michi</span></h2>
+    <div class="divider-line"></div>
+    <p class="section-sub">Free monthly group coaching calls. Ask anything about technique, gear, training, and progression. Open to everyone.</p>
+
+    <div id="coaching-qa-sessions" style="max-width: 700px; margin: 2rem auto 0;">
+      <!-- Loaded dynamically -->
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section class="faq-section" id="faq">
+  <div class="container fade-in">
+    <p class="section-label">Questions</p>
+    <h2 class="section-title">Frequently Asked <span style="color: var(--teal);">Questions</span></h2>
+    <div class="divider-line"></div>
+
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>What level do I need to be for video coaching?</summary>
+        <div class="faq-answer">Any level from beginner to advanced. Whether you're working on your first waterstart or trying to land a frontside 360, Michi tailors his feedback to exactly where you are in your progression. The most common riders are intermediate foilers working on jibes, tacks, and transitions.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary>How does the video coaching process work?</summary>
+        <div class="faq-answer">It's simple: you purchase a session, upload your riding clips (any format from your phone or camera), and fill out a quick rider profile. Michi personally reviews your footage, identifies the key issues, and records a detailed video response with frame-by-frame analysis and specific drills. You'll receive your coaching video within 72 hours.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary>What equipment do I need to film my session?</summary>
+        <div class="faq-answer">A smartphone is enough. Ideally, have someone film you from the shore or a boat - side-angle shots are most useful. If you have friends around, let them film you with a GoPro. That would be helpful.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Can I book coaching in person?</summary>
+        <div class="faq-answer">Yes! Michi runs group coaching camps at Lake Garda and Tarifa through <a href="https://events.tricktionary.com" target="_blank" rel="noopener">events.tricktionary.com</a>. For private 1:1 coaching packages and monthly coaching programs, these are coming soon - join the waitlist to be notified when they launch.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary>What's included in the founding price?</summary>
+        <div class="faq-answer">The &euro;49 founding price includes unlimited video uploads per session, a personal video response from Michi with frame-by-frame technique breakdown, a custom progression roadmap, and follow-up Q&amp;A.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary>How long until I get my feedback?</summary>
+        <div class="faq-answer">Michi delivers your personal coaching video within 72 hours of receiving your upload. Most responses come within 48 hours. You'll get an email with a private link to your coaching video that you can rewatch anytime.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary>What makes this different from YouTube tutorials?</summary>
+        <div class="faq-answer">YouTube tutorials are generic - they show what perfect technique looks like. Michi's coaching shows you what YOUR technique looks like and exactly what to change. He identifies the specific body position, timing, or equipment issue that's holding you back, and gives you targeted drills to fix it.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Do I need to be in Europe for coaching?</summary>
+        <div class="faq-answer">Not for video coaching - it's 100% remote and works from anywhere in the world. For in-person camps and events, Michi is primarily based between Lake Garda (Italy) and Tarifa (Spain). Private coaching trips to other locations can be arranged on request.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ABOUT MICHI ═══ -->
+<section class="about-section" id="about">
+  <div class="container fade-in">
+    <div class="about-grid">
+      <div class="about-portrait">
+        <img src="assets/coach-portrait.jpg" alt="Michi Rossmeier - Wingfoil Coach" loading="lazy">
+      </div>
+      <div class="about-text">
+        <p class="section-label">Your Coach</p>
+        <h3>Michi Rossmeier</h3>
+        <p class="about-role">Founder of Tricktionary &middot; Professional Wingfoil Coach</p>
+        <p>Michi has spent decades in action sports - from professional windsurfing to becoming one of the leading voices in wingfoil progression worldwide. He authored the Tricktionary book series for both windsurfing and wingfoil, built the Trickgenius app platform, and coaches riders from beginners to advanced.</p>
+        <p>Based between Lake Garda and Tarifa, Michi combines deep technical knowledge with years of on-water coaching experience. His approach: break complex maneuvers into clear, achievable steps.</p>
+        <ul class="credentials">
+          <li>Wingfoil Tricktionary Author</li>
+          <li>Windsurfing Tricktionary Author</li>
+          <li>Trickgenius App Creator</li>
+          <li>Pro Gear Service Founder</li>
+          <li>20+ Years Coaching Experience</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CONTACT ═══ -->
+<section id="contact" style="padding: 4rem 0; text-align: center;">
+  <div class="container">
+    <p class="section-label">Get in Touch</p>
+    <h2 class="section-title">Questions?</h2>
+    <div class="divider-line"></div>
+    <p style="color: var(--white-dim); max-width: 520px; margin: 1.5rem auto 2rem;">Whether you have a question about coaching, want to discuss your goals, or just want to say hi - reach out anytime.</p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <a href="mailto:rossi@tricktionary.com" class="btn-coaching" style="text-decoration:none;">rossi@tricktionary.com</a>
+      <a href="https://wa.me/34641836429" target="_blank" class="btn-waitlist" style="text-decoration:none;">WhatsApp</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <p class="footer-brand">Tricktionary Coaching</p>
+      <p class="footer-tagline">Professional wingfoil coaching by Michi Rossmeier. From your first flight to advanced tricks.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h5>Coaching</h5>
+        <a href="/video-coaching/">Video Coaching</a>
+        <a href="#masterclass">Masterclasses</a>
+        <a href="#one-on-one">1:1 Coaching</a>
+        <a href="#monthly">Monthly Coaching</a>
+        <a href="https://events.tricktionary.com">Events &amp; Camps</a>
+        <a href="https://events.tricktionary.com/live-qa/">Q&A Meetups</a>
+      </div>
+      <div class="footer-col">
+        <h5>Tricktionary</h5>
+        <a href="https://events.tricktionary.com/about/">About Michi</a>
+        <a href="https://tricktionary.com" target="_blank" rel="noopener">tricktionary.com</a>
+        <a href="https://progearservice.com" target="_blank" rel="noopener">progearservice.com</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    &copy; 2026 Tricktionary GmbH. All rights reserved.
+  </div>
+</footer>
+
+<script>
+// ── Navigation ──────────────────────────────────────────────────────────────
+function toggleMobileNav() {
+  var mobileNav = document.getElementById('mobileNav');
+  mobileNav.classList.toggle('active');
+}
+
+document.addEventListener('click', function(e) {
+  var mobileNav = document.getElementById('mobileNav');
+  var menuBtn = document.querySelector('.mobile-menu-btn');
+  if (mobileNav && mobileNav.classList.contains('active')) {
+    if (!mobileNav.contains(e.target) && !menuBtn.contains(e.target)) {
+      mobileNav.classList.remove('active');
+    }
+  }
+});
+
+document.querySelectorAll('.mobile-nav a').forEach(function(link) {
+  link.addEventListener('click', function() {
+    document.getElementById('mobileNav').classList.remove('active');
+  });
+});
+
+// Header scroll effect
+var headerEl = document.querySelector('header');
+window.addEventListener('scroll', function() {
+  if (window.pageYOffset > 50) {
+    headerEl.style.borderBottomColor = 'rgba(255, 255, 255, 0.12)';
+    headerEl.style.boxShadow = '0 4px 30px rgba(0, 0, 0, 0.3)';
+  } else {
+    headerEl.style.borderBottomColor = 'rgba(255, 255, 255, 0.08)';
+    headerEl.style.boxShadow = 'none';
+  }
+});
+
+// ── Scroll fade (IntersectionObserver) ──────────────────────────────────────
+(function() {
+  var els = document.querySelectorAll('.fade-in');
+  if (els.length && 'IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    els.forEach(function(el) { obs.observe(el); });
+  } else {
+    els.forEach(function(el) { el.classList.add('visible'); });
+  }
+})();
+
+// ── Waitlist forms ──────────────────────────────────────────────────────────
+function showWaitlistForm(type) {
+  var form = document.getElementById('waitlist-form-' + type);
+  if (!form) return;
+  var isOpen = form.classList.contains('active');
+  form.classList.toggle('active');
+  if (!isOpen) {
+    var nameInput = document.getElementById('waitlist-name-' + type);
+    if (nameInput) nameInput.focus();
+  }
+}
+
+async function submitWaitlist(type) {
+  var nameEl = document.getElementById('waitlist-name-' + type);
+  var emailEl = document.getElementById('waitlist-email-' + type);
+  var name = nameEl.value.trim();
+  var email = emailEl.value.trim();
+
+  // Clear previous errors
+  nameEl.classList.remove('error');
+  emailEl.classList.remove('error');
+
+  if (!email || !email.includes('@')) {
+    emailEl.classList.add('error');
+    emailEl.focus();
+    return;
+  }
+
+  // Disable inputs during submit
+  nameEl.disabled = true;
+  emailEl.disabled = true;
+
+  var ok = false;
+  try {
+    var res = await fetch('/video-coaching/api/waitlist.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, email: email, type: type })
+    });
+    ok = res.ok;
+  } catch(e) {
+    ok = false;
+  }
+
+  if (ok) {
+    // Show success with smooth transition
+    document.getElementById('waitlist-form-' + type).classList.remove('active');
+    setTimeout(function() {
+      document.getElementById('waitlist-success-' + type).classList.add('active');
+      var container = document.getElementById('waitlist-' + type + '-container');
+      var btn = container.querySelector('.btn-waitlist');
+      if (btn) btn.style.display = 'none';
+    }, 300);
+  } else {
+    // Re-enable inputs and show fallback contact
+    nameEl.disabled = false;
+    emailEl.disabled = false;
+    var formEl = document.getElementById('waitlist-form-' + type);
+    var fallback = formEl.querySelector('.waitlist-fallback');
+    if (!fallback) {
+      fallback = document.createElement('div');
+      fallback.className = 'waitlist-fallback';
+      fallback.innerHTML = 'Something went wrong. Reach out directly: <a href="https://wa.me/34641836429" target="_blank" style="color:var(--teal);">WhatsApp</a> or <a href="mailto:rossi@tricktionary.com" style="color:var(--teal);">Email</a>';
+      formEl.appendChild(fallback);
+    }
+    fallback.style.display = 'block';
+  }
+}
+
+// ── Q&A Sessions loader ─────────────────────────────────────────────────────
+(function() {
+  var container = document.getElementById('coaching-qa-sessions');
+  if (!container) return;
+
+  container.innerHTML = '<p style="text-align:center;color:var(--gray);">Loading sessions...</p>';
+
+  fetch('/video-coaching/api/qa-sessions')
+    .then(function(res) { return res.ok ? res.json() : Promise.reject(); })
+    .then(function(sessions) {
+      if (!sessions.length) {
+        container.innerHTML = '<p style="text-align:center;color:var(--gray);">No sessions scheduled yet - check back soon.</p>';
+        return;
+      }
+
+      var badgeMap = {
+        'meetup': { text: 'Q&A Meetup', bg: 'rgba(14,165,233,0.9)' },
+        'info-session': { text: 'Info Session', bg: 'rgba(212,168,67,0.9)' },
+        'kickoff': { text: 'Kickoff', bg: 'rgba(212,168,67,0.9)' },
+        'webinar': { text: 'Webinar', bg: 'rgba(14,165,233,0.9)' },
+        'summit': { text: 'Summit', bg: 'rgba(212,168,67,0.9)' }
+      };
+
+      var html = '';
+      sessions.forEach(function(s) {
+        var date = new Date(s.scheduled_at);
+        var dateStr = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        var timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        var badge = badgeMap[s.type] || badgeMap['meetup'];
+        var isKickoff = s.type === 'kickoff';
+
+        html += '<div style="background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;padding:2rem;margin-bottom:1.5rem;">' +
+          '<span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;color:#fff;background:' + badge.bg + ';margin-bottom:0.75rem;">' + badge.text + '</span>' +
+          '<h3 style="font-size:1.2rem;margin-bottom:0.5rem;">' + escapeHtml(s.title) + '</h3>' +
+          (s.description ? '<p style="color:var(--white-dim);font-size:0.9rem;margin-bottom:0.75rem;">' + escapeHtml(s.description) + '</p>' : '') +
+          '<p style="color:var(--gray);font-size:0.85rem;margin-bottom:1rem;">' + dateStr + ' at ' + timeStr + ' · ' + s.duration_minutes + ' min</p>';
+
+        if (isKickoff && s.external_url) {
+          html += '<div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">' +
+            '<span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.7rem;font-weight:600;color:#fff;background:rgba(100,116,139,0.8);">Invitational</span>' +
+            '<a href="' + escapeHtml(s.external_url) + '" target="_blank" rel="noopener" class="btn-waitlist" style="font-size:0.8rem;padding:8px 18px;">Event Details</a>' +
+          '</div>';
+        } else if (s.external_url) {
+          html += '<div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">' +
+            '<a href="' + escapeHtml(s.external_url) + '" target="_blank" rel="noopener" class="btn-waitlist" style="font-size:0.85rem;padding:8px 20px;">Event Details</a>';
+          if (s.spots_remaining > 0) {
+            html += '<button class="btn-waitlist" onclick="showCoachingQaModal(' + s.id + ',\'' + escapeHtml(s.title).replace(/'/g, "\\'") + '\')">Sign Up</button>';
+          }
+          html += '</div>';
+          if (s.spots_remaining > 0) {
+            html += '<div id="qa-ok-' + s.id + '" style="display:none;margin-top:1rem;padding:1rem;background:rgba(14,165,233,0.1);border:1px solid rgba(14,165,233,0.3);border-radius:8px;text-align:center;">' +
+              '<p style="color:var(--teal-glow);margin:0;font-weight:500;">You\'re registered! Check your email.</p>' +
+            '</div>';
+          } else {
+            html += '<p style="color:var(--gray);font-size:0.9rem;">This session is full.</p>';
+          }
+        }
+
+        if (!isKickoff && !s.external_url && s.spots_remaining > 0) {
+          html += '<button class="btn-waitlist" onclick="showCoachingQaModal(' + s.id + ',\'' + escapeHtml(s.title).replace(/'/g, "\\'") + '\')">Sign Up</button>' +
+            '<div id="qa-ok-' + s.id + '" style="display:none;margin-top:1rem;padding:1rem;background:rgba(14,165,233,0.1);border:1px solid rgba(14,165,233,0.3);border-radius:8px;text-align:center;">' +
+              '<p style="color:var(--teal-glow);margin:0;font-weight:500;">You\'re registered! Check your email.</p>' +
+            '</div>';
+        } else if (!isKickoff && !s.external_url) {
+          html += '<p style="color:var(--gray);font-size:0.9rem;">This session is full.</p>';
+        }
+
+        html += '</div>';
+      });
+
+      container.innerHTML = html;
+    })
+    .catch(function() {
+      container.innerHTML = '<p style="text-align:center;color:var(--gray);">Could not load sessions. Try again later.</p>';
+    });
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+})();
+
+// ── Q&A Signup Modal ──
+var coachingQaModal = null;
+
+function ensureCoachingQaModal() {
+  if (coachingQaModal) return;
+  coachingQaModal = document.createElement('div');
+  coachingQaModal.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity 0.3s ease,visibility 0.3s ease;';
+  coachingQaModal.innerHTML =
+    '<div style="background:var(--base-light,#132640);border:1px solid var(--glass-border);border-radius:20px;width:90%;max-width:460px;max-height:90vh;overflow-y:auto;">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:1.5rem 2rem 0;">' +
+        '<h3 id="coaching-qa-modal-title" style="font-size:1.1rem;font-weight:700;margin-bottom:0;"></h3>' +
+        '<button onclick="closeCoachingQaModal()" style="background:none;border:none;color:var(--gray);font-size:1.5rem;cursor:pointer;padding:0;line-height:1;">&times;</button>' +
+      '</div>' +
+      '<div style="padding:1.5rem 2rem 2rem;">' +
+        '<input type="text" id="cqa-name" placeholder="Your name" style="width:100%;padding:10px 14px;margin-bottom:8px;background:var(--base-deep);border:1px solid var(--glass-border);border-radius:8px;color:var(--white);font-family:Inter,sans-serif;font-size:0.9rem;">' +
+        '<input type="email" id="cqa-email" placeholder="Your email" style="width:100%;padding:10px 14px;margin-bottom:8px;background:var(--base-deep);border:1px solid var(--glass-border);border-radius:8px;color:var(--white);font-family:Inter,sans-serif;font-size:0.9rem;">' +
+        '<input type="tel" id="cqa-whatsapp" placeholder="WhatsApp number (optional)" style="width:100%;padding:10px 14px;margin-bottom:8px;background:var(--base-deep);border:1px solid var(--glass-border);border-radius:8px;color:var(--white);font-family:Inter,sans-serif;font-size:0.9rem;">' +
+        '<textarea id="cqa-msg" placeholder="Any questions? (optional)" rows="2" style="width:100%;padding:10px 14px;margin-bottom:8px;background:var(--base-deep);border:1px solid var(--glass-border);border-radius:8px;color:var(--white);font-family:Inter,sans-serif;font-size:0.9rem;resize:vertical;"></textarea>' +
+        '<button class="btn-coaching" id="cqa-submit" style="width:100%;text-align:center;">Register</button>' +
+        '<p id="cqa-fallback" style="display:none;margin-top:0.75rem;color:var(--gray);font-size:0.85rem;text-align:center;">Something went wrong. Try <a href="https://wa.me/34641836429" target="_blank" style="color:var(--teal);">WhatsApp</a> or <a href="mailto:rossi@tricktionary.com" style="color:var(--teal);">Email</a>.</p>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(coachingQaModal);
+
+  coachingQaModal.addEventListener('click', function(e) {
+    if (e.target === coachingQaModal) closeCoachingQaModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && coachingQaModal.style.opacity === '1') closeCoachingQaModal();
+  });
+}
+
+function showCoachingQaModal(id, title) {
+  ensureCoachingQaModal();
+  document.getElementById('coaching-qa-modal-title').textContent = title || 'Sign Up';
+  coachingQaModal.dataset.sessionId = id;
+
+  // Reset
+  ['cqa-name','cqa-email','cqa-whatsapp','cqa-msg'].forEach(function(elId) {
+    var el = document.getElementById(elId);
+    if (el) { el.value = ''; el.style.borderColor = ''; }
+  });
+  var btn = document.getElementById('cqa-submit');
+  btn.disabled = false;
+  btn.textContent = 'Register';
+  btn.onclick = function() { submitCoachingQaForm(id); };
+  document.getElementById('cqa-fallback').style.display = 'none';
+
+  coachingQaModal.style.opacity = '1';
+  coachingQaModal.style.visibility = 'visible';
+  setTimeout(function() { document.getElementById('cqa-name').focus(); }, 200);
+}
+
+function closeCoachingQaModal() {
+  if (coachingQaModal) {
+    coachingQaModal.style.opacity = '0';
+    coachingQaModal.style.visibility = 'hidden';
+  }
+}
+
+async function submitCoachingQaForm(id) {
+  var nameEl = document.getElementById('cqa-name');
+  var emailEl = document.getElementById('cqa-email');
+  var msgEl = document.getElementById('cqa-msg');
+  var btn = document.getElementById('cqa-submit');
+
+  var name = nameEl.value.trim();
+  var email = emailEl.value.trim();
+
+  nameEl.style.borderColor = '';
+  emailEl.style.borderColor = '';
+
+  if (!name) { nameEl.style.borderColor = '#ef4444'; nameEl.focus(); return; }
+  if (!email || !email.includes('@')) { emailEl.style.borderColor = '#ef4444'; emailEl.focus(); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Registering...';
+
+  var ok = false;
+  try {
+    var res = await fetch('/video-coaching/api/qa-sessions/' + id + '/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, email: email, message: msgEl ? msgEl.value.trim() : '' })
+    });
+    ok = res.ok;
+  } catch(e) { ok = false; }
+
+  if (ok) {
+    closeCoachingQaModal();
+    var okDiv = document.getElementById('qa-ok-' + id);
+    if (okDiv) okDiv.style.display = 'block';
+  } else {
+    btn.disabled = false;
+    btn.textContent = 'Register';
+    document.getElementById('cqa-fallback').style.display = 'block';
+  }
+}
+</script>
+
+</body>
+</html>
