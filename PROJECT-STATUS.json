@@ -1,5 +1,5 @@
 {
-  "lastDev": "Coaching pages restructure: VIP updates, new Private Coaching page, Peak Performance waitlist",
+  "lastDev": "Fix: filter Stripe webhooks to only process WingCoach payments (shared account issue)",
   "lastDevDate": "2026-04-11",
   "phase": "active",
   "milestone": "Full coaching product lineup on hub",
