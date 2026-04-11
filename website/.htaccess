@@ -1,0 +1,47 @@
+RewriteEngine On
+
+# Pass Authorization header to PHP-FPM
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+RewriteCond %{HTTP:Authorization} .+
+RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+# --- Static files: serve directly ---
+RewriteCond %{REQUEST_URI} ^.*/static/ [OR]
+RewriteCond %{REQUEST_URI} ^.*/api/
+RewriteRule ^ - [L]
+
+# --- Clean URL routing ---
+
+# /success → success.php
+RewriteRule ^success$ success.php [L]
+
+# /admin → admin.php
+RewriteRule ^admin$ admin.php [L]
+
+# /dev → api/dev.php (dev test dashboard)
+RewriteRule ^dev$ api/dev.php [L]
+
+# /reply/:token → reply.php
+RewriteRule ^reply/[^/]+$ reply.php [L]
+
+# --- Forward non-API routes to api/ directory ---
+
+# /create-checkout-session → api/checkout.php
+RewriteRule ^create-checkout-session$ api/checkout.php [L,QSA]
+
+# /webhook/stripe → api/webhook.php
+RewriteRule ^webhook/stripe$ api/webhook.php [L,QSA]
+
+# /upload/:id/audio → api/upload.php
+RewriteRule ^upload/(\d+)/audio$ api/upload.php?id=$1&_action=audio [L,QSA]
+
+# /upload/:id/:filename (for DELETE) → api/upload.php
+RewriteRule ^upload/(\d+)/([^/]+)$ api/upload.php?id=$1&filename=$2 [L,QSA]
+
+# /upload/:id → api/upload.php
+RewriteRule ^upload/(\d+)$ api/upload.php?id=$1&_action=video [L,QSA]
+
+# --- Default: index.php ---
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^$ index.php [L]

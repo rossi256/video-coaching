@@ -1,0 +1,121 @@
+RewriteEngine On
+
+# Pass Authorization header to PHP-FPM
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+RewriteCond %{HTTP:Authorization} .+
+RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+# CORS headers
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, PATCH, DELETE, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+
+# Handle CORS preflight
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ - [R=204,L]
+
+# Upload limits — set via .user.ini (PHP-FPM compatible)
+
+# --- API rewrites ---
+
+# /api/create-checkout-session → checkout.php
+RewriteRule ^create-checkout-session$ checkout.php [L,QSA]
+
+# /api/webhook/stripe → webhook.php
+RewriteRule ^webhook/stripe$ webhook.php [L,QSA]
+
+# /api/spots → spots.php
+RewriteRule ^spots$ spots.php [L,QSA]
+
+# /api/verify-session → verify-session.php
+RewriteRule ^verify-session$ verify-session.php [L,QSA]
+
+# /api/submit/ID → submit.php?id=ID
+RewriteRule ^submit/(\d+)$ submit.php?id=$1 [L,QSA]
+
+# /api/submission/ID → autosave.php?id=ID
+RewriteRule ^submission/(\d+)$ autosave.php?id=$1 [L,QSA]
+
+# /upload/ID/audio → upload.php?id=ID&_action=audio
+RewriteRule ^upload/(\d+)/audio$ upload.php?id=$1&_action=audio [L,QSA]
+
+# /upload/ID/FILENAME (DELETE) → upload.php?id=ID&filename=FILENAME
+RewriteRule ^upload/(\d+)/([^/]+)$ upload.php?id=$1&filename=$2 [L,QSA]
+
+# /upload/ID → upload.php?id=ID&_action=video
+RewriteRule ^upload/(\d+)$ upload.php?id=$1&_action=video [L,QSA]
+
+# /api/reply/TOKEN/video/FILENAME → reply.php?token=TOKEN&_video=FILENAME
+RewriteRule ^reply/([^/]+)/video/(.+)$ reply.php?token=$1&_video=$2 [L,QSA]
+
+# /api/reply/TOKEN → reply.php?token=TOKEN
+RewriteRule ^reply/([^/]+)$ reply.php?token=$1 [L,QSA]
+
+# /api/admin/file/ID/PATH → admin.php?_action=file&id=ID&_path=PATH
+RewriteRule ^admin/file/(\d+)/(.+)$ admin.php?_action=file&id=$1&_path=$2 [L,QSA]
+
+# /api/admin/submission/ID/reply-item/ITEMID/order → admin.php
+RewriteRule ^admin/submission/(\d+)/reply-item/(\d+)/order$ admin.php?_action=reply-item-order&id=$1&itemId=$2 [L,QSA]
+
+# /api/admin/submission/ID/reply-item/ITEMID → admin.php
+RewriteRule ^admin/submission/(\d+)/reply-item/(\d+)$ admin.php?_action=reply-item-delete&id=$1&itemId=$2 [L,QSA]
+
+# /api/admin/submission/ID/reply-item → admin.php
+RewriteRule ^admin/submission/(\d+)/reply-item$ admin.php?_action=reply-item&id=$1 [L,QSA]
+
+# /api/admin/submission/ID/reply/FILENAME → admin.php
+RewriteRule ^admin/submission/(\d+)/reply/(.+)$ admin.php?_action=reply-file&id=$1&filename=$2 [L,QSA]
+
+# /api/admin/submission/ID/confirm-receipt → admin.php
+RewriteRule ^admin/submission/(\d+)/confirm-receipt$ admin.php?_action=confirm-receipt&id=$1 [L,QSA]
+
+# /api/admin/submission/ID/feedback-sent → admin.php
+RewriteRule ^admin/submission/(\d+)/feedback-sent$ admin.php?_action=feedback-sent&id=$1 [L,QSA]
+
+# /api/admin/submission/ID → admin.php
+RewriteRule ^admin/submission/(\d+)$ admin.php?_action=get&id=$1 [L,QSA]
+
+# /api/admin/submissions → admin.php
+RewriteRule ^admin/submissions$ admin.php?_action=list [L,QSA]
+
+# /api/admin/event-inquiries → admin.php
+RewriteRule ^admin/event-inquiries$ admin.php?_action=event-inquiries [L,QSA]
+
+# /api/admin/event-inquiry/ID/respond → admin.php
+RewriteRule ^admin/event-inquiry/(\d+)/respond$ admin.php?_action=event-inquiry-respond&id=$1 [L,QSA]
+
+# /api/admin/qa-sessions → admin.php (list/create)
+RewriteRule ^admin/qa-sessions$ admin.php?_action=qa-sessions-admin [L,QSA]
+
+# /api/admin/qa-session/create → admin.php
+RewriteRule ^admin/qa-session/create$ admin.php?_action=qa-session-create [L,QSA]
+
+# /api/admin/qa-signups?session_id=ID → admin.php
+RewriteRule ^admin/qa-signups$ admin.php?_action=qa-signups [L,QSA]
+
+# --- Dev test dashboard ---
+# /api/dev/email-test → dev.php
+RewriteRule ^dev/email-test$ dev.php?_action=email-test [L,QSA]
+
+# /api/dev/bypass → dev.php
+RewriteRule ^dev/bypass$ dev.php?_action=bypass [L,QSA]
+
+# /api/dev/abandoned-test → dev.php
+RewriteRule ^dev/abandoned-test$ dev.php?_action=abandoned-test [L,QSA]
+
+# /api/dev/latest-reply → dev.php
+RewriteRule ^dev/latest-reply$ dev.php?_action=latest-reply [L,QSA]
+
+# /api/dev → dev.php (dashboard)
+RewriteRule ^dev$ dev.php?_action=dashboard [L,QSA]
+
+# --- Phase 3: Event inquiries & Q&A sessions ---
+
+# /api/event-inquiry → event-inquiry.php
+RewriteRule ^event-inquiry$ event-inquiry.php [L,QSA]
+
+# /api/qa-sessions → qa-session.php
+RewriteRule ^qa-sessions$ qa-session.php [L,QSA]
+
+# /api/qa-sessions/ID/signup → qa-session.php?_action=signup&session_id=ID
+RewriteRule ^qa-sessions/(\d+)/signup$ qa-session.php?_action=signup&session_id=$1 [L,QSA]
