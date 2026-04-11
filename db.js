@@ -64,6 +64,51 @@ function initDb() {
     );
   `);
 
+  // ── Events Business Case tables ──────────────────────────────────────────
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      location TEXT,
+      start_date TEXT,
+      end_date TEXT,
+      event_type TEXT DEFAULT 'own',
+      attendees_min INTEGER DEFAULT 0,
+      attendees_base INTEGER DEFAULT 0,
+      attendees_max INTEGER DEFAULT 0,
+      price_per_person REAL DEFAULT 0,
+      accom_per_person_night REAL DEFAULT 0,
+      accom_nights INTEGER DEFAULT 0,
+      rental_per_person REAL DEFAULT 0,
+      coaching_rate_per_day REAL DEFAULT 0,
+      coaching_days INTEGER DEFAULT 0,
+      commission_pct REAL DEFAULT 0,
+      extras_per_person REAL DEFAULT 0,
+      extras_description TEXT,
+      marketing_pct REAL DEFAULT 0,
+      org_hours REAL DEFAULT 0,
+      org_hourly_rate REAL DEFAULT 0,
+      admin_pct REAL DEFAULT 0,
+      notes TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS event_todos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      event_id INTEGER NOT NULL,
+      phase INTEGER NOT NULL DEFAULT 1,
+      title TEXT NOT NULL,
+      done INTEGER DEFAULT 0,
+      responsible TEXT DEFAULT 'me',
+      due_date TEXT,
+      notes TEXT,
+      order_index INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+    );
+  `);
+
   // Migration: add confirmed_at column if it doesn't exist
   try { db.exec(`ALTER TABLE submissions ADD COLUMN confirmed_at TEXT`); } catch {}
 
@@ -191,6 +236,71 @@ function moveReplyItem(itemId, direction) {
   }
 }
 
+// ── Events Business Case ─────────────────────────────────────────────────────
+
+function createEvent(data) {
+  const cols = Object.keys(data);
+  const placeholders = cols.map(() => '?').join(', ');
+  const result = db.prepare(
+    `INSERT INTO events (${cols.join(', ')}) VALUES (${placeholders})`
+  ).run(...cols.map(c => data[c]));
+  return result.lastInsertRowid;
+}
+
+function updateEvent(id, fields) {
+  const keys = Object.keys(fields);
+  if (keys.length === 0) return;
+  fields.updated_at = new Date().toISOString();
+  const allKeys = [...keys, 'updated_at'];
+  const setClause = allKeys.map(k => `${k} = ?`).join(', ');
+  const values = allKeys.map(k => fields[k]);
+  db.prepare(`UPDATE events SET ${setClause} WHERE id = ?`).run(...values, id);
+}
+
+function getEvent(id) {
+  return db.prepare('SELECT * FROM events WHERE id = ?').get(id);
+}
+
+function getAllEvents() {
+  return db.prepare('SELECT * FROM events ORDER BY created_at DESC').all();
+}
+
+function deleteEvent(id) {
+  db.prepare('DELETE FROM event_todos WHERE event_id = ?').run(id);
+  db.prepare('DELETE FROM events WHERE id = ?').run(id);
+}
+
+// ── Event Todos ──────────────────────────────────────────────────────────────
+
+function addEventTodo(eventId, data) {
+  const maxOrder = db.prepare(
+    'SELECT MAX(order_index) as max FROM event_todos WHERE event_id = ? AND phase = ?'
+  ).get(eventId, data.phase || 1);
+  const nextOrder = (maxOrder?.max ?? -1) + 1;
+  const result = db.prepare(
+    'INSERT INTO event_todos (event_id, phase, title, responsible, due_date, notes, order_index) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  ).run(eventId, data.phase || 1, data.title, data.responsible || 'me', data.due_date || null, data.notes || null, nextOrder);
+  return result.lastInsertRowid;
+}
+
+function getEventTodos(eventId) {
+  return db.prepare(
+    'SELECT * FROM event_todos WHERE event_id = ? ORDER BY phase ASC, order_index ASC'
+  ).all(eventId);
+}
+
+function updateEventTodo(id, fields) {
+  const keys = Object.keys(fields);
+  if (keys.length === 0) return;
+  const setClause = keys.map(k => `${k} = ?`).join(', ');
+  const values = keys.map(k => fields[k]);
+  db.prepare(`UPDATE event_todos SET ${setClause} WHERE id = ?`).run(...values, id);
+}
+
+function deleteEventTodo(id) {
+  db.prepare('DELETE FROM event_todos WHERE id = ?').run(id);
+}
+
 module.exports = {
   initDb,
   getSpots,
@@ -210,4 +320,13 @@ module.exports = {
   getReplyItems,
   deleteReplyItem,
   moveReplyItem,
+  createEvent,
+  updateEvent,
+  getEvent,
+  getAllEvents,
+  deleteEvent,
+  addEventTodo,
+  getEventTodos,
+  updateEventTodo,
+  deleteEventTodo,
 };

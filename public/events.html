@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="/projects/ari-assets/apple-touch-icon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Events Planner — WingCoach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .tab-btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .tab-btn.active { background: rgba(14,165,233,0.2); color: #38bdf8; }
+    .tab-btn:not(.active) { color: #64748b; }
+    .tab-btn:not(.active):hover { color: #94a3b8; }
+    .field-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin-bottom: 4px; }
+    input[type="text"], input[type="number"], input[type="date"], select, textarea {
+      width: 100%; background: #0d1b2e; border: 1px solid rgba(255,255,255,0.12);
+      color: #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 13px; outline: none;
+      font-family: 'Inter', sans-serif; transition: border-color 0.15s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #0ea5e9; }
+    textarea { resize: vertical; min-height: 60px; }
+    .card { background: #1e293b; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); padding: 20px 24px; }
+    .scenario-positive { color: #4ade80; }
+    .scenario-negative { color: #f87171; }
+    .scenario-zero { color: #fbbf24; }
+    .todo-done { text-decoration: line-through; opacity: 0.5; }
+    .phase-header { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+    .phase-1 { color: #fbbf24; }
+    .phase-2 { color: #38bdf8; }
+    .phase-3 { color: #c084fc; }
+    .phase-4 { color: #4ade80; }
+    .phase-5 { color: #fb923c; }
+    .responsible-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; }
+    .resp-me { background: rgba(14,165,233,0.2); color: #38bdf8; }
+    .resp-ai { background: rgba(168,85,247,0.2); color: #c084fc; }
+    .resp-collaborator { background: rgba(251,146,60,0.2); color: #fb923c; }
+    .event-type-card { border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; background: rgba(255,255,255,0.02); }
+    .event-type-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  </style>
+</head>
+<body class="bg-[#080f1c] text-white min-h-screen">
+
+<!-- Nav -->
+<nav class="bg-[#0d1b2e] border-b border-white/10 px-6 py-3 flex items-center justify-between">
+  <div class="flex items-center gap-2">
+    <span class="text-[#0ea5e9] font-black">WING</span><span class="text-white font-light">COACH</span>
+    <span class="text-slate-500 text-sm ml-1">Events Planner</span>
+  </div>
+  <div class="flex items-center gap-4">
+    <a href="{{BASE_PATH}}/admin" class="text-sm text-slate-400 hover:text-white transition-colors">← Admin</a>
+  </div>
+</nav>
+
+<!-- Main layout -->
+<div class="max-w-7xl mx-auto px-4 py-8">
+
+  <!-- Top bar: event selector + tabs -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+    <div class="flex items-center gap-3">
+      <select id="event-select" onchange="loadEvent(this.value)" class="!w-auto min-w-[200px]">
+        <option value="">— Select Event —</option>
+      </select>
+      <button onclick="newEvent()" class="text-sm font-semibold text-[#0ea5e9] hover:text-white border border-[#0ea5e9]/30 px-3 py-1.5 rounded-lg transition-colors">+ New</button>
+      <button id="btn-delete" onclick="deleteCurrentEvent()" class="hidden text-sm font-semibold text-red-400 hover:text-red-300 border border-red-400/30 px-3 py-1.5 rounded-lg transition-colors">Delete</button>
+    </div>
+    <div class="flex gap-1 bg-white/5 rounded-lg p-1" id="tab-bar">
+      <button class="tab-btn active" data-tab="calculator" onclick="switchTab('calculator')">Business Case</button>
+      <button class="tab-btn" data-tab="todos" onclick="switchTab('todos')">To-Do List</button>
+      <button class="tab-btn" data-tab="reference" onclick="switchTab('reference')">Event Types</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB: Business Case Calculator                                          -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <div id="tab-calculator">
+    <div id="no-event-msg" class="text-center py-20 text-slate-500">
+      <p class="text-4xl mb-3">📊</p>
+      <p>Select an event or create a new one to start planning.</p>
+    </div>
+
+    <div id="calculator-content" class="hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- LEFT: Event Info + Revenue -->
+        <div class="space-y-6">
+          <div class="card">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[#38bdf8] mb-4">Event Details</h3>
+            <div class="space-y-3">
+              <div><div class="field-label">Event Name</div><input type="text" id="f-name" onchange="autoSave()"></div>
+              <div><div class="field-label">Location</div><input type="text" id="f-location" onchange="autoSave()"></div>
+              <div class="grid grid-cols-2 gap-3">
+                <div><div class="field-label">Start Date</div><input type="date" id="f-start_date" onchange="autoSave()"></div>
+                <div><div class="field-label">End Date</div><input type="date" id="f-end_date" onchange="autoSave()"></div>
+              </div>
+              <div><div class="field-label">Event Type</div>
+                <select id="f-event_type" onchange="autoSave()">
+                  <option value="own">Tricktionary Own Event</option>
+                  <option value="partner">Partner Collab Event</option>
+                  <option value="guest">Guest Coach / Surf Center</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[#38bdf8] mb-4">Revenue</h3>
+            <div class="space-y-3">
+              <div class="grid grid-cols-3 gap-3">
+                <div><div class="field-label">Min Pax</div><input type="number" id="f-attendees_min" min="0" oninput="recalc()"></div>
+                <div><div class="field-label">Base Pax</div><input type="number" id="f-attendees_base" min="0" oninput="recalc()"></div>
+                <div><div class="field-label">Max Pax</div><input type="number" id="f-attendees_max" min="0" oninput="recalc()"></div>
+              </div>
+              <div><div class="field-label">Price / Person (€)</div><input type="number" id="f-price_per_person" min="0" step="0.01" oninput="recalc()"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MIDDLE: Costs -->
+        <div class="space-y-6">
+          <div class="card">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[#38bdf8] mb-4">Costs</h3>
+            <div class="space-y-3">
+              <div class="grid grid-cols-2 gap-3">
+                <div><div class="field-label">Accom €/person/night</div><input type="number" id="f-accom_per_person_night" min="0" step="0.01" oninput="recalc()"></div>
+                <div><div class="field-label">Nights</div><input type="number" id="f-accom_nights" min="0" oninput="recalc()"></div>
+              </div>
+              <div><div class="field-label">Rental €/person</div><input type="number" id="f-rental_per_person" min="0" step="0.01" oninput="recalc()"></div>
+              <div class="grid grid-cols-2 gap-3">
+                <div><div class="field-label">Coaching €/day</div><input type="number" id="f-coaching_rate_per_day" min="0" step="0.01" oninput="recalc()"></div>
+                <div><div class="field-label">Coaching Days</div><input type="number" id="f-coaching_days" min="0" oninput="recalc()"></div>
+              </div>
+              <div><div class="field-label">Commission Income (%)</div><input type="number" id="f-commission_pct" min="0" max="100" step="0.1" oninput="recalc()"></div>
+              <div><div class="field-label">Extras €/person</div><input type="number" id="f-extras_per_person" min="0" step="0.01" oninput="recalc()"></div>
+              <div><div class="field-label">Extras Description</div><input type="text" id="f-extras_description" onchange="autoSave()"></div>
+              <div><div class="field-label">Marketing (%)</div><input type="number" id="f-marketing_pct" min="0" max="100" step="0.1" oninput="recalc()"></div>
+              <div class="grid grid-cols-2 gap-3">
+                <div><div class="field-label">Org Hours</div><input type="number" id="f-org_hours" min="0" step="0.5" oninput="recalc()"></div>
+                <div><div class="field-label">Hourly Rate (€)</div><input type="number" id="f-org_hourly_rate" min="0" step="0.01" oninput="recalc()"></div>
+              </div>
+              <div><div class="field-label">Administration (%)</div><input type="number" id="f-admin_pct" min="0" max="100" step="0.1" oninput="recalc()"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="field-label">Notes</div>
+            <textarea id="f-notes" rows="3" onchange="autoSave()"></textarea>
+          </div>
+        </div>
+
+        <!-- RIGHT: Results + Scenario Table -->
+        <div class="space-y-6">
+          <div class="card" id="results-card">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[#38bdf8] mb-4">Results (Base Scenario)</h3>
+            <div class="space-y-3" id="results-body">
+              <div class="flex justify-between"><span class="text-slate-400 text-sm">Revenue</span><span class="font-bold text-lg" id="r-revenue">€0</span></div>
+              <div class="flex justify-between"><span class="text-slate-400 text-sm">Total Costs</span><span class="font-bold text-lg" id="r-costs">€0</span></div>
+              <div class="border-t border-white/10 pt-3 flex justify-between"><span class="text-slate-400 text-sm">Profit / Loss</span><span class="font-bold text-xl" id="r-profit">€0</span></div>
+              <div class="flex justify-between"><span class="text-slate-400 text-sm">Margin</span><span class="font-semibold" id="r-margin">0%</span></div>
+              <div class="flex justify-between"><span class="text-slate-400 text-sm">Break-even Pax</span><span class="font-semibold" id="r-breakeven">0</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[#38bdf8] mb-4">Scenario Comparison</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-slate-400 text-xs uppercase tracking-wider">
+                    <th class="text-left py-2"></th>
+                    <th class="text-right py-2 px-2">Min</th>
+                    <th class="text-right py-2 px-2">Base</th>
+                    <th class="text-right py-2 px-2">Max</th>
+                  </tr>
+                </thead>
+                <tbody id="scenario-tbody">
+                  <tr><td class="py-1.5 text-slate-400">Attendees</td><td class="text-right px-2" id="s-pax-min">0</td><td class="text-right px-2" id="s-pax-base">0</td><td class="text-right px-2" id="s-pax-max">0</td></tr>
+                  <tr><td class="py-1.5 text-slate-400">Revenue</td><td class="text-right px-2" id="s-rev-min">€0</td><td class="text-right px-2" id="s-rev-base">€0</td><td class="text-right px-2" id="s-rev-max">€0</td></tr>
+                  <tr><td class="py-1.5 text-slate-400">Costs</td><td class="text-right px-2" id="s-cost-min">€0</td><td class="text-right px-2" id="s-cost-base">€0</td><td class="text-right px-2" id="s-cost-max">€0</td></tr>
+                  <tr class="border-t border-white/10 font-semibold"><td class="py-1.5 text-slate-400">Profit</td><td class="text-right px-2" id="s-profit-min">€0</td><td class="text-right px-2" id="s-profit-base">€0</td><td class="text-right px-2" id="s-profit-max">€0</td></tr>
+                  <tr><td class="py-1.5 text-slate-400">Margin</td><td class="text-right px-2" id="s-margin-min">0%</td><td class="text-right px-2" id="s-margin-base">0%</td><td class="text-right px-2" id="s-margin-max">0%</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[#38bdf8] mb-4">Cost Breakdown (Base)</h3>
+            <div class="space-y-2 text-sm" id="cost-breakdown"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB: To-Do List                                                        -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <div id="tab-todos" class="hidden">
+    <div id="todos-no-event" class="text-center py-20 text-slate-500">
+      <p class="text-4xl mb-3">✅</p>
+      <p>Select an event to see its to-do list.</p>
+    </div>
+    <div id="todos-content" class="hidden">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-bold" id="todos-event-name">Event To-Dos</h2>
+          <p class="text-slate-400 text-sm mt-1" id="todos-progress">0 / 0 completed</p>
+        </div>
+        <button onclick="seedTodos()" id="btn-seed" class="text-sm font-semibold text-[#0ea5e9] hover:text-white border border-[#0ea5e9]/30 px-3 py-1.5 rounded-lg transition-colors">+ Seed Default To-Dos</button>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="w-full bg-white/5 rounded-full h-2 mb-8">
+        <div class="bg-[#0ea5e9] h-2 rounded-full transition-all duration-300" id="todos-bar" style="width:0%"></div>
+      </div>
+
+      <div id="todos-phases" class="space-y-8"></div>
+
+      <!-- Add custom todo -->
+      <div class="card mt-8">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-[#38bdf8] mb-4">Add Custom To-Do</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div><div class="field-label">Phase</div>
+            <select id="add-phase">
+              <option value="1">1 — Concept</option>
+              <option value="2">2 — Promotion</option>
+              <option value="3">3 — Logistics</option>
+              <option value="4">4 — During</option>
+              <option value="5">5 — Post</option>
+            </select>
+          </div>
+          <div class="sm:col-span-2"><div class="field-label">Title</div><input type="text" id="add-title" placeholder="Task description..."></div>
+          <div><div class="field-label">Responsible</div>
+            <select id="add-responsible">
+              <option value="me">Me</option>
+              <option value="ai">AI</option>
+              <option value="collaborator">Collaborator</option>
+            </select>
+          </div>
+        </div>
+        <button onclick="addTodo()" class="mt-3 text-sm font-semibold bg-[#0ea5e9] hover:bg-[#0ea5e9]/80 text-white px-4 py-2 rounded-lg transition-colors">Add To-Do</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB: Event Types Reference                                             -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <div id="tab-reference" class="hidden">
+    <h2 class="text-xl font-bold mb-6">Michi's Event Models</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <div class="event-type-card">
+        <div class="text-[#0ea5e9] text-xs font-bold uppercase tracking-wider mb-2">Own Event</div>
+        <h4 class="text-white">Tricktionary Own Event</h4>
+        <p class="text-slate-400 text-sm mb-4">Full income — you organize, promote, and run everything.</p>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between"><span class="text-slate-500">Income model</span><span class="text-slate-200">100% revenue</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Promotion</span><span class="text-slate-200">Your own channels</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Organization</span><span class="text-slate-200">Full responsibility</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Risk</span><span class="text-slate-200">Highest (you cover all costs)</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Margin potential</span><span class="text-slate-200 text-[#4ade80]">Highest</span></div>
+        </div>
+        <div class="mt-4 p-3 bg-white/5 rounded-lg text-xs text-slate-400">
+          <strong class="text-slate-300">Typical pricing:</strong> €800–1,500/person for multi-day camps.
+          Set min pax = break-even. Use business case calculator to validate.
+        </div>
+      </div>
+
+      <div class="event-type-card">
+        <div class="text-[#c084fc] text-xs font-bold uppercase tracking-wider mb-2">Partner Collab</div>
+        <h4 class="text-white">Partner Collab Event</h4>
+        <p class="text-slate-400 text-sm mb-4">Split model — partner brings clients (commission) or you promote (full income).</p>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between"><span class="text-slate-500">If partner promotes</span><span class="text-slate-200">Commission (15–30%)</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">If you promote</span><span class="text-slate-200">Full income</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Organization</span><span class="text-slate-200">Shared with partner</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Risk</span><span class="text-slate-200">Medium (shared)</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Margin potential</span><span class="text-slate-200 text-[#fbbf24]">Medium</span></div>
+        </div>
+        <div class="mt-4 p-3 bg-white/5 rounded-lg text-xs text-slate-400">
+          <strong class="text-slate-300">Commission model:</strong> Partner pays accommodation + venue.
+          You earn commission on attendees they bring. Full price on your own sign-ups.
+        </div>
+      </div>
+
+      <div class="event-type-card">
+        <div class="text-[#fb923c] text-xs font-bold uppercase tracking-wider mb-2">Guest Coach</div>
+        <h4 class="text-white">Guest Coach / Surf Center</h4>
+        <p class="text-slate-400 text-sm mb-4">Fixed daily coaching fee — surf center handles everything else.</p>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between"><span class="text-slate-500">Income model</span><span class="text-slate-200">Fixed daily rate</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Promotion</span><span class="text-slate-200">Center handles it</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Organization</span><span class="text-slate-200">Center handles it</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Risk</span><span class="text-slate-200">Lowest (guaranteed fee)</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Margin potential</span><span class="text-slate-200 text-[#f87171]">Fixed</span></div>
+        </div>
+        <div class="mt-4 p-3 bg-white/5 rounded-lg text-xs text-slate-400">
+          <strong class="text-slate-300">Standard rates:</strong><br>
+          Day rate: €250–400/day<br>
+          Week rate: €1,200–2,000/week<br>
+          +Travel & accommodation covered by center
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-8">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-[#38bdf8] mb-4">Rate Calculator Quick Reference</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-slate-400 text-xs uppercase tracking-wider border-b border-white/10">
+              <th class="text-left py-2 pr-4">Model</th>
+              <th class="text-right py-2 px-4">5 pax</th>
+              <th class="text-right py-2 px-4">10 pax</th>
+              <th class="text-right py-2 px-4">15 pax</th>
+              <th class="text-right py-2 px-4">20 pax</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            <tr><td class="py-2 pr-4 text-slate-400">Own @ €1,000/pax</td><td class="text-right px-4">€5,000</td><td class="text-right px-4">€10,000</td><td class="text-right px-4">€15,000</td><td class="text-right px-4">€20,000</td></tr>
+            <tr><td class="py-2 pr-4 text-slate-400">Partner @ 20% comm, €1,000/pax</td><td class="text-right px-4">€1,000</td><td class="text-right px-4">€2,000</td><td class="text-right px-4">€3,000</td><td class="text-right px-4">€4,000</td></tr>
+            <tr><td class="py-2 pr-4 text-slate-400">Guest Coach @ €300/day × 5d</td><td class="text-right px-4 text-slate-500" colspan="4">€1,500 fixed (regardless of pax)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const BP = '{{BASE_PATH}}';
+let currentEventId = null;
+let saveTimeout = null;
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadEventList();
+});
+
+// ── Tab Switching ─────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('[id^="tab-"]').forEach(el => {
+    if (el.id === 'tab-bar') return;
+    el.classList.add('hidden');
+  });
+  document.getElementById('tab-' + tab).classList.remove('hidden');
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+}
+
+// ── Event List ────────────────────────────────────────────────────────────────
+async function loadEventList() {
+  const r = await apiFetch('/api/admin/events');
+  const events = await r.json();
+  const sel = document.getElementById('event-select');
+  sel.innerHTML = '<option value="">— Select Event —</option>';
+  for (const e of events) {
+    const opt = document.createElement('option');
+    opt.value = e.id;
+    opt.textContent = e.name + (e.location ? ' — ' + e.location : '');
+    sel.appendChild(opt);
+  }
+  if (currentEventId) {
+    sel.value = currentEventId;
+  }
+}
+
+async function loadEvent(id) {
+  if (!id) {
+    currentEventId = null;
+    document.getElementById('no-event-msg').classList.remove('hidden');
+    document.getElementById('calculator-content').classList.add('hidden');
+    document.getElementById('todos-no-event').classList.remove('hidden');
+    document.getElementById('todos-content').classList.add('hidden');
+    document.getElementById('btn-delete').classList.add('hidden');
+    return;
+  }
+  currentEventId = parseInt(id);
+  const r = await apiFetch('/api/admin/events/' + id);
+  const event = await r.json();
+
+  // Fill form fields
+  const fields = [
+    'name','location','start_date','end_date','event_type',
+    'attendees_min','attendees_base','attendees_max','price_per_person',
+    'accom_per_person_night','accom_nights','rental_per_person',
+    'coaching_rate_per_day','coaching_days','commission_pct',
+    'extras_per_person','extras_description','marketing_pct',
+    'org_hours','org_hourly_rate','admin_pct','notes',
+  ];
+  for (const f of fields) {
+    const el = document.getElementById('f-' + f);
+    if (el) el.value = event[f] ?? '';
+  }
+
+  document.getElementById('no-event-msg').classList.add('hidden');
+  document.getElementById('calculator-content').classList.remove('hidden');
+  document.getElementById('todos-no-event').classList.add('hidden');
+  document.getElementById('todos-content').classList.remove('hidden');
+  document.getElementById('btn-delete').classList.remove('hidden');
+
+  recalc();
+  renderTodos(event.todos || []);
+  document.getElementById('todos-event-name').textContent = event.name + ' — To-Dos';
+}
+
+// ── New Event ─────────────────────────────────────────────────────────────────
+async function newEvent() {
+  const name = prompt('Event name:');
+  if (!name) return;
+  const r = await apiFetch('/api/admin/events', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  const event = await r.json();
+  currentEventId = event.id;
+  await loadEventList();
+  document.getElementById('event-select').value = event.id;
+  loadEvent(event.id);
+}
+
+async function deleteCurrentEvent() {
+  if (!currentEventId) return;
+  if (!confirm('Delete this event and all its to-dos?')) return;
+  await apiFetch('/api/admin/events/' + currentEventId, { method: 'DELETE' });
+  currentEventId = null;
+  await loadEventList();
+  loadEvent('');
+}
+
+// ── Auto-Save ─────────────────────────────────────────────────────────────────
+function autoSave() {
+  if (!currentEventId) return;
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(doSave, 600);
+  recalc();
+}
+
+async function doSave() {
+  if (!currentEventId) return;
+  const fields = [
+    'name','location','start_date','end_date','event_type',
+    'attendees_min','attendees_base','attendees_max','price_per_person',
+    'accom_per_person_night','accom_nights','rental_per_person',
+    'coaching_rate_per_day','coaching_days','commission_pct',
+    'extras_per_person','extras_description','marketing_pct',
+    'org_hours','org_hourly_rate','admin_pct','notes',
+  ];
+  const data = {};
+  for (const f of fields) {
+    const el = document.getElementById('f-' + f);
+    if (el) data[f] = el.value;
+  }
+  await apiFetch('/api/admin/events/' + currentEventId, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  // Update event list name
+  const opt = document.getElementById('event-select').querySelector(`option[value="${currentEventId}"]`);
+  if (opt) opt.textContent = (data.name || 'Untitled') + (data.location ? ' — ' + data.location : '');
+}
+
+// ── Business Case Calculation ─────────────────────────────────────────────────
+function val(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+function calcScenario(pax) {
+  const price = val('f-price_per_person');
+  const revenue = pax * price;
+
+  const accomCost = val('f-accom_per_person_night') * val('f-accom_nights') * pax;
+  const rentalCost = val('f-rental_per_person') * pax;
+  const coachingCost = val('f-coaching_rate_per_day') * val('f-coaching_days');
+  const commissionOffset = revenue * (val('f-commission_pct') / 100);
+  const extrasCost = val('f-extras_per_person') * pax;
+  const subtotal = accomCost + rentalCost + coachingCost - commissionOffset + extrasCost;
+  const marketingCost = subtotal * (val('f-marketing_pct') / 100);
+  const orgCost = val('f-org_hours') * val('f-org_hourly_rate');
+  const adminCost = subtotal * (val('f-admin_pct') / 100);
+
+  const totalCosts = accomCost + rentalCost + coachingCost - commissionOffset + extrasCost + marketingCost + orgCost + adminCost;
+  const profit = revenue - totalCosts;
+  const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+
+  return {
+    pax, revenue, totalCosts, profit, margin,
+    breakdown: { accomCost, rentalCost, coachingCost, commissionOffset, extrasCost, marketingCost, orgCost, adminCost },
+  };
+}
+
+function calcBreakeven() {
+  const price = val('f-price_per_person');
+  if (price <= 0) return 0;
+  // Binary search for break-even
+  for (let p = 1; p <= 1000; p++) {
+    const s = calcScenario(p);
+    if (s.profit >= 0) return p;
+  }
+  return '1000+';
+}
+
+function fmt(n) { return '€' + Math.round(n).toLocaleString('de-DE'); }
+function pct(n) { return n.toFixed(1) + '%'; }
+
+function profitClass(n) {
+  if (n > 0) return 'scenario-positive';
+  if (n < 0) return 'scenario-negative';
+  return 'scenario-zero';
+}
+
+function recalc() {
+  autoSave();
+  const min = calcScenario(val('f-attendees_min'));
+  const base = calcScenario(val('f-attendees_base'));
+  const max = calcScenario(val('f-attendees_max'));
+  const breakeven = calcBreakeven();
+
+  // Base results
+  document.getElementById('r-revenue').textContent = fmt(base.revenue);
+  document.getElementById('r-costs').textContent = fmt(base.totalCosts);
+  const profitEl = document.getElementById('r-profit');
+  profitEl.textContent = fmt(base.profit);
+  profitEl.className = 'font-bold text-xl ' + profitClass(base.profit);
+  document.getElementById('r-margin').textContent = pct(base.margin);
+  document.getElementById('r-margin').className = 'font-semibold ' + profitClass(base.profit);
+  document.getElementById('r-breakeven').textContent = breakeven;
+
+  // Scenario table
+  for (const [key, s] of [['min', min], ['base', base], ['max', max]]) {
+    document.getElementById('s-pax-' + key).textContent = s.pax;
+    document.getElementById('s-rev-' + key).textContent = fmt(s.revenue);
+    document.getElementById('s-cost-' + key).textContent = fmt(s.totalCosts);
+    const pEl = document.getElementById('s-profit-' + key);
+    pEl.textContent = fmt(s.profit);
+    pEl.className = 'text-right px-2 ' + profitClass(s.profit);
+    const mEl = document.getElementById('s-margin-' + key);
+    mEl.textContent = pct(s.margin);
+    mEl.className = 'text-right px-2 ' + profitClass(s.profit);
+  }
+
+  // Cost breakdown
+  const bd = base.breakdown;
+  const items = [
+    { label: 'Accommodation', value: bd.accomCost },
+    { label: 'Rental', value: bd.rentalCost },
+    { label: 'Coaching', value: bd.coachingCost },
+    { label: 'Commission offset', value: -bd.commissionOffset },
+    { label: 'Extras', value: bd.extrasCost },
+    { label: 'Marketing', value: bd.marketingCost },
+    { label: 'Organization', value: bd.orgCost },
+    { label: 'Administration', value: bd.adminCost },
+  ];
+  document.getElementById('cost-breakdown').innerHTML = items.map(i =>
+    `<div class="flex justify-between"><span class="text-slate-400">${i.label}</span><span class="${i.value < 0 ? 'text-green-400' : 'text-slate-200'}">${i.value < 0 ? '-' : ''}€${Math.abs(Math.round(i.value)).toLocaleString('de-DE')}</span></div>`
+  ).join('');
+}
+
+// ── Todos ─────────────────────────────────────────────────────────────────────
+const PHASE_NAMES = {
+  1: 'Concept & Decision',
+  2: 'Promotion',
+  3: 'Logistics',
+  4: 'During Event',
+  5: 'Post Event',
+};
+
+function renderTodos(todos) {
+  const phases = {};
+  for (let p = 1; p <= 5; p++) phases[p] = [];
+  for (const t of todos) {
+    if (!phases[t.phase]) phases[t.phase] = [];
+    phases[t.phase].push(t);
+  }
+
+  const total = todos.length;
+  const done = todos.filter(t => t.done).length;
+  document.getElementById('todos-progress').textContent = `${done} / ${total} completed`;
+  document.getElementById('todos-bar').style.width = total > 0 ? ((done / total) * 100) + '%' : '0%';
+
+  // Hide seed button if todos exist
+  document.getElementById('btn-seed').classList.toggle('hidden', total > 0);
+
+  const container = document.getElementById('todos-phases');
+  container.innerHTML = '';
+
+  for (let p = 1; p <= 5; p++) {
+    const items = phases[p];
+    const phaseDone = items.filter(t => t.done).length;
+    const section = document.createElement('div');
+    section.innerHTML = `
+      <div class="flex items-center gap-3 mb-3">
+        <span class="phase-header phase-${p}">Phase ${p}: ${PHASE_NAMES[p]}</span>
+        <span class="text-slate-500 text-xs">${phaseDone}/${items.length}</span>
+      </div>
+      <div class="space-y-1">
+        ${items.map(t => `
+          <div class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/5 group ${t.done ? 'todo-done' : ''}">
+            <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo(${t.id}, this.checked)"
+              class="w-4 h-4 rounded accent-[#0ea5e9] cursor-pointer">
+            <span class="flex-1 text-sm">${escHtml(t.title)}</span>
+            <span class="responsible-badge resp-${t.responsible}">${t.responsible}</span>
+            ${t.due_date ? `<span class="text-xs text-slate-500">${t.due_date}</span>` : ''}
+            <button onclick="deleteTodo(${t.id})" class="text-red-400/0 group-hover:text-red-400/60 hover:!text-red-400 text-xs transition-colors">✕</button>
+          </div>
+        `).join('')}
+        ${items.length === 0 ? '<div class="text-slate-500 text-sm px-4 py-2">No items yet</div>' : ''}
+      </div>
+    `;
+    container.appendChild(section);
+  }
+}
+
+async function toggleTodo(todoId, done) {
+  await apiFetch('/api/admin/events/todos/' + todoId, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ done }),
+  });
+  loadEvent(currentEventId);
+}
+
+async function deleteTodo(todoId) {
+  await apiFetch('/api/admin/events/todos/' + todoId, { method: 'DELETE' });
+  loadEvent(currentEventId);
+}
+
+async function addTodo() {
+  if (!currentEventId) return;
+  const title = document.getElementById('add-title').value.trim();
+  if (!title) return;
+  await apiFetch('/api/admin/events/' + currentEventId + '/todos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      phase: parseInt(document.getElementById('add-phase').value),
+      title,
+      responsible: document.getElementById('add-responsible').value,
+    }),
+  });
+  document.getElementById('add-title').value = '';
+  loadEvent(currentEventId);
+}
+
+async function seedTodos() {
+  if (!currentEventId) return;
+  await apiFetch('/api/admin/events/' + currentEventId + '/seed-todos', { method: 'POST' });
+  loadEvent(currentEventId);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function apiFetch(path, opts = {}) {
+  const pw = sessionStorage.getItem('admin_pw') || prompt('Admin password:');
+  if (pw) sessionStorage.setItem('admin_pw', pw);
+  const headers = { ...(opts.headers || {}), Authorization: 'Basic ' + btoa(':' + pw) };
+  return fetch(BP + path, { ...opts, headers });
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>
