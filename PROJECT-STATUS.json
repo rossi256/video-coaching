@@ -1,7 +1,7 @@
 {
-  "lastDev": "Fix: admin 500 error — missing vendor dir from broken composer on PHP 8.5, pin CI to php8.4",
+  "lastDev": "Fix: admin submissions 500 error — vendor/ missing due to composer failing on PHP 8.5. Installed deps with php8.4, pinne",
   "lastDevDate": "2026-04-11",
   "phase": "active",
-  "milestone": "Full coaching product lineup on hub",
+  "milestone": null,
   "blockedBy": null
 }
