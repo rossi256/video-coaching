@@ -1,5 +1,5 @@
 {
-  "lastDev": "Fix: filter Stripe webhooks to only process WingCoach payments (shared account issue)",
+  "lastDev": "Fix: admin 500 error — missing vendor dir from broken composer on PHP 8.5, pin CI to php8.4",
   "lastDevDate": "2026-04-11",
   "phase": "active",
   "milestone": "Full coaching product lineup on hub",
