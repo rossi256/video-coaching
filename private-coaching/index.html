@@ -171,21 +171,38 @@
     line-height: 1.2;
   }
 
-  /* ─── THE EXPERIENCE (prose) ─── */
-  .experience-section {
+  /* ─── EXPERIENCE HERO SECTIONS ─── */
+  .experience-hero {
     position: relative;
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
 
-  .experience-section::before {
+  .experience-hero::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(ellipse at 30% 20%, rgba(212, 168, 67, 0.04) 0%, transparent 50%);
+    inset: 0;
+    background: linear-gradient(135deg, rgba(6, 10, 20, 0.82) 0%, rgba(6, 10, 20, 0.6) 50%, rgba(6, 10, 20, 0.75) 100%);
     pointer-events: none;
+  }
+
+  .experience-hero .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .experience-hero--maldives {
+    background-image: url('/assets/experience-maldives.jpg');
+    background-position: center 40%;
+  }
+
+  .experience-hero--yacht {
+    background-image: url('/assets/experience-yacht.jpg');
+    background-position: center 60%;
   }
 
   .experience-prose {
@@ -199,6 +216,69 @@
     color: var(--white-dim);
     line-height: 1.85;
     margin-bottom: 1.8rem;
+  }
+
+  .experience-prose p:last-child {
+    margin-bottom: 0;
+  }
+
+  .experience-highlight {
+    color: var(--gold-light);
+    font-weight: 500;
+  }
+
+  /* ─── EXPERIENCE CONTENT BLOCKS ─── */
+  .experience-block {
+    position: relative;
+  }
+
+  .experience-block::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at 30% 20%, rgba(212, 168, 67, 0.04) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .experience-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .experience-feature {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+
+  .experience-feature h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gold-light);
+    margin-bottom: 0.5rem;
+  }
+
+  .experience-feature p {
+    font-size: 0.88rem;
+    color: var(--white-dim);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 640px) {
+    .experience-hero {
+      min-height: 60vh;
+    }
+    .experience-features {
+      grid-template-columns: 1fr;
+    }
   }
 
   /* ─── YOUR JOURNEY (three pillars) ─── */
@@ -649,15 +729,67 @@
   </div>
 </section>
 
-<!-- ═══ THE EXPERIENCE ═══ -->
-<section class="experience-section">
+<!-- ═══ YOUR WORLD, YOUR SCHEDULE ═══ -->
+<section class="experience-hero experience-hero--maldives">
   <div class="container fade-in">
     <p class="section-label">The Experience</p>
+    <h2 class="section-title">Your World. Your Schedule.</h2>
     <div class="experience-prose">
       <p>Michi comes to you. Your location, your schedule, your conditions. Whether it's a week in the Maldives, a long weekend in the Mediterranean, or a focused stretch at your home spot - this is coaching built entirely around you. Solo or with your crew.</p>
+      <p>No group schedules. No compromises. Just you, your coach, and the water.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ON THE WATER ═══ -->
+<section class="experience-block">
+  <div class="container fade-in">
+    <p class="section-label">On the Water</p>
+    <h2 class="section-title">Every Session, Dialed In</h2>
+    <div class="experience-prose">
       <p>On the water, Michi coaches you in real time - technique, timing, wave reading, equipment setup. Off the water, daily video analysis breaks down every session frame by frame. Equipment is tuned, progression is tracked, and every detail is dialed in.</p>
-      <p>But this goes beyond technical. Session planning, mental preparation, and peak performance techniques give you tools that stay with you long after the coaching ends. You'll leave riding differently - and thinking differently about your riding.</p>
-      <p>The experience begins before Michi arrives. A pre-trip video review of your current riding, a goal-setting conversation, and a custom preparation plan ensure every on-water hour counts. And it doesn't end when the trip does - follow-up sessions keep your progression on track.</p>
+    </div>
+    <div class="experience-features">
+      <div class="experience-feature">
+        <h4>Real-Time Coaching</h4>
+        <p>Michi is on the water with you. Immediate feedback on technique, positioning, and timing - not after the session, during it.</p>
+      </div>
+      <div class="experience-feature">
+        <h4>Video Analysis</h4>
+        <p>Daily frame-by-frame breakdown of your sessions. See exactly what's happening and what to change on your next run.</p>
+      </div>
+      <div class="experience-feature">
+        <h4>Equipment Optimization</h4>
+        <p>Board, wing, foil - everything tuned to your weight, style, conditions, and skill level for maximum progression.</p>
+      </div>
+      <div class="experience-feature">
+        <h4>Session Strategy</h4>
+        <p>Structured session plans with clear goals. Mental preparation and peak performance techniques for every session.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WORLD-CLASS EQUIPMENT ═══ -->
+<section class="experience-hero experience-hero--yacht">
+  <div class="container fade-in">
+    <p class="section-label">World-Class Equipment</p>
+    <h2 class="section-title">Ride the Best Gear in the World</h2>
+    <div class="experience-prose">
+      <p>Michi brings the latest top-level <span class="experience-highlight">Duotone</span> equipment - wings, boards, and foils at the highest performance level. Supported by <span class="experience-highlight">Pro Gear Service Tarifa</span>, every piece of gear is race-tuned, freshly serviced, and matched to your riding and the conditions.</p>
+      <p>No need to travel with your own equipment. No compromises on quality. You show up, and everything is ready - dialed in by someone who understands gear as deeply as technique.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BEYOND THE TRIP ═══ -->
+<section class="experience-block">
+  <div class="container fade-in">
+    <p class="section-label">Beyond the Trip</p>
+    <h2 class="section-title">It Starts Before. It Continues After.</h2>
+    <div class="experience-prose">
+      <p>The experience begins before Michi arrives. A pre-trip video review of your current riding, a goal-setting conversation, and a custom preparation plan ensure every on-water hour counts.</p>
+      <p>And it doesn't end when the trip does. Follow-up video reviews, progression check-ins, and continued access to Michi keep your momentum going. You'll leave riding differently - and thinking differently about your riding.</p>
     </div>
   </div>
 </section>
