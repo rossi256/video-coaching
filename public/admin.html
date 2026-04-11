@@ -33,6 +33,7 @@
   </div>
   <div class="flex items-center gap-4">
     <span class="text-slate-400 text-sm" id="nav-stats"></span>
+    <a href="{{BASE_PATH}}/events" class="text-sm text-[#0ea5e9] hover:text-white border border-[#0ea5e9]/30 px-3 py-1.5 rounded-lg transition-colors font-semibold">Events Planner</a>
     <button onclick="showList()" class="text-sm text-slate-400 hover:text-white transition-colors">← All Submissions</button>
   </div>
 </nav>
@@ -111,12 +112,12 @@ async function loadList() {
     tbody.innerHTML = '';
     subs.forEach(s => {
       const tr = document.createElement('tr');
-      const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+      const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) : '-';
       tr.innerHTML = `
         <td class="px-4 py-3 text-slate-400 font-mono">#${s.id}</td>
-        <td class="px-4 py-3 font-medium">${esc(s.name || '—')}</td>
-        <td class="px-4 py-3 text-slate-300">${esc(s.email || '—')}</td>
-        <td class="px-4 py-3 text-slate-400">${esc(s.level || '—')}</td>
+        <td class="px-4 py-3 font-medium">${esc(s.name || '-')}</td>
+        <td class="px-4 py-3 text-slate-300">${esc(s.email || '-')}</td>
+        <td class="px-4 py-3 text-slate-400">${esc(s.level || '-')}</td>
         <td class="px-4 py-3 text-slate-400">${dateStr}</td>
         <td class="px-4 py-3"><span class="status-badge status-${s.status}">${s.status}</span></td>
         <td class="px-4 py-3">
@@ -323,9 +324,9 @@ function renderDetail(s) {
           <h3 class="font-bold mb-3 text-slate-200">Details</h3>
           <div class="text-slate-400 space-y-1.5">
             <div class="flex justify-between"><span>Submission ID</span><span class="text-white font-mono">#{s.id}</span></div>
-            <div class="flex justify-between"><span>Spots at purchase</span><span class="text-white">${s.spots_at_purchase ?? '—'}</span></div>
-            <div class="flex justify-between"><span>Payment intent</span><span class="text-white font-mono text-xs truncate max-w-[120px]" title="${esc(s.stripe_payment_intent || '')}">${s.stripe_payment_intent ? s.stripe_payment_intent.slice(0, 16) + '…' : '—'}</span></div>
-            <div class="flex justify-between"><span>Created</span><span class="text-white">${s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}</span></div>
+            <div class="flex justify-between"><span>Spots at purchase</span><span class="text-white">${s.spots_at_purchase ?? '-'}</span></div>
+            <div class="flex justify-between"><span>Payment intent</span><span class="text-white font-mono text-xs truncate max-w-[120px]" title="${esc(s.stripe_payment_intent || '')}">${s.stripe_payment_intent ? s.stripe_payment_intent.slice(0, 16) + '…' : '-'}</span></div>
+            <div class="flex justify-between"><span>Created</span><span class="text-white">${s.created_at ? new Date(s.created_at).toLocaleDateString() : '-'}</span></div>
           </div>
         </div>
 
@@ -610,7 +611,7 @@ async function downloadAll() {
 }
 
 function fmtSize(bytes) {
-  if (!bytes) return '—';
+  if (!bytes) return '-';
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
   if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';

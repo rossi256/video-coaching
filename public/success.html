@@ -5,7 +5,7 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="/projects/ari-assets/apple-touch-icon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>You're In — WingCoach</title>
+  <title>You're In - WingCoach</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -143,14 +143,14 @@
               <select id="ride_frequency">
                 <option value="">Select...</option>
                 <option value="< 10 days/year">&lt; 10 days/year</option>
-                <option value="10–30 days/year">10–30 days/year</option>
-                <option value="30–60 days/year">30–60 days/year</option>
+                <option value="10-30 days/year">10-30 days/year</option>
+                <option value="30-60 days/year">30-60 days/year</option>
                 <option value="60+ days/year">60+ days/year</option>
               </select>
             </div>
             <div class="form-group">
               <label>Usual wind conditions?</label>
-              <input type="text" id="conditions" placeholder="e.g. 15–20 knots, choppy">
+              <input type="text" id="conditions" placeholder="e.g. 15-20 knots, choppy">
             </div>
             <div class="form-group sm:col-span-2">
               <label>Equipment (wing size(s), board, foil)</label>
@@ -162,7 +162,7 @@
         <!-- Current Level: Move Picker -->
         <div class="card">
           <h2 class="card-title">Your Current Level</h2>
-          <p class="text-slate-400 text-sm mb-5 mt-2">Tap the highest move you can do consistently — everything before it will be marked too. Uncheck any that don't apply.</p>
+          <p class="text-slate-400 text-sm mb-5 mt-2">Tap the highest move you can do consistently - everything before it will be marked too. Uncheck any that don't apply.</p>
           <div id="level-tags" class="flex flex-wrap gap-2">
             <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="0" data-value="Getting up on the board">Getting up on the board</button>
             <button type="button" class="level-tag text-sm px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 hover:border-white/30" data-index="1" data-value="First flights">First flights</button>
@@ -210,13 +210,13 @@
             </div>
             <div class="form-group">
               <label>What would success look like for you? <span class="text-[#0ea5e9]" id="q3-req">*</span></label>
-              <textarea id="success_looks_like" placeholder="What does 'this coaching worked' look like to you in 2–4 weeks?"></textarea>
+              <textarea id="success_looks_like" placeholder="What does 'this coaching worked' look like to you in 2-4 weeks?"></textarea>
             </div>
           </div>
 
           <!-- Audio panel -->
           <div id="panel-audio" class="hidden">
-            <p class="text-slate-400 text-sm mb-5">Hit record and talk through the questions below — much faster than typing.</p>
+            <p class="text-slate-400 text-sm mb-5">Hit record and talk through the questions below - much faster than typing.</p>
 
             <!-- Inline questions -->
             <div class="bg-[#0d2235] border border-[#0ea5e9]/20 rounded-xl p-4 mb-5">
@@ -261,7 +261,7 @@
         <!-- Video upload -->
         <div class="card">
           <h2 class="card-title">Upload Your Riding Videos</h2>
-          <p class="text-slate-400 text-sm mt-2 mb-4">Any format from your phone — MP4, MOV, HEVC, etc. Multiple clips welcome.</p>
+          <p class="text-slate-400 text-sm mt-2 mb-4">Any format from your phone - MP4, MOV, HEVC, etc. Multiple clips welcome.</p>
 
           <!-- Tips as pills above drop zone -->
           <div class="flex flex-wrap gap-2 mb-5">
@@ -287,7 +287,7 @@
           <div id="submit-area">
             <p class="text-center text-slate-400 text-sm mb-4">
               💌 <strong class="text-slate-300">Your progress is saved automatically.</strong>
-              Can't finish now? Check your email — we sent you a link to come back anytime.
+              Can't finish now? Check your email - we sent you a link to come back anytime.
             </p>
             <button id="submit-btn" onclick="submitForm()"
               class="w-full bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-lg py-4 rounded-xl transition-all hover:scale-[1.01] shadow-lg shadow-[#0ea5e9]/20">
@@ -359,7 +359,7 @@ async function autoSave() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-  } catch {} // silent — not critical
+  } catch {} // silent - not critical
 }
 
 // ── Level cascade-select ──────────────────────────────────────────────────────
@@ -398,12 +398,12 @@ function switchTab(tab) {
   document.getElementById('tab-text').className = (isText ? 'tab-active' : 'tab-inactive') + ' flex-1 py-3 text-sm font-semibold transition-colors';
   document.getElementById('tab-audio').className = (isText ? 'tab-inactive' : 'tab-active') + ' flex-1 py-3 text-sm font-semibold transition-colors border-l border-white/10';
   if (!isText) {
-    // audio tab — text fields become optional
+    // audio tab - text fields become optional
     document.getElementById('q1-req').style.display = 'none';
     document.getElementById('q2-req').style.display = 'none';
     document.getElementById('q3-req').style.display = 'none';
   } else {
-    // back to text — restore required if no audio recorded yet
+    // back to text - restore required if no audio recorded yet
     if (!audioFilename) {
       document.getElementById('q1-req').style.display = '';
       document.getElementById('q2-req').style.display = '';
@@ -432,7 +432,7 @@ async function verifySession() {
       const d = await r.json();
 
       if (r.status === 202) {
-        // Webhook still processing — wait and retry
+        // Webhook still processing - wait and retry
         await new Promise(res => setTimeout(res, 2000));
         continue;
       }

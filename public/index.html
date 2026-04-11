@@ -5,7 +5,7 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="/projects/ari-assets/apple-touch-icon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WingCoach — Break Through Your Wingfoil Plateau</title>
+  <title>WingCoach - Break Through Your Wingfoil Plateau</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -66,6 +66,64 @@
     /* Nav dot indicators */
     .slide-dot { transition: all 0.3s; }
     .slide-dot.active { background: #0ea5e9; width: 24px; }
+
+    /* Results gallery - infinite scroll marquee */
+    .gallery-track {
+      display: flex;
+      gap: 24px;
+      animation: marquee 30s linear infinite;
+      width: max-content;
+    }
+    .gallery-track:hover {
+      animation-play-state: paused;
+    }
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .gallery-item {
+      flex-shrink: 0;
+      width: 400px;
+      aspect-ratio: 16/10;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .gallery-item:hover {
+      transform: scale(1.03);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+    .gallery-item img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    @media (max-width: 640px) {
+      .gallery-item { width: 300px; }
+    }
+
+    /* Lightbox */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0,0,0,0.9);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .lightbox.active {
+      display: flex;
+      opacity: 1;
+    }
+    .lightbox img {
+      max-width: 90vw;
+      max-height: 90vh;
+      object-fit: contain;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body class="bg-[#0d1b2e] text-white">
@@ -73,11 +131,11 @@
 <!-- ═══ NAVIGATION ════════════════════════════════════════════════════════════ -->
 <nav class="fixed top-0 left-0 right-0 z-50 bg-[#0d1b2e]/80 backdrop-blur-md border-b border-white/10">
   <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-2">
+    <a href="/" class="flex items-center gap-2 no-underline">
       <span class="text-[#0ea5e9] font-black text-lg tracking-tight">WING</span>
       <span class="text-white font-light text-lg tracking-tight">COACH</span>
       <span class="text-slate-400 text-xs font-normal ml-1">by Tricktionary</span>
-    </div>
+    </a>
     <a href="#payment" class="hidden sm:block bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
       Get Your Spot
     </a>
@@ -98,7 +156,7 @@
     <!-- Badge -->
     <div class="inline-flex items-center gap-2 bg-[#0ea5e9]/20 border border-[#0ea5e9]/40 rounded-full px-4 py-1.5 text-sm font-medium text-[#38bdf8] mb-6">
       <span class="text-base">🔥</span>
-      <span>Founding 10 — €49 (price goes up to €149)</span>
+      <span>Founding 10 - €49 (price goes up to €149)</span>
     </div>
 
     <!-- Headline -->
@@ -163,7 +221,7 @@
         <div class="absolute bottom-0 left-0 right-0 p-8 z-10">
           <div class="max-w-xl">
             <p class="text-[#0ea5e9] font-semibold text-sm mb-2">01 / Getting up</p>
-            <h3 class="text-2xl sm:text-3xl font-bold mb-2">"You're doing everything right — but you can't get up consistently."</h3>
+            <h3 class="text-2xl sm:text-3xl font-bold mb-2">"You're doing everything right - but you can't get up consistently."</h3>
             <p class="text-slate-300 text-sm">One session it clicks, the next it doesn't. You don't know what you're doing differently.</p>
           </div>
         </div>
@@ -208,7 +266,7 @@
           <div class="max-w-xl">
             <p class="text-[#0ea5e9] font-semibold text-sm mb-2">05 / Progress</p>
             <h3 class="text-2xl sm:text-3xl font-bold mb-2">"You've been stuck on the same moves for months."</h3>
-            <p class="text-slate-300 text-sm">You're not improving — you're just surviving. You need someone who can actually see what's happening.</p>
+            <p class="text-slate-300 text-sm">You're not improving - you're just surviving. You need someone who can actually see what's happening.</p>
           </div>
         </div>
       </div>
@@ -252,14 +310,14 @@
       <div class="bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-[#0ea5e9]/40 transition-colors">
         <div class="text-4xl mb-4">📹</div>
         <h3 class="text-xl font-bold mb-3">Send your riding clips</h3>
-        <p class="text-slate-400 leading-relaxed">Upload as many videos as you want — any format from your phone or camera. No editing needed. Raw footage is perfect.</p>
+        <p class="text-slate-400 leading-relaxed">Upload your riding video clips - any format from your phone or camera. No editing needed. Raw footage is perfect.</p>
       </div>
       <!-- Card 2 -->
       <div class="bg-white/5 border border-[#0ea5e9]/30 rounded-2xl p-8 relative overflow-hidden">
         <div class="absolute top-0 right-0 left-0 h-0.5 bg-gradient-to-r from-transparent via-[#0ea5e9] to-transparent"></div>
         <div class="text-4xl mb-4">🎯</div>
         <h3 class="text-xl font-bold mb-3">Get a personal video response</h3>
-        <p class="text-slate-400 leading-relaxed">Michi watches your footage, spots the exact issue, and records a personal coaching video back to you — within 72 hours.</p>
+        <p class="text-slate-400 leading-relaxed">Michi watches your footage, spots the exact issue, and records a personal coaching video back to you - within 72 hours.</p>
       </div>
       <!-- Card 3 -->
       <div class="bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-[#0ea5e9]/40 transition-colors">
@@ -283,7 +341,7 @@
       <div class="flex gap-6 items-start">
         <div class="step-num">1</div>
         <div class="pt-1.5">
-          <h3 class="text-xl font-bold mb-1">Pay — secure your spot</h3>
+          <h3 class="text-xl font-bold mb-1">Pay - secure your spot</h3>
           <p class="text-slate-400">€49 founding price. Secure payment via Stripe. Once all 10 spots are taken, the next round starts at €149.</p>
         </div>
       </div>
@@ -293,7 +351,7 @@
       <div class="flex gap-6 items-start">
         <div class="step-num">2</div>
         <div class="pt-1.5">
-          <h3 class="text-xl font-bold mb-1">Upload — send your videos</h3>
+          <h3 class="text-xl font-bold mb-1">Upload - send your videos</h3>
           <p class="text-slate-400">After payment you'll get a private upload page. Upload your riding videos (any format, multiple clips welcome), fill out a quick rider profile, and optionally record your answers out loud.</p>
 
         </div>
@@ -303,7 +361,7 @@
       <div class="flex gap-6 items-start">
         <div class="step-num">3</div>
         <div class="pt-1.5">
-          <h3 class="text-xl font-bold mb-1">Receive — Michi's personal response</h3>
+          <h3 class="text-xl font-bold mb-1">Receive - Michi's personal response</h3>
           <p class="text-slate-400">You'll get an email with a private link to your coaching video within 72 hours. Rewatch it anytime. The link is yours forever.</p>
         </div>
       </div>
@@ -331,10 +389,10 @@
         <div class="space-y-4 text-slate-300 leading-relaxed">
           <p>
             Michi has been coaching water sports for over 20 years. He's the author of the
-            <strong class="text-white">WingFoil Tricktionary</strong> — the definitive guide to wingfoil moves trusted by thousands of riders worldwide.
+            <strong class="text-white">WingFoil Tricktionary</strong> - the definitive guide to wingfoil moves trusted by thousands of riders worldwide.
           </p>
           <p>
-            He's seen every plateau. He knows exactly what to look for in your footage — the subtle body position mistakes, timing issues, and equipment misuse that you can't see yourself.
+            He's seen every plateau. He knows exactly what to look for in your footage - the subtle body position mistakes, timing issues, and equipment misuse that you can't see yourself.
           </p>
           <p class="text-white font-semibold">
             "This is not a course. This is a direct conversation with Michi."
@@ -362,19 +420,29 @@
       <p class="text-[#0ea5e9] font-semibold text-sm uppercase tracking-widest mb-3">The other side</p>
       <h2 class="text-3xl sm:text-4xl font-black">What "after" looks like.</h2>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="rounded-2xl overflow-hidden aspect-video bg-white/5">
-        <img src="{{BASE_PATH}}/static/assets/good%20technique/5I3A9785.jpg" alt="Good wingfoil technique" class="w-full h-full object-cover">
+    <!-- Full-width auto-scrolling gallery -->
+    <div class="overflow-hidden -mx-4">
+      <div class="gallery-track">
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="{{BASE_PATH}}/static/assets/good%20technique/5I3A9785.jpg" alt="Good wingfoil technique"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="{{BASE_PATH}}/static/assets/good%20technique/TRCK6968.jpg" alt="Clean wingfoil riding"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="{{BASE_PATH}}/static/assets/good%20technique/TRCK7208.jpg" alt="Controlled wingfoil flight"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="{{BASE_PATH}}/static/assets/good%20technique/TRCK9034.jpg" alt="Advanced wingfoil technique"></div>
+        <!-- Duplicated for seamless loop -->
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="{{BASE_PATH}}/static/assets/good%20technique/5I3A9785.jpg" alt="Good wingfoil technique"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="{{BASE_PATH}}/static/assets/good%20technique/TRCK6968.jpg" alt="Clean wingfoil riding"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="{{BASE_PATH}}/static/assets/good%20technique/TRCK7208.jpg" alt="Controlled wingfoil flight"></div>
+        <div class="gallery-item" onclick="openLightbox(this)"><img src="{{BASE_PATH}}/static/assets/good%20technique/TRCK9034.jpg" alt="Advanced wingfoil technique"></div>
       </div>
-      <div class="rounded-2xl overflow-hidden aspect-video bg-white/5">
-        <img src="{{BASE_PATH}}/static/assets/good%20technique/TRCK6968.jpg" alt="Clean wingfoil riding" class="w-full h-full object-cover">
-      </div>
+    </div>
+    <!-- Lightbox -->
+    <div class="lightbox" id="gallery-lightbox" onclick="this.classList.remove('active')">
+      <img src="" alt="Full size" id="lightbox-img">
     </div>
     <p class="text-center text-slate-400 mt-6">Clean position. Controlled flight. This is what one coaching conversation can unlock.</p>
   </div>
 </section>
 
-<!-- ═══ TESTIMONIALS — hidden until first real ones collected ════════════════ -->
+<!-- ═══ TESTIMONIALS - hidden until first real ones collected ════════════════ -->
 <section class="py-24 px-4 bg-[#0d1b2e] hidden">
   <div class="max-w-6xl mx-auto">
     <div class="text-center mb-14">
@@ -425,26 +493,56 @@
   </div>
 </section>
 
-<!-- ═══ IN-PERSON EVENTS ══════════════════════════════════════════════════════ -->
+<!-- ═══ IN-PERSON & MORE ═══════════════════════════════════════════════════════ -->
 <section class="py-16 px-4 bg-[#0d1b2e] border-t border-white/5">
-  <div class="max-w-3xl mx-auto text-center">
-    <p class="text-[#0ea5e9] font-semibold text-sm uppercase tracking-widest mb-3">Want to ride with Michi in person?</p>
-    <h2 class="text-2xl sm:text-3xl font-bold mb-4">Join a Camp or Event</h2>
-    <p class="text-slate-400 mb-8 leading-relaxed">Video coaching is remote — but Michi also runs in-person camps and coaching sessions in Tarifa and Lake Garda.</p>
-    <div class="flex flex-wrap justify-center gap-4 mb-8">
-      <div class="flex-1 min-w-[220px] max-w-xs bg-white/5 border border-white/10 rounded-xl p-4 text-left">
-        <p class="font-semibold mb-1">🌊 Tarifa Experience</p>
-        <p class="text-slate-400 text-sm">Spring & autumn coaching sessions in Europe's wind capital.</p>
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-10">
+      <p class="text-[#0ea5e9] font-semibold text-sm uppercase tracking-widest mb-3">Want to ride with Michi in person?</p>
+      <h2 class="text-2xl sm:text-3xl font-bold mb-4">Camps, Events &amp; More Coaching Options</h2>
+      <p class="text-slate-400 mb-8 leading-relaxed max-w-2xl mx-auto">Video coaching is remote - but Michi also runs in-person camps at the best spots in Europe, plus structured coaching programs for deeper progression.</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <!-- Tarifa -->
+      <div class="bg-white/5 border border-white/10 rounded-xl overflow-hidden text-left hover:border-[#0ea5e9]/30 transition-colors">
+        <div class="h-36 bg-white/5 overflow-hidden">
+          <img src="{{BASE_PATH}}/static/assets/coach%20action/20250805_4467-1.jpg" alt="Tarifa wingfoil coaching" class="w-full h-full object-cover">
+        </div>
+        <div class="p-4">
+          <p class="font-semibold mb-1">Tarifa Experience</p>
+          <p class="text-slate-400 text-sm">Spring &amp; autumn coaching sessions in Europe's wind capital.</p>
+        </div>
       </div>
-      <div class="flex-1 min-w-[220px] max-w-xs bg-white/5 border border-white/10 rounded-xl p-4 text-left">
-        <p class="font-semibold mb-1">⛵ Lake Garda Camp</p>
-        <p class="text-slate-400 text-sm">Summer pilot programs on the iconic Italian lake.</p>
+      <!-- Lake Garda -->
+      <div class="bg-white/5 border border-white/10 rounded-xl overflow-hidden text-left hover:border-[#0ea5e9]/30 transition-colors">
+        <div class="h-36 bg-white/5 overflow-hidden">
+          <img src="{{BASE_PATH}}/static/assets/coach%20action/TRCK7644.jpg" alt="Lake Garda wingfoil camp" class="w-full h-full object-cover">
+        </div>
+        <div class="p-4">
+          <p class="font-semibold mb-1">Lake Garda Camp</p>
+          <p class="text-slate-400 text-sm">Summer programs on the iconic Italian lake.</p>
+        </div>
+      </div>
+      <!-- 1:1 / Monthly -->
+      <div class="bg-white/5 border border-white/10 rounded-xl overflow-hidden text-left hover:border-[#d4a843]/30 transition-colors">
+        <div class="h-36 bg-white/5 overflow-hidden">
+          <img src="{{BASE_PATH}}/static/assets/coach%20action/20250805_4326-1.jpg" alt="Private wingfoil coaching" class="w-full h-full object-cover">
+        </div>
+        <div class="p-4">
+          <p class="font-semibold mb-1">1:1 &amp; Monthly Coaching</p>
+          <p class="text-slate-400 text-sm">Structured programs with Michi. Coming soon.</p>
+        </div>
       </div>
     </div>
-    <a href="https://ari.tricktionary.com/projects/events/" target="_blank" rel="noopener"
-      class="inline-flex items-center gap-2 border border-[#0ea5e9]/40 hover:border-[#0ea5e9] text-[#0ea5e9] font-semibold px-6 py-3 rounded-xl transition-colors text-sm">
-      View All Events →
-    </a>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="https://events.tricktionary.com" target="_blank" rel="noopener"
+        class="inline-flex items-center gap-2 border border-[#0ea5e9]/40 hover:border-[#0ea5e9] text-[#0ea5e9] font-semibold px-6 py-3 rounded-xl transition-colors text-sm">
+        View All Events &rarr;
+      </a>
+      <a href="/"
+        class="inline-flex items-center gap-2 border border-white/20 hover:border-white/40 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm">
+        All Coaching Options &rarr;
+      </a>
+    </div>
   </div>
 </section>
 
@@ -460,8 +558,8 @@
       I want to work with 10 riders. Personally.
     </h2>
     <div class="text-slate-300 space-y-4 text-lg mb-10 text-left max-w-2xl mx-auto">
-      <p>This is not a course. It's a direct conversation with me — I watch your footage, I tell you exactly what I see.</p>
-      <p>I'm opening up <strong class="text-white">10 founding spots at €49</strong>. Once those are gone, the next round starts at €149. No countdown timers, no fake urgency — just 10 spots, and then it's closed.</p>
+      <p>This is not a course. It's a direct conversation with me - I watch your footage, I tell you exactly what I see.</p>
+      <p>I'm opening up <strong class="text-white">10 founding spots at €49</strong>. Once those are gone, the next round starts at €149.</p>
       <p>If you're serious about breaking your plateau, this is the most direct path. Send me your video. Let's figure it out.</p>
     </div>
 
@@ -508,6 +606,51 @@
   </div>
 </section>
 
+<!-- ═══ MORE WAYS TO PROGRESS ═══════════════════════════════════════════════ -->
+<section class="py-16 px-4 bg-[#0d1b2e] border-t border-white/5">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-10">
+      <p class="text-[#d4a843] font-semibold text-sm uppercase tracking-widest mb-3">More ways to progress</p>
+      <h2 class="text-2xl sm:text-3xl font-bold">Continue Your Wingfoil Journey</h2>
+      <p class="text-slate-400 mt-3 max-w-xl mx-auto">Video coaching is just the start. Explore the full Tricktionary coaching ecosystem.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- 1:1 Coaching -->
+      <a href="/#one-on-one" class="bg-white/5 border border-white/10 hover:border-[#d4a843]/30 rounded-xl p-5 transition-all hover:-translate-y-1 block no-underline">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-lg">&#127919;</span>
+          <span class="bg-[#d4a843]/15 text-[#d4a843] text-[0.6rem] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full">Coming Soon</span>
+        </div>
+        <h3 class="text-white font-bold text-base mb-1">1:1 Coaching Package</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">4 video call sessions, structured progression plan, and direct WhatsApp access to Michi.</p>
+      </a>
+      <!-- Monthly Coaching -->
+      <a href="/#monthly" class="bg-white/5 border border-white/10 hover:border-[#d4a843]/30 rounded-xl p-5 transition-all hover:-translate-y-1 block no-underline">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-lg">&#128200;</span>
+          <span class="bg-[#d4a843]/15 text-[#d4a843] text-[0.6rem] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full">Coming Soon</span>
+        </div>
+        <h3 class="text-white font-bold text-base mb-1">Monthly Coaching</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">Ongoing support with monthly video reviews, check-ins, and continuous progression tracking.</p>
+      </a>
+      <!-- Camps & Events -->
+      <a href="https://events.tricktionary.com" target="_blank" rel="noopener" class="bg-white/5 border border-white/10 hover:border-[#0ea5e9]/30 rounded-xl p-5 transition-all hover:-translate-y-1 block no-underline">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-lg">&#127754;</span>
+          <span class="bg-[#0ea5e9]/15 text-[#0ea5e9] text-[0.6rem] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full">Live</span>
+        </div>
+        <h3 class="text-white font-bold text-base mb-1">Camps &amp; Events</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">In-person coaching camps at Lake Garda and Tarifa. Small groups, coached by Michi on the water.</p>
+      </a>
+    </div>
+    <div class="text-center mt-6">
+      <a href="/" class="text-[#0ea5e9] hover:text-[#38bdf8] text-sm font-medium transition-colors">
+        View all coaching options &rarr;
+      </a>
+    </div>
+  </div>
+</section>
+
 <!-- ═══ FOOTER ════════════════════════════════════════════════════════════════ -->
 <footer class="bg-[#080f1c] border-t border-white/10 py-12 px-4">
   <div class="max-w-6xl mx-auto">
@@ -538,19 +681,33 @@
       <div>
         <h4 class="font-semibold text-sm mb-3 text-slate-300">Tricktionary</h4>
         <div class="space-y-2 text-sm">
+          <a href="/" class="block text-slate-400 hover:text-[#0ea5e9] transition-colors">All Coaching Options</a>
           <a href="https://tricktionary.com" target="_blank" rel="noopener" class="block text-slate-400 hover:text-[#0ea5e9] transition-colors">tricktionary.com</a>
+          <a href="https://progearservice.com" target="_blank" rel="noopener" class="block text-slate-400 hover:text-[#0ea5e9] transition-colors">progearservice.com</a>
           <p class="text-slate-500 text-xs mt-2">Secure payment via Stripe</p>
         </div>
       </div>
     </div>
     <div class="border-t border-white/10 pt-6 text-center text-slate-600 text-xs">
-      &copy; 2025 Tricktionary GmbH — WingCoach. All rights reserved.
+      &copy; 2026 Tricktionary GmbH - WingCoach. All rights reserved.
     </div>
   </div>
 </footer>
 
 <script>
 const BP = '{{BASE_PATH}}';
+
+// ── Lightbox ────────────────────────────────────────────────────────────────
+function openLightbox(el) {
+  var img = el.querySelector('img');
+  if (img) {
+    document.getElementById('lightbox-img').src = img.src;
+    document.getElementById('gallery-lightbox').classList.add('active');
+  }
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') document.getElementById('gallery-lightbox').classList.remove('active');
+});
 
 // ── Spots counter ───────────────────────────────────────────────────────────
 async function loadSpots() {
@@ -559,7 +716,7 @@ async function loadSpots() {
     const d = await r.json();
     const text = d.remaining > 0
       ? `${d.remaining} of ${d.total} spots remaining`
-      : 'All spots filled — join waitlist';
+      : 'All spots filled - join waitlist';
     document.getElementById('spots-text').textContent = text;
     document.getElementById('spots-text-2').textContent = text;
     if (d.remaining === 0) {
@@ -574,7 +731,7 @@ async function loadSpots() {
 }
 loadSpots();
 
-// ── CTA handler — Step 1: show email capture ─────────────────────────────────
+// ── CTA handler - Step 1: show email capture ─────────────────────────────────
 const _ctaOriginals = {};
 
 function handleCTA(containerId) {
@@ -607,7 +764,7 @@ function handleCTA(containerId) {
   }, 0);
 }
 
-// ── CTA handler — Step 2: POST with email, redirect to Stripe ─────────────────
+// ── CTA handler - Step 2: POST with email, redirect to Stripe ─────────────────
 async function proceedToCheckout(containerId) {
   const emailEl = document.getElementById('cta-email-' + containerId);
   const email = emailEl ? emailEl.value.trim() : '';

@@ -5,7 +5,7 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="/projects/ari-assets/apple-touch-icon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Coaching Feedback — WingCoach</title>
+  <title>Your Coaching Feedback - WingCoach</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -213,7 +213,7 @@
     <div class="text-center mb-10">
       <p class="text-[#0ea5e9] font-semibold text-sm uppercase tracking-widest mb-3">Your coaching feedback</p>
       <h1 class="text-3xl sm:text-4xl font-black mb-3" id="feedback-title">Your feedback from Michi is ready.</h1>
-      <p class="text-slate-400" id="feedback-subtitle">Personal coaching — recorded just for you.</p>
+      <p class="text-slate-400" id="feedback-subtitle">Personal coaching - recorded just for you.</p>
     </div>
 
     <!-- Video tabs (if multiple) -->
@@ -272,7 +272,7 @@ async function loadFeedback() {
 
     // Personalise
     if (d.name) {
-      document.getElementById('feedback-title').textContent = `Hey ${d.name.split(' ')[0]} — your feedback is ready!`;
+      document.getElementById('feedback-title').textContent = `Hey ${d.name.split(' ')[0]} - your feedback is ready!`;
     }
 
     showState('feedback-screen');

@@ -9,7 +9,7 @@ router.get('/api/verify-session', async (req, res) => {
   if (!session_id) return res.status(400).json({ error: 'Missing session_id' });
 
   // Dev bypass: session IDs starting with 'dev_test_' skip Stripe (DEV_BYPASS=true only)
-  if (session_id.startsWith('dev_test_') && process.env.DEV_BYPASS === 'true') {
+  if ((session_id.startsWith('dev_test_') || session_id.startsWith('dev_checkout_')) && process.env.DEV_BYPASS === 'true') {
     const submission = getSubmissionBySessionId(session_id);
     if (!submission) return res.status(404).json({ error: 'Dev session not found' });
     const devEmail = submission.email || getCheckoutAttemptBySessionId(session_id)?.email || null;
