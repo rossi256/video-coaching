@@ -42,3 +42,29 @@ When you complete significant work (new feature, major fix, architecture change,
 - Keep `lastDev` under 120 characters
 - Update on meaningful changes, not every small edit
 - `phase` = development lifecycle (not deployment status)
+
+## Completion Protocol
+
+When you finish a significant piece of work on this project:
+
+1. **Commit & push** your changes
+2. **Update PROJECT-STATUS.json** in this project root (create if missing):
+   ```json
+   {"lastDev": "summary of work done", "lastDevDate": "YYYY-MM-DD", "phase": "active"}
+   ```
+3. **Update Forge** so the project dashboard stays current:
+   ```bash
+   # Post a status note (also updates lastMaintenance automatically)
+   curl -s -X POST https://forge.tricktionary.com/api/projects/video-coaching/notes \
+     -H "Content-Type: application/json" -H "Cookie: ari_session=$ARI_SESSION" \
+     -d '{"text": "Completed: [brief summary of what was done]"}'
+   ```
+   ```bash
+   # Mark todos as done (if applicable)
+   curl -s -X PATCH https://forge.tricktionary.com/api/projects/video-coaching/todos \
+     -H "Content-Type: application/json" -H "Cookie: ari_session=$ARI_SESSION" \
+     -d '{"todoId": "TODO_ID", "status": "done"}'
+   ```
+   Or use the helper: `~/.openclaw/workspace/scripts/forge-sync.sh video-coaching "Completed: summary"`
+
+This keeps the Forge dashboard, PROJECT-STATUS.json, and git history in sync.

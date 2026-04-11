@@ -1,7 +1,7 @@
 {
-  "lastDev": "Organized 25 uncommitted changes into 9 commits, added OG meta tags, gitignored PHP secrets",
+  "lastDev": "Coaching pages restructure: VIP updates, new Private Coaching page, Peak Performance waitlist",
   "lastDevDate": "2026-04-11",
   "phase": "active",
-  "milestone": "Codebase organized, social sharing ready",
-  "blockedBy": "coaching product scope undefined"
+  "milestone": "Full coaching product lineup on hub",
+  "blockedBy": null
 }
