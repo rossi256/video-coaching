@@ -55,33 +55,28 @@
     padding: 80px 24px;
   }
 
-  .hero::before {
-    content: '';
+  .hero-bg {
     position: absolute;
-    top: -20%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 120%;
-    height: 80%;
-    background: radial-gradient(ellipse at center, rgba(212, 168, 67, 0.08) 0%, rgba(212, 168, 67, 0.03) 35%, transparent 65%);
-    pointer-events: none;
+    inset: -20% 0;
+    background-image: url('/assets/experience-maldives.jpg');
+    background-size: cover;
+    background-position: center 40%;
+    will-change: transform;
+    transition: transform 0.1s linear;
   }
 
   .hero::after {
     content: '';
     position: absolute;
-    bottom: -30%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    height: 60%;
-    background: radial-gradient(ellipse at center, rgba(45, 212, 191, 0.04) 0%, transparent 60%);
+    inset: 0;
+    background: linear-gradient(135deg, rgba(6, 10, 20, 0.78) 0%, rgba(6, 10, 20, 0.50) 50%, rgba(6, 10, 20, 0.68) 100%);
     pointer-events: none;
+    z-index: 0;
   }
 
   .hero-content {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     max-width: 720px;
   }
 
@@ -203,14 +198,9 @@
     z-index: 1;
   }
 
-  .experience-hero--maldives .experience-hero-bg {
-    background-image: url('/assets/experience-maldives.jpg');
-    background-position: center 40%;
-  }
-
   .experience-hero--yacht .experience-hero-bg {
-    background-image: url('/assets/experience-yacht.jpg');
-    background-position: center 60%;
+    background-image: url('/assets/experience-yacht-aerial.jpg');
+    background-position: center;
   }
 
   .experience-prose {
@@ -640,6 +630,58 @@
     line-height: 1.7;
   }
 
+  /* ─── CONTACT OPTIONS ─── */
+  .contact-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+  .contact-option {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+  }
+  .contact-option:hover {
+    border-color: rgba(212, 168, 67, 0.25);
+    transform: translateY(-3px);
+    background: rgba(212, 168, 67, 0.04);
+  }
+  .contact-option-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 1rem;
+    border-radius: 12px;
+    background: rgba(212, 168, 67, 0.1);
+  }
+  .contact-option h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--gold-light);
+    margin-bottom: 0.5rem;
+  }
+  .contact-option p {
+    font-size: 0.85rem;
+    color: var(--white-dim);
+    line-height: 1.6;
+  }
+  .contact-option--active {
+    border-color: rgba(212, 168, 67, 0.2);
+    background: rgba(212, 168, 67, 0.03);
+  }
+  @media (max-width: 768px) {
+    .contact-options { grid-template-columns: 1fr; }
+  }
+
   /* ─── FOOTER ─── */
   .footer {
     padding: 2rem 24px;
@@ -731,24 +773,24 @@
 
 <!-- ═══ HERO ═══ -->
 <section class="hero">
+  <div class="hero-bg" data-parallax></div>
   <div class="hero-content fade-in">
     <span class="hero-badge">VIP Private Coaching</span>
     <h1>Your Coach. Your Location. Your Progression.</h1>
-    <p class="hero-sub">An exclusive, fully customized coaching immersion with Michi Rossmeier - anywhere in the world. Limited availability.</p>
+    <p class="hero-sub">The world's best wingfoil coach comes to you - with the best gear, a custom plan, and full immersion coaching for you, your family, or your crew. Anywhere in the world.</p>
     <p class="hero-host">by Michi Rossmeier</p>
     <a href="#apply" class="cta-btn">Apply for Your VIP Experience</a>
   </div>
 </section>
 
 <!-- ═══ YOUR WORLD, YOUR SCHEDULE ═══ -->
-<section class="experience-hero experience-hero--maldives">
-  <div class="experience-hero-bg" data-parallax></div>
+<section class="experience-block">
   <div class="container fade-in">
     <p class="section-label">The Experience</p>
     <h2 class="section-title">Your World. Your Schedule.</h2>
     <div class="experience-prose">
-      <p>Michi comes to you. Your location, your schedule, your conditions. Whether it's a week in the Maldives, a long weekend in the Mediterranean, or a focused stretch at your home spot - this is coaching built entirely around you. Solo or with your crew.</p>
-      <p>No group schedules. No compromises. Just you, your coach, and the water.</p>
+      <p>Michi comes to you. Your location, your schedule, your conditions. Whether it's a week in the Maldives, a long weekend in the Mediterranean, or a focused stretch at your home spot - this is coaching built entirely around you.</p>
+      <p>Solo, with your partner, your kids, or a group of friends. Adults and children of all ages and levels - everyone gets a tailored experience.</p>
     </div>
   </div>
 </section>
@@ -789,8 +831,9 @@
     <p class="section-label">World-Class Equipment</p>
     <h2 class="section-title">Ride the Best Gear in the World</h2>
     <div class="experience-prose">
-      <p>Michi brings the latest top-level <span class="experience-highlight">Duotone</span> equipment - wings, boards, and foils at the highest performance level. Supported by <span class="experience-highlight">Pro Gear Service Tarifa</span>, every piece of gear is race-tuned, freshly serviced, and matched to your riding and the conditions.</p>
+      <p>Michi brings the latest top-level <a href="https://www.duotone.com" target="_blank" rel="noopener" class="experience-highlight" style="text-decoration: underline; text-underline-offset: 3px;">Duotone</a> equipment - wings, boards, and foils at the highest performance level. Supported by <a href="https://progearservice.com" target="_blank" rel="noopener" class="experience-highlight" style="text-decoration: underline; text-underline-offset: 3px;">Pro Gear Service Tarifa</a>, every piece of gear is race-tuned, freshly serviced, and matched to your riding and the conditions.</p>
       <p>No need to travel with your own equipment. No compromises on quality. You show up, and everything is ready - dialed in by someone who understands gear as deeply as technique.</p>
+      <p style="color: var(--gold-light); font-weight: 500;">Michi can bring the full equipment setup to your location if desired - just let him know when you apply.</p>
     </div>
   </div>
 </section>
@@ -853,14 +896,39 @@
   </div>
 </section>
 
-<!-- ═══ APPLICATION FORM ═══ -->
+<!-- ═══ APPLICATION / CONTACT ═══ -->
 <section class="apply-section" id="apply">
   <div class="container fade-in">
     <div class="apply-wrap">
-      <p class="section-label">Apply</p>
-      <h2 class="section-title">Apply for Your VIP Experience</h2>
-      <p class="apply-subtitle">Tell Michi about yourself and what you're looking for.</p>
+      <p class="section-label">Get Started</p>
+      <h2 class="section-title">Ready for Your VIP Experience?</h2>
+      <p class="apply-subtitle">Choose how you'd like to connect with Michi.</p>
 
+      <div class="contact-options">
+        <div class="contact-option contact-option--active" onclick="showApplyForm()" style="cursor: pointer;">
+          <div class="contact-option-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <h3>Apply</h3>
+          <p>Tell Michi about yourself and what you're looking for</p>
+        </div>
+        <a class="contact-option" href="https://tidycal.com/michirossmeier/vip-coaching-experience-call" target="_blank" rel="noopener">
+          <div class="contact-option-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <h3>Schedule a Call</h3>
+          <p>Book a free consultation to talk through your ideas</p>
+        </a>
+        <a class="contact-option" href="https://wa.me/4369913909040?text=Hi%20Michi%2C%20I%27m%20interested%20in%20your%20VIP%20coaching%20experience." target="_blank" rel="noopener">
+          <div class="contact-option-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--gold)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </div>
+          <h3>Message Michi Directly</h3>
+          <p>Send a direct message and start the conversation</p>
+        </a>
+      </div>
+
+      <div id="apply-form-section">
       <form id="application-form" onsubmit="submitApplication(event)">
         <!-- Honeypot -->
         <div class="ohnohoney">
@@ -893,13 +961,13 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label>Number of Riders</label>
+            <label>Group Size</label>
             <select id="app-group-size">
               <option value="">Select...</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3-4">3-4</option>
-              <option value="5+">5+</option>
+              <option value="1">Just me</option>
+              <option value="2">2 (couple / partner)</option>
+              <option value="3-4">3-4 (family / small group)</option>
+              <option value="5+">5+ (larger group)</option>
             </select>
           </div>
           <div class="form-group">
@@ -909,7 +977,7 @@
               <option value="Beginner">Beginner</option>
               <option value="Intermediate">Intermediate</option>
               <option value="Advanced">Advanced</option>
-              <option value="Mixed group">Mixed group</option>
+              <option value="Mixed group">Mixed group (different levels)</option>
             </select>
           </div>
         </div>
@@ -917,7 +985,7 @@
         <!-- Optional message -->
         <div class="form-group">
           <label>Anything else Michi should know?</label>
-          <textarea id="app-message" placeholder="Tell us about your goals, experience, preferences..."></textarea>
+          <textarea id="app-message" placeholder="Who's joining, what you're looking for, any special requests..."></textarea>
         </div>
 
         <div class="form-divider"></div>
@@ -969,6 +1037,7 @@
 
         <button type="submit" id="submit-btn" class="cta-btn submit-btn">Submit Application</button>
       </form>
+      </div>
 
       <div id="success-state" class="success-message" style="display:none;">
         <h3>Thank you.</h3>
@@ -1216,6 +1285,12 @@ async function submitApplication(e) {
     btn.textContent = 'Submit Application';
     btn.disabled = false;
   }
+}
+
+// ── Show apply form ──────────────────────────────────────────────────────
+function showApplyForm() {
+  const formSection = document.getElementById('apply-form-section');
+  formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
