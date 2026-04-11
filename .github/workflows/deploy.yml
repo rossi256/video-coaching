@@ -45,8 +45,10 @@ jobs:
             # Copy backend API
             cp -r backend-php/api/ api/
 
-            # Use staging config
-            cp backend-php/api/config.staging.php api/config.php
+            # Use staging config (file is gitignored; skip if not present)
+            if [ -f backend-php/api/config.staging.php ]; then
+              cp backend-php/api/config.staging.php api/config.php
+            fi
 
             # Ensure uploads directory exists
             mkdir -p uploads
@@ -103,8 +105,10 @@ jobs:
               --exclude='config.staging.php' --exclude='config.production-coaching.php' --exclude='config.php' \
               backend-php/api/ "$WEB_ROOT/video-coaching/api/"
 
-            # Use production coaching config
-            cp backend-php/api/config.production-coaching.php "$WEB_ROOT/video-coaching/api/config.php"
+            # Use production coaching config (file is gitignored; skip if not present)
+            if [ -f backend-php/api/config.production-coaching.php ]; then
+              cp backend-php/api/config.production-coaching.php "$WEB_ROOT/video-coaching/api/config.php"
+            fi
 
             # Ensure uploads directory exists
             mkdir -p "$WEB_ROOT/video-coaching/uploads"
