@@ -21,7 +21,7 @@ if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     jsonResponse(['error' => 'Valid email required'], 400);
 }
 
-if (!in_array($type, ['1on1', 'monthly', 'vip', 'masterclass'], true)) {
+if (!in_array($type, ['1on1', 'monthly', 'vip', 'masterclass', 'peak'], true)) {
     jsonResponse(['error' => 'Invalid type'], 400);
 }
 

@@ -814,7 +814,7 @@
   }
 
   /* ─── VIP CARD (premium styling) ─── */
-  .vip-card {
+  .vip-card { grid-column: 1 / -1;
     background: linear-gradient(160deg, #1a1a0e 0%, #0d1321 40%, #111827 100%);
     border: 1px solid rgba(212, 168, 67, 0.25);
     border-radius: 20px;
@@ -1543,6 +1543,20 @@
         <span class="program-tag program-tag--live">View Events</span>
       </a>
 
+      <!-- Private Coaching -->
+      <a href="/private-coaching/" class="program-card">
+        <span class="program-icon">&#127947;</span>
+        <h4>Private Coaching</h4>
+        <p>One-on-one sessions with Michi at his home spots. Bring your gear, bring your goals.</p>
+        <ul class="detail-list">
+          <li>Private 1:1 on-water coaching</li>
+          <li>Video analysis after every session</li>
+          <li>Tarifa (Spain) or Lake Garda (Italy)</li>
+          <li>&euro;250 per session</li>
+        </ul>
+        <span class="program-tag program-tag--live">Book Now</span>
+      </a>
+
       <!-- VIP Private Coaching Experience -->
       <a href="/vip-coaching/" class="vip-card" style="text-decoration: none; color: inherit;">
         <div class="vip-header">
@@ -1559,6 +1573,36 @@
         <span class="vip-inquiry-tag">By Application Only</span>
         <span class="vip-cta" style="display: inline-block; margin-top: 1.2rem; font-size: 0.85rem; font-weight: 600; padding: 10px 24px; border-radius: 8px; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%); color: var(--base-deep); position: relative; z-index: 1;">Apply Now</span>
       </a>
+
+      <!-- Peak Performance Coaching (Coming Soon) -->
+      <div class="program-card" style="cursor: default;">
+        <span class="coaching-badge coaching-badge--soon" style="position: static; display: inline-block; margin-bottom: 1rem;">Coming Soon</span>
+        <span class="program-icon">&#129504;</span>
+        <h4>Peak Performance Coaching</h4>
+        <p>Go beyond technique. Michi helps you unlock your mental game - flow states, focus, confidence, and breaking through the barriers that hold your riding back.</p>
+        <ul class="detail-list">
+          <li>Mental performance and flow state training</li>
+          <li>Overcoming fears and mental blocks</li>
+          <li>Breaking through plateaus and limitations</li>
+          <li>NLP techniques for peak performance</li>
+          <li>For athletes, professionals, and anyone ready to level up</li>
+        </ul>
+        <div id="waitlist-peak-container" style="margin-top: 1rem;">
+          <button class="btn-waitlist" onclick="showWaitlistForm('peak')">
+            Join the Waitlist
+          </button>
+          <div class="waitlist-form" id="waitlist-form-peak">
+            <div class="waitlist-form-inner">
+              <input type="text" id="waitlist-name-peak" placeholder="Your name">
+              <input type="email" id="waitlist-email-peak" placeholder="Your email">
+              <button onclick="submitWaitlist('peak')">Notify me</button>
+            </div>
+          </div>
+          <div class="waitlist-success" id="waitlist-success-peak">
+            Thanks! Michi will be in touch when Peak Performance Coaching launches.
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Pro Gear Service cross-sell -->
