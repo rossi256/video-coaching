@@ -1,4 +1,4 @@
-name: Deploy to ari-server
+name: Deploy WingCoach
 
 on:
   push:
@@ -6,7 +6,8 @@ on:
       - main
 
 jobs:
-  deploy:
+  deploy-staging:
+    name: Deploy to Staging (ari.tricktionary.com)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -35,15 +36,84 @@ jobs:
             git reset --hard origin/main
             echo "Code at $(git rev-parse --short HEAD)"
 
-            # Install dependencies
-            npm ci --omit=dev
+            # Copy website PHP wrappers + static to web root
+            cp -r website/* .
+
+            # Set staging base path
+            sed -i '1i SetEnv WINGCOACH_BASE_PATH /projects/video-coaching' .htaccess
+
+            # Copy backend API
+            cp -r backend-php/api/ api/
+
+            # Use staging config
+            cp backend-php/api/config.staging.php api/config.php
 
             # Ensure uploads directory exists
             mkdir -p uploads
 
-            # Reload PM2
-            pm2 delete wingcoach 2>/dev/null || true
-            pm2 start ecosystem.config.js
-            pm2 save
+            # Install PHP dependencies
+            if [ -f backend-php/composer.json ]; then
+              cp backend-php/composer.json composer.json
+              composer install --no-dev --no-interaction 2>&1 || true
+            fi
 
-            echo "Deploy complete."
+            echo "Staging deploy complete."
+
+  deploy-coaching:
+    name: Deploy to Production (coaching.tricktionary.com)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 91.134.225.245
+          username: coaching
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+
+            WEB_ROOT="/home/coaching/public_html"
+            REPO_DIR="/home/coaching/video-coaching-repo"
+            REPO_URL="https://x-access-token:${{ secrets.GH_DEPLOY_TOKEN }}@github.com/rossi256/video-coaching.git"
+
+            # Clone or update repo
+            if [ ! -d "$REPO_DIR/.git" ]; then
+              git clone "$REPO_URL" "$REPO_DIR"
+            fi
+            cd "$REPO_DIR"
+            git remote set-url origin "$REPO_URL"
+            git fetch origin main
+            git reset --hard origin/main
+            echo "Code at $(git rev-parse --short HEAD)"
+
+            # Deploy coaching hub landing page
+            cp coaching-hub/index.html "$WEB_ROOT/index.html"
+
+            # Deploy website to /video-coaching/
+            mkdir -p "$WEB_ROOT/video-coaching"
+            rsync -a --delete \
+              --exclude='api/' --exclude='uploads/' \
+              website/ "$WEB_ROOT/video-coaching/"
+
+            # Deploy backend API
+            rsync -a --delete \
+              --exclude='config.staging.php' --exclude='config.production-coaching.php' --exclude='config.php' \
+              backend-php/api/ "$WEB_ROOT/video-coaching/api/"
+
+            # Use production coaching config
+            cp backend-php/api/config.production-coaching.php "$WEB_ROOT/video-coaching/api/config.php"
+
+            # Ensure uploads directory exists
+            mkdir -p "$WEB_ROOT/video-coaching/uploads"
+
+            # Install PHP dependencies
+            if [ -f backend-php/composer.json ]; then
+              cp backend-php/composer.json "$WEB_ROOT/video-coaching/composer.json"
+              cd "$WEB_ROOT/video-coaching"
+              composer install --no-dev --no-interaction 2>&1 || true
+            fi
+
+            echo "Production deploy complete."
