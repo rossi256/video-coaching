@@ -73,12 +73,14 @@ app.get(BASE_PATH + '/', (req, res) => sendHtml(res, 'index.html'));
 app.get(BASE_PATH + '/success', (req, res) => sendHtml(res, 'success.html'));
 app.get(BASE_PATH + '/admin', basicAuth, (req, res) => sendHtml(res, 'admin.html'));
 app.get(BASE_PATH + '/reply/:token', (req, res) => sendHtml(res, 'reply.html'));
+app.get(BASE_PATH + '/events', basicAuth, (req, res) => sendHtml(res, 'events.html'));
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
 app.use(BASE_PATH, require('./routes/checkout'));
 app.use(BASE_PATH, require('./routes/upload'));
 app.use(BASE_PATH, require('./routes/success'));
 app.use(BASE_PATH + '/api/admin', basicAuth, require('./routes/admin'));
+app.use(BASE_PATH + '/api/admin', basicAuth, require('./routes/events'));
 app.use(BASE_PATH, require('./routes/reply'));
 
 // ─── Dev Bypass (only when DEV_BYPASS=true) ──────────────────────────────────
