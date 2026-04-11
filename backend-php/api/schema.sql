@@ -71,6 +71,18 @@ CREATE TABLE IF NOT EXISTS private_coaching_applications (
     reviewed_at DATETIME
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS private_inquiries (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    location VARCHAR(100),
+    riding_level VARCHAR(50),
+    message TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_email (email),
+    INDEX idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS reply_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     submission_id INT NOT NULL,

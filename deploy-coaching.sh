@@ -39,6 +39,12 @@ deploy_assets() {
   scp "$PROJECT_DIR/public/assets/coach action/TRCK7644.jpg" "$SERVER:$WEB_ROOT/assets/coach-action-TRCK7644.jpg"
   scp "$PROJECT_DIR/public/assets/coach action/20250805_4326-1.jpg" "$SERVER:$WEB_ROOT/assets/coach-action-20250805_4326-1.jpg"
   scp "$PROJECT_DIR/public/assets/coach action/TRCK7317.jpg" "$SERVER:$WEB_ROOT/assets/coach-action-TRCK7317.jpg"
+  # Experience images (VIP coaching)
+  for img in experience-maldives.jpg experience-yacht.jpg experience-yacht-aerial.jpg; do
+    if [ -f "$PROJECT_DIR/public/assets/$img" ]; then
+      scp "$PROJECT_DIR/public/assets/$img" "$SERVER:$WEB_ROOT/assets/$img"
+    fi
+  done
   echo "  Assets deployed."
 }
 
@@ -53,10 +59,11 @@ deploy_website() {
 }
 
 deploy_private() {
-  echo "[private] Deploying VIP coaching landing page..."
-  ssh "$SERVER" "mkdir -p $WEB_ROOT/vip-coaching"
+  echo "[private] Deploying VIP + Private coaching pages..."
+  ssh "$SERVER" "mkdir -p $WEB_ROOT/vip-coaching $WEB_ROOT/private-coaching"
   scp "$PROJECT_DIR/vip-coaching/index.html" "$SERVER:$WEB_ROOT/vip-coaching/index.html"
-  echo "  VIP coaching page deployed."
+  scp "$PROJECT_DIR/private-coaching/index.html" "$SERVER:$WEB_ROOT/private-coaching/index.html"
+  echo "  VIP and Private coaching pages deployed."
 }
 
 deploy_backend() {
@@ -119,4 +126,5 @@ echo "=== Production deploy complete ==="
 echo "Hub:     $URL"
 echo "App:     ${URL}/video-coaching/"
 echo "VIP:     ${URL}/vip-coaching/"
+echo "Private: ${URL}/private-coaching/"
 echo "Admin:   ${URL}/video-coaching/admin"
