@@ -24,6 +24,7 @@ async function createCheckoutSession(successUrl, cancelUrl, spotsAtPurchase, cus
     cancel_url: cancelUrl,
     metadata: {
       spots_at_purchase: String(spotsAtPurchase),
+      product: 'wingcoach',
     },
   });
 }

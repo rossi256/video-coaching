@@ -18,6 +18,15 @@ try {
 
 if ($event->type === 'checkout.session.completed') {
     $session = $event->data->object;
+
+    // Only process WingCoach checkout sessions (shared Stripe account)
+    if (($session->metadata->product ?? '') !== 'wingcoach') {
+        error_log('Skipping non-WingCoach checkout session: ' . $session->id);
+        header('Content-Type: application/json');
+        echo json_encode(['received' => true]);
+        exit;
+    }
+
     $db = getDb();
 
     // Mark checkout attempt as converted

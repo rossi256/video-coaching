@@ -25,6 +25,12 @@ router.post('/', (req, res) => {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
+    // Only process WingCoach checkout sessions (shared Stripe account)
+    if (session.metadata?.product !== 'wingcoach') {
+      console.log(`Skipping non-WingCoach checkout session: ${session.id}`);
+      return res.json({ received: true });
+    }
+
     // Mark checkout attempt as converted (if one exists)
     markAttemptConverted(session.id);
 

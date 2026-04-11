@@ -77,6 +77,7 @@ try {
         'cancel_url' => BASE_URL . '/',
         'metadata' => [
             'spots_at_purchase' => (string) $remaining,
+            'product' => 'wingcoach',
         ],
     ]);
 
