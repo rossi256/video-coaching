@@ -53,10 +53,10 @@ deploy_website() {
 }
 
 deploy_private() {
-  echo "[private] Deploying private coaching landing page..."
-  ssh "$SERVER" "mkdir -p $WEB_ROOT/private-coaching"
-  scp "$PROJECT_DIR/private-coaching/index.html" "$SERVER:$WEB_ROOT/private-coaching/index.html"
-  echo "  Private coaching page deployed."
+  echo "[private] Deploying VIP coaching landing page..."
+  ssh "$SERVER" "mkdir -p $WEB_ROOT/vip-coaching"
+  scp "$PROJECT_DIR/vip-coaching/index.html" "$SERVER:$WEB_ROOT/vip-coaching/index.html"
+  echo "  VIP coaching page deployed."
 }
 
 deploy_backend() {
@@ -118,5 +118,5 @@ echo ""
 echo "=== Production deploy complete ==="
 echo "Hub:     $URL"
 echo "App:     ${URL}/video-coaching/"
-echo "Private: ${URL}/private-coaching/"
+echo "VIP:     ${URL}/vip-coaching/"
 echo "Admin:   ${URL}/video-coaching/admin"
