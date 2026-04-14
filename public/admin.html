@@ -21,6 +21,22 @@
     .detail-field { margin-bottom: 16px; }
     .detail-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin-bottom: 4px; }
     .detail-value { color: #e2e8f0; font-size: 14px; white-space: pre-wrap; }
+    .tab-btn { border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; background: transparent; }
+    .tab-btn:hover { color: #fff; border-color: rgba(14,165,233,0.4); }
+    .tab-btn.active { color: #000; background: #0ea5e9; border-color: #0ea5e9; font-weight: 600; }
+    .mini-table { width: 100%; font-size: 13px; }
+    .mini-table thead tr { background: rgba(255,255,255,0.05); color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .mini-table th { text-align: left; padding: 10px 16px; font-weight: 600; }
+    .mini-table td { padding: 10px 16px; vertical-align: top; border-top: 1px solid rgba(255,255,255,0.06); }
+    .mini-table tr:hover td { background: rgba(255,255,255,0.03); }
+    .mini-table .cell-dim { color: #64748b; }
+    .chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(14,165,233,0.15); color: #38bdf8; }
+    .chip-warn { background: rgba(234,179,8,0.15); color: #fbbf24; }
+    .chip-ok   { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 50; }
+    .modal-card { background: #0d1b2e; border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 24px; max-width: 520px; width: calc(100% - 32px); max-height: 90vh; overflow-y: auto; }
+    .modal-card input, .modal-card textarea, .modal-card select { background: #080f1c; border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; padding: 8px 12px; border-radius: 8px; width: 100%; font-family: inherit; font-size: 14px; }
+    .modal-card label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; margin-bottom: 4px; margin-top: 12px; }
   </style>
 </head>
 <body class="bg-[#080f1c] text-white min-h-screen">
@@ -40,39 +56,100 @@
 
 <!-- List view -->
 <div id="list-view" class="max-w-6xl mx-auto px-4 py-8">
-  <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold">Submissions</h1>
-    <button onclick="loadList()" class="text-sm text-slate-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-lg transition-colors">Refresh</button>
+
+  <!-- Tab bar -->
+  <div class="flex flex-wrap gap-2 mb-6 border-b border-white/10 pb-3">
+    <button data-tab="video"   class="tab-btn text-sm px-3 py-1.5 rounded-lg transition-colors">Video Submissions</button>
+    <button data-tab="events"  class="tab-btn text-sm px-3 py-1.5 rounded-lg transition-colors">Event Inquiries</button>
+    <button data-tab="qa"      class="tab-btn text-sm px-3 py-1.5 rounded-lg transition-colors">Q&A Sessions</button>
+    <button data-tab="waitlist"class="tab-btn text-sm px-3 py-1.5 rounded-lg transition-colors">Waitlist</button>
+    <button data-tab="private" class="tab-btn text-sm px-3 py-1.5 rounded-lg transition-colors">Private Coaching</button>
   </div>
 
-  <div id="list-loading" class="text-slate-400 py-8 text-center">
-    <div class="w-8 h-8 border-2 border-[#0ea5e9]/30 border-t-[#0ea5e9] rounded-full animate-spin mx-auto mb-3"></div>
-    Loading...
-  </div>
+  <!-- Tab: Video Submissions -->
+  <div id="tab-video" class="tab-panel">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Video Submissions</h1>
+      <button onclick="loadList()" class="text-sm text-slate-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-lg transition-colors">Refresh</button>
+    </div>
 
-  <div id="list-empty" class="hidden text-center py-16 text-slate-500">
-    <p class="text-4xl mb-3">📭</p>
-    <p>No submissions yet.</p>
-  </div>
+    <div id="list-loading" class="text-slate-400 py-8 text-center">
+      <div class="w-8 h-8 border-2 border-[#0ea5e9]/30 border-t-[#0ea5e9] rounded-full animate-spin mx-auto mb-3"></div>
+      Loading...
+    </div>
 
-  <div id="list-table-wrap" class="hidden">
-    <div class="overflow-x-auto rounded-xl border border-white/10">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="bg-white/5 text-slate-400 text-xs uppercase tracking-wider">
-            <th class="text-left px-4 py-3">ID</th>
-            <th class="text-left px-4 py-3">Name</th>
-            <th class="text-left px-4 py-3">Email</th>
-            <th class="text-left px-4 py-3">Level</th>
-            <th class="text-left px-4 py-3">Date</th>
-            <th class="text-left px-4 py-3">Status</th>
-            <th class="text-left px-4 py-3">Action</th>
-          </tr>
-        </thead>
-        <tbody id="list-tbody" class="divide-y divide-white/5"></tbody>
-      </table>
+    <div id="list-empty" class="hidden text-center py-16 text-slate-500">
+      <p class="text-4xl mb-3">📭</p>
+      <p>No submissions yet.</p>
+    </div>
+
+    <div id="list-table-wrap" class="hidden">
+      <div class="overflow-x-auto rounded-xl border border-white/10">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-white/5 text-slate-400 text-xs uppercase tracking-wider">
+              <th class="text-left px-4 py-3">ID</th>
+              <th class="text-left px-4 py-3">Name</th>
+              <th class="text-left px-4 py-3">Email</th>
+              <th class="text-left px-4 py-3">Level</th>
+              <th class="text-left px-4 py-3">Date</th>
+              <th class="text-left px-4 py-3">Status</th>
+              <th class="text-left px-4 py-3">Action</th>
+            </tr>
+          </thead>
+          <tbody id="list-tbody" class="divide-y divide-white/5"></tbody>
+        </table>
+      </div>
     </div>
   </div>
+
+  <!-- Tab: Event Inquiries -->
+  <div id="tab-events" class="tab-panel hidden">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Event Inquiries <span id="events-count" class="text-slate-500 font-normal text-base"></span></h1>
+      <div class="flex items-center gap-2">
+        <select id="events-filter" onchange="renderEvents()" class="bg-[#0d1b2e] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-300">
+          <option value="">All events</option>
+        </select>
+        <button onclick="loadEvents()" class="text-sm text-slate-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-lg transition-colors">Refresh</button>
+      </div>
+    </div>
+    <div id="events-wrap" class="rounded-xl border border-white/10 overflow-x-auto"></div>
+  </div>
+
+  <!-- Tab: Q&A Sessions -->
+  <div id="tab-qa" class="tab-panel hidden">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Q&A Sessions</h1>
+      <div class="flex items-center gap-2">
+        <button onclick="openQaCreate()" class="text-sm text-black bg-[#0ea5e9] hover:bg-[#38bdf8] font-semibold px-3 py-1.5 rounded-lg transition-colors">+ New Session</button>
+        <button onclick="loadQa()" class="text-sm text-slate-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-lg transition-colors">Refresh</button>
+      </div>
+    </div>
+    <div id="qa-wrap" class="rounded-xl border border-white/10 overflow-hidden"></div>
+  </div>
+
+  <!-- Tab: Waitlist -->
+  <div id="tab-waitlist" class="tab-panel hidden">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Waitlist <span id="waitlist-count" class="text-slate-500 font-normal text-base"></span></h1>
+      <button onclick="loadWaitlist()" class="text-sm text-slate-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-lg transition-colors">Refresh</button>
+    </div>
+    <div id="waitlist-wrap" class="rounded-xl border border-white/10 overflow-x-auto"></div>
+  </div>
+
+  <!-- Tab: Private Coaching -->
+  <div id="tab-private" class="tab-panel hidden">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Private Coaching</h1>
+      <button onclick="loadPrivate()" class="text-sm text-slate-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-lg transition-colors">Refresh</button>
+    </div>
+    <h2 class="text-sm uppercase tracking-wider text-slate-400 mb-2">Applications <span id="priv-app-count" class="text-slate-500 normal-case"></span></h2>
+    <div id="priv-app-wrap" class="rounded-xl border border-white/10 overflow-x-auto mb-8"></div>
+    <h2 class="text-sm uppercase tracking-wider text-slate-400 mb-2">Inquiries <span id="priv-inq-count" class="text-slate-500 normal-case"></span></h2>
+    <div id="priv-inq-wrap" class="rounded-xl border border-white/10 overflow-x-auto"></div>
+  </div>
+
 </div>
 
 <!-- Detail view -->
@@ -622,8 +699,254 @@ function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+const TAB_LOADERS = { video: loadList, events: loadEvents, qa: loadQa, waitlist: loadWaitlist, private: loadPrivate };
+let activeTab = 'video';
+const tabsLoaded = new Set();
+
+function switchTab(name) {
+  activeTab = name;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('hidden', p.id !== 'tab-' + name));
+  if (!tabsLoaded.has(name)) { tabsLoaded.add(name); (TAB_LOADERS[name] || (()=>{}))(); }
+}
+document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+function fmtDate(s) {
+  if (!s) return '-';
+  const d = new Date(s.replace(' ', 'T'));
+  if (isNaN(d)) return esc(s);
+  return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+}
+function fmtDateTime(s) {
+  if (!s) return '-';
+  const d = new Date(s.replace(' ', 'T'));
+  if (isNaN(d)) return esc(s);
+  return d.toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+// ── Event Inquiries ─────────────────────────────────────────────────────────
+let eventsCache = [];
+async function loadEvents() {
+  const wrap = document.getElementById('events-wrap');
+  wrap.innerHTML = '<div class="p-8 text-slate-400 text-center">Loading…</div>';
+  try {
+    const r = await fetch(`${BP}/api/admin/event-inquiries`);
+    eventsCache = await r.json();
+    const slugs = [...new Set(eventsCache.map(e => e.event_slug).filter(Boolean))].sort();
+    const sel = document.getElementById('events-filter');
+    sel.innerHTML = '<option value="">All events (' + eventsCache.length + ')</option>' +
+      slugs.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    renderEvents();
+  } catch {
+    wrap.innerHTML = '<div class="p-8 text-red-400 text-center">Error loading event inquiries.</div>';
+  }
+}
+function renderEvents() {
+  const wrap = document.getElementById('events-wrap');
+  const filter = document.getElementById('events-filter').value;
+  const rows = filter ? eventsCache.filter(e => e.event_slug === filter) : eventsCache;
+  document.getElementById('events-count').textContent = `(${rows.length})`;
+  if (!rows.length) { wrap.innerHTML = '<div class="p-8 text-slate-500 text-center">No inquiries.</div>'; return; }
+  wrap.innerHTML = `
+    <table class="mini-table">
+      <thead><tr>
+        <th>Date</th><th>Event</th><th>Name</th><th>Email</th><th>Level</th><th>Message</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(r => `
+          <tr>
+            <td class="cell-dim">${fmtDate(r.created_at)}</td>
+            <td><span class="chip">${esc(r.event_slug || '-')}</span></td>
+            <td>${esc(r.name || '-')}</td>
+            <td class="cell-dim"><a href="mailto:${esc(r.email)}" class="hover:text-[#38bdf8]">${esc(r.email || '-')}</a></td>
+            <td class="cell-dim">${esc(r.current_level || '-')}</td>
+            <td style="max-width:280px"><div class="line-clamp-3 text-slate-300" style="white-space:pre-wrap">${esc(r.message || '')}</div></td>
+            <td>${r.status === 'responded' ? '<span class="chip chip-ok">responded</span>' : '<span class="chip chip-warn">new</span>'}</td>
+            <td>${r.status === 'responded' ? '' : `<button onclick="markEventResponded(${r.id})" class="text-xs text-[#0ea5e9] hover:underline">Mark responded</button>`}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+async function markEventResponded(id) {
+  if (!confirm('Mark inquiry #' + id + ' as responded?')) return;
+  const r = await fetch(`${BP}/api/admin/event-inquiry/${id}/respond`, { method: 'POST' });
+  if (r.ok) loadEvents(); else alert('Failed');
+}
+
+// ── Q&A Sessions ────────────────────────────────────────────────────────────
+let qaCache = [];
+async function loadQa() {
+  const wrap = document.getElementById('qa-wrap');
+  wrap.innerHTML = '<div class="p-8 text-slate-400 text-center">Loading…</div>';
+  try {
+    const r = await fetch(`${BP}/api/admin/qa-sessions`);
+    qaCache = await r.json();
+    if (!qaCache.length) { wrap.innerHTML = '<div class="p-8 text-slate-500 text-center">No Q&A sessions yet. Click "+ New Session".</div>'; return; }
+    wrap.innerHTML = `
+      <table class="mini-table">
+        <thead><tr>
+          <th>When</th><th>Title</th><th>Type</th><th>Status</th><th>Signups</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${qaCache.map(s => `
+            <tr>
+              <td class="cell-dim">${fmtDateTime(s.scheduled_at)}</td>
+              <td><div>${esc(s.title)}</div><div class="cell-dim text-xs">${esc((s.description||'').slice(0,90))}${(s.description||'').length>90?'…':''}</div></td>
+              <td><span class="chip">${esc(s.type || 'meetup')}</span></td>
+              <td>${esc(s.status || 'upcoming')}</td>
+              <td><button onclick="viewQaSignups(${s.id})" class="text-[#0ea5e9] hover:underline">View →</button></td>
+              <td class="cell-dim text-xs">${s.meeting_link ? `<a href="${esc(s.meeting_link)}" target="_blank" class="hover:text-[#38bdf8]">link</a>` : ''}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      <div id="qa-signups-panel" class="hidden border-t border-white/10"></div>`;
+  } catch {
+    wrap.innerHTML = '<div class="p-8 text-red-400 text-center">Error loading sessions.</div>';
+  }
+}
+async function viewQaSignups(sessionId) {
+  const sess = qaCache.find(s => +s.id === +sessionId) || {};
+  const title = sess.title || ('Session #' + sessionId);
+  const panel = document.getElementById('qa-signups-panel');
+  panel.classList.remove('hidden');
+  panel.innerHTML = `<div class="p-6"><h3 class="font-semibold mb-3">Signups — ${esc(title)}</h3><div class="text-slate-400">Loading…</div></div>`;
+  const r = await fetch(`${BP}/api/admin/qa-signups?session_id=${sessionId}`);
+  const rows = await r.json();
+  panel.innerHTML = `
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold">Signups — ${esc(title)} <span class="cell-dim font-normal">(${rows.length})</span></h3>
+        <button onclick="document.getElementById('qa-signups-panel').classList.add('hidden')" class="text-xs text-slate-400 hover:text-white">Close</button>
+      </div>
+      ${rows.length ? `
+        <table class="mini-table">
+          <thead><tr><th>Date</th><th>Name</th><th>Email</th><th>Message</th></tr></thead>
+          <tbody>${rows.map(s => `
+            <tr>
+              <td class="cell-dim">${fmtDate(s.created_at)}</td>
+              <td>${esc(s.name)}</td>
+              <td class="cell-dim"><a href="mailto:${esc(s.email)}" class="hover:text-[#38bdf8]">${esc(s.email)}</a></td>
+              <td style="max-width:320px; white-space:pre-wrap">${esc(s.message || '')}</td>
+            </tr>`).join('')}</tbody>
+        </table>` : '<p class="text-slate-500">No signups yet.</p>'}
+    </div>`;
+}
+function openQaCreate() {
+  const today = new Date();
+  today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+  const defaultDt = today.toISOString().slice(0, 16);
+  document.body.insertAdjacentHTML('beforeend', `
+    <div id="qa-modal" class="modal-bg" onclick="if(event.target===this)this.remove()">
+      <div class="modal-card">
+        <h2 class="text-lg font-bold mb-2">New Q&A Session</h2>
+        <label>Title *</label><input id="qa-title" placeholder="e.g. April Wingfoil Q&A">
+        <label>Description</label><textarea id="qa-desc" rows="3" placeholder="What this session covers"></textarea>
+        <label>When (local time) *</label><input id="qa-when" type="datetime-local" value="${defaultDt}">
+        <label>Duration (min)</label><input id="qa-dur" type="number" value="60">
+        <label>Max participants</label><input id="qa-max" type="number" value="50">
+        <label>Meeting link</label><input id="qa-link" placeholder="https://meet…">
+        <div class="flex gap-2 mt-5">
+          <button onclick="submitQaCreate()" class="flex-1 bg-[#0ea5e9] hover:bg-[#38bdf8] text-black font-semibold py-2 rounded-lg">Create</button>
+          <button onclick="document.getElementById('qa-modal').remove()" class="px-4 text-slate-300 hover:text-white border border-white/10 rounded-lg">Cancel</button>
+        </div>
+      </div>
+    </div>`);
+}
+async function submitQaCreate() {
+  const payload = {
+    title: document.getElementById('qa-title').value.trim(),
+    description: document.getElementById('qa-desc').value.trim(),
+    scheduled_at: document.getElementById('qa-when').value.replace('T', ' ') + ':00',
+    duration_minutes: +document.getElementById('qa-dur').value || 60,
+    max_participants: +document.getElementById('qa-max').value || 50,
+    meeting_link: document.getElementById('qa-link').value.trim()
+  };
+  if (!payload.title || !payload.scheduled_at) { alert('Title and date/time are required.'); return; }
+  const r = await fetch(`${BP}/api/admin/qa-session/create`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+  });
+  if (r.ok) { document.getElementById('qa-modal').remove(); loadQa(); }
+  else alert('Failed to create session: ' + (await r.text()));
+}
+
+// ── Waitlist ────────────────────────────────────────────────────────────────
+async function loadWaitlist() {
+  const wrap = document.getElementById('waitlist-wrap');
+  wrap.innerHTML = '<div class="p-8 text-slate-400 text-center">Loading…</div>';
+  try {
+    const r = await fetch(`${BP}/api/admin/waitlist`);
+    const rows = await r.json();
+    document.getElementById('waitlist-count').textContent = `(${rows.length})`;
+    if (!rows.length) { wrap.innerHTML = '<div class="p-8 text-slate-500 text-center">No waitlist signups.</div>'; return; }
+    wrap.innerHTML = `
+      <table class="mini-table">
+        <thead><tr><th>Date</th><th>Type</th><th>Name</th><th>Email</th></tr></thead>
+        <tbody>${rows.map(w => `
+          <tr>
+            <td class="cell-dim">${fmtDate(w.created_at)}</td>
+            <td><span class="chip">${esc(w.type || '-')}</span></td>
+            <td>${esc(w.name || '-')}</td>
+            <td class="cell-dim"><a href="mailto:${esc(w.email)}" class="hover:text-[#38bdf8]">${esc(w.email)}</a></td>
+          </tr>`).join('')}</tbody>
+      </table>`;
+  } catch {
+    wrap.innerHTML = '<div class="p-8 text-red-400 text-center">Error loading waitlist.</div>';
+  }
+}
+
+// ── Private Coaching ────────────────────────────────────────────────────────
+async function loadPrivate() {
+  const appWrap = document.getElementById('priv-app-wrap');
+  const inqWrap = document.getElementById('priv-inq-wrap');
+  appWrap.innerHTML = inqWrap.innerHTML = '<div class="p-8 text-slate-400 text-center">Loading…</div>';
+  try {
+    const [appsR, inqsR] = await Promise.all([
+      fetch(`${BP}/api/admin/private-applications`),
+      fetch(`${BP}/api/admin/private-inquiries`)
+    ]);
+    const apps = await appsR.json();
+    const inqs = await inqsR.json();
+    document.getElementById('priv-app-count').textContent = `(${apps.length})`;
+    document.getElementById('priv-inq-count').textContent = `(${inqs.length})`;
+
+    appWrap.innerHTML = apps.length ? `
+      <table class="mini-table">
+        <thead><tr><th>Date</th><th>Name</th><th>Email</th><th>Location</th><th>Level</th><th>Group</th><th>Timeframe</th><th>Message</th><th>Status</th></tr></thead>
+        <tbody>${apps.map(a => `
+          <tr>
+            <td class="cell-dim">${fmtDate(a.created_at)}</td>
+            <td>${esc(a.name)}</td>
+            <td class="cell-dim"><a href="mailto:${esc(a.email)}" class="hover:text-[#38bdf8]">${esc(a.email)}</a></td>
+            <td class="cell-dim">${esc(a.location || '-')}</td>
+            <td class="cell-dim">${esc(a.riding_level || '-')}</td>
+            <td class="cell-dim">${esc(a.group_size || '-')}</td>
+            <td class="cell-dim">${esc(a.timeframe || '-')}</td>
+            <td style="max-width:260px; white-space:pre-wrap">${esc(a.message || '')}</td>
+            <td>${a.status === 'reviewed' ? '<span class="chip chip-ok">reviewed</span>' : '<span class="chip chip-warn">' + esc(a.status || 'new') + '</span>'}</td>
+          </tr>`).join('')}</tbody>
+      </table>` : '<div class="p-8 text-slate-500 text-center">No applications.</div>';
+
+    inqWrap.innerHTML = inqs.length ? `
+      <table class="mini-table">
+        <thead><tr><th>Date</th><th>Name</th><th>Email</th><th>Location</th><th>Level</th><th>Message</th></tr></thead>
+        <tbody>${inqs.map(i => `
+          <tr>
+            <td class="cell-dim">${fmtDate(i.created_at)}</td>
+            <td>${esc(i.name)}</td>
+            <td class="cell-dim"><a href="mailto:${esc(i.email)}" class="hover:text-[#38bdf8]">${esc(i.email)}</a></td>
+            <td class="cell-dim">${esc(i.location || '-')}</td>
+            <td class="cell-dim">${esc(i.riding_level || '-')}</td>
+            <td style="max-width:320px; white-space:pre-wrap">${esc(i.message || '')}</td>
+          </tr>`).join('')}</tbody>
+      </table>` : '<div class="p-8 text-slate-500 text-center">No inquiries.</div>';
+  } catch {
+    appWrap.innerHTML = inqWrap.innerHTML = '<div class="p-8 text-red-400 text-center">Error loading.</div>';
+  }
+}
+
 // ── Init ─────────────────────────────────────────────────────────────────────
-loadList();
+switchTab('video');
 </script>
 </body>
 </html>

@@ -311,4 +311,36 @@ if ($action === 'qa-signups') {
     exit;
 }
 
+// --- GET /api/admin/qa-signups-all ---  (every signup across all sessions, session title joined)
+if ($action === 'qa-signups-all') {
+    $sql = 'SELECT s.id, s.session_id, s.name, s.email, s.message, s.created_at,
+                   q.title AS session_title, q.scheduled_at
+            FROM qa_signups s
+            LEFT JOIN qa_sessions q ON q.id = s.session_id
+            ORDER BY s.created_at DESC';
+    echo json_encode($db->query($sql)->fetchAll());
+    exit;
+}
+
+// --- GET /api/admin/waitlist ---
+if ($action === 'waitlist') {
+    $rows = $db->query('SELECT * FROM waitlist ORDER BY id DESC')->fetchAll();
+    echo json_encode($rows);
+    exit;
+}
+
+// --- GET /api/admin/private-inquiries ---
+if ($action === 'private-inquiries') {
+    $rows = $db->query('SELECT * FROM private_inquiries ORDER BY id DESC')->fetchAll();
+    echo json_encode($rows);
+    exit;
+}
+
+// --- GET /api/admin/private-applications ---
+if ($action === 'private-applications') {
+    $rows = $db->query('SELECT * FROM private_coaching_applications ORDER BY id DESC')->fetchAll();
+    echo json_encode($rows);
+    exit;
+}
+
 jsonResponse(['error' => 'Unknown action'], 400);

@@ -93,6 +93,18 @@ RewriteRule ^admin/qa-session/create$ admin.php?_action=qa-session-create [L,QSA
 # /api/admin/qa-signups?session_id=ID → admin.php
 RewriteRule ^admin/qa-signups$ admin.php?_action=qa-signups [L,QSA]
 
+# /api/admin/qa-signups-all → admin.php (all signups across sessions)
+RewriteRule ^admin/qa-signups-all$ admin.php?_action=qa-signups-all [L,QSA]
+
+# /api/admin/waitlist → admin.php
+RewriteRule ^admin/waitlist$ admin.php?_action=waitlist [L,QSA]
+
+# /api/admin/private-inquiries → admin.php
+RewriteRule ^admin/private-inquiries$ admin.php?_action=private-inquiries [L,QSA]
+
+# /api/admin/private-applications → admin.php
+RewriteRule ^admin/private-applications$ admin.php?_action=private-applications [L,QSA]
+
 # --- Dev test dashboard ---
 # /api/dev/email-test → dev.php
 RewriteRule ^dev/email-test$ dev.php?_action=email-test [L,QSA]
