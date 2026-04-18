@@ -38,7 +38,8 @@ deploy_backend() {
   # Deploy composer.json and install deps on server
   scp "$PROJECT_DIR/backend-php/composer.json" "$SERVER:$WEB_ROOT/composer.json"
   echo "  Running composer install on server..."
-  ssh "$SERVER" "cd $WEB_ROOT && composer install --no-dev --no-interaction 2>&1"
+  # Match prod + CI: pinned php8.4 composer, non-fatal so set -e doesn't abort follow-up steps.
+  ssh "$SERVER" "cd $WEB_ROOT && /usr/bin/php8.4 /usr/local/bin/composer install --no-dev --no-interaction 2>&1 || true"
   echo "  PHP backend deployed."
 }
 

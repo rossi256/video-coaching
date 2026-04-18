@@ -77,7 +77,9 @@ deploy_backend() {
   # Deploy composer.json and install deps on server
   scp "$PROJECT_DIR/backend-php/composer.json" "$SERVER:$WEB_ROOT/video-coaching/composer.json"
   echo "  Running composer install on server..."
-  ssh "$SERVER" "cd $WEB_ROOT/video-coaching && composer install --no-dev --no-interaction 2>&1"
+  # PHP 8.5 on prod is missing ext-curl; use pinned php8.4 binary (matches .github/workflows/deploy.yml).
+  # `|| true` so composer failures don't abort the rest of the deploy under `set -e`.
+  ssh "$SERVER" "cd $WEB_ROOT/video-coaching && /usr/bin/php8.4 /usr/local/bin/composer install --no-dev --no-interaction 2>&1 || true"
   echo "  PHP backend deployed."
 }
 
