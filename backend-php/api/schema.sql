@@ -120,7 +120,9 @@ CREATE TABLE IF NOT EXISTS qa_sessions (
     duration_minutes INT DEFAULT 60,
     max_participants INT DEFAULT 50,
     status VARCHAR(32) DEFAULT 'upcoming',
+    type VARCHAR(32) DEFAULT 'meetup',
     meeting_link VARCHAR(500),
+    external_url VARCHAR(500) DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_scheduled (scheduled_at),
     INDEX idx_status (status)

@@ -56,13 +56,15 @@ When you finish a significant piece of work on this project:
    ```bash
    # Post a status note (also updates lastMaintenance automatically)
    curl -s -X POST https://forge.tricktionary.com/api/projects/video-coaching/notes \
-     -H "Content-Type: application/json" -H "Cookie: ari_session=$ARI_SESSION" \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer $FORGE_API_KEY" \
      -d '{"text": "Completed: [brief summary of what was done]"}'
    ```
    ```bash
    # Mark todos as done (if applicable)
    curl -s -X PATCH https://forge.tricktionary.com/api/projects/video-coaching/todos \
-     -H "Content-Type: application/json" -H "Cookie: ari_session=$ARI_SESSION" \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer $FORGE_API_KEY" \
      -d '{"todoId": "TODO_ID", "status": "done"}'
    ```
    Or use the helper: `~/.openclaw/workspace/scripts/forge-sync.sh video-coaching "Completed: summary"`
