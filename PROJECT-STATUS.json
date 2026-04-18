@@ -1,6 +1,6 @@
 {
-  "lastDev": "Fix: admin submissions 500 error — vendor/ missing due to composer failing on PHP 8.5. Installed deps with php8.4, pinne",
-  "lastDevDate": "2026-04-11",
+  "lastDev": "Reply-page player swapped to video.js 8.16.1 + videojs-landscape-fullscreen (matches Tricktionary mobile app). Mirror + 0.25-2x speeds + landscape-on-rotate.",
+  "lastDevDate": "2026-04-18",
   "phase": "active",
   "milestone": null,
   "blockedBy": null

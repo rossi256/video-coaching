@@ -1,0 +1,82 @@
+/* WingCoach custom skin on top of video.js default styles */
+
+.video-js {
+  width: 100%;
+  max-height: 70vh;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Brand accent (sky-blue #0ea5e9) on progress bar + seek handles */
+.video-js .vjs-play-progress,
+.video-js .vjs-volume-level {
+  background-color: #0ea5e9;
+}
+.video-js .vjs-play-progress::before {
+  color: #0ea5e9;
+}
+.video-js .vjs-slider {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+.video-js .vjs-big-play-button {
+  background-color: rgba(14, 165, 233, 0.65);
+  border-color: #0ea5e9;
+  border-radius: 50%;
+  width: 72px;
+  height: 72px;
+  line-height: 72px;
+  font-size: 36px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+}
+.video-js:hover .vjs-big-play-button,
+.video-js .vjs-big-play-button:focus {
+  background-color: #0ea5e9;
+}
+
+/* Control bar styling to match card chrome */
+.video-js .vjs-control-bar {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
+}
+
+/* Mirror button (copied from Tricktionary app, re-skinned for WingCoach) */
+.vjs-mirror-button {
+  position: absolute !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  z-index: 10;
+}
+.vjs-mirror-button:hover {
+  background: rgba(14, 165, 233, 0.3);
+  border-color: #0ea5e9;
+}
+.vjs-mirror-button.vjs-mirror-active {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+}
+.vjs-mirror-button .vjs-icon-mirror {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-image: url('./mirror.png');
+  background-size: cover;
+  mix-blend-mode: lighten;
+}
+
+/* Keep tab styling the existing page uses */
+.tab-btn { border-bottom: 2px solid transparent; transition: all 0.2s; }
+.tab-btn.active { border-bottom-color: #0ea5e9; color: #0ea5e9; }
