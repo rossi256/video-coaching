@@ -1,7 +1,7 @@
 {
-  "lastDev": "Event Inquiries admin: detail drawer (full message + parsed quiz answers), archive/delete, AI reply drafts to info@ Drafts via himalaya poller bridge",
+  "lastDev": "Event Inquiries admin: detail drawer (full message + parsed quiz answers), archive/delete, and AI reply drafts to info@ ",
   "lastDevDate": "2026-06-09",
-  "phase": "migrating",
-  "milestone": "Absorb into wingfoil app per https://ari.tricktionary.com/handoff/wing-coaching.md",
+  "phase": "active",
+  "milestone": null,
   "blockedBy": null
 }
