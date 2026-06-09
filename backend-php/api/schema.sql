@@ -128,6 +128,20 @@ CREATE TABLE IF NOT EXISTS qa_sessions (
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Email draft queue: admin "Draft reply" button enqueues here; a local
+-- poller (scripts/coaching-draft-poller.py) picks up pending rows, generates
+-- an AI reply via claude -p, and saves a himalaya draft into info@ Drafts.
+CREATE TABLE IF NOT EXISTS email_draft_queue (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    inquiry_id INT NOT NULL,
+    account VARCHAR(128) NOT NULL DEFAULT 'info@tricktionary.com',
+    status VARCHAR(16) NOT NULL DEFAULT 'pending',  -- pending | done | failed
+    error TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    processed_at DATETIME,
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS qa_signups (
     id INT AUTO_INCREMENT PRIMARY KEY,
     session_id INT NOT NULL,

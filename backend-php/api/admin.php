@@ -275,6 +275,55 @@ if ($action === 'event-inquiry-respond' && $method === 'POST' && $id) {
     jsonResponse(['success' => true]);
 }
 
+// --- POST /api/admin/event-inquiry/:id/archive ---
+if ($action === 'event-inquiry-archive' && $method === 'POST' && $id) {
+    $stmt = $db->prepare('UPDATE event_inquiries SET status = ? WHERE id = ?');
+    $stmt->execute(['archived', $id]);
+    jsonResponse(['success' => true]);
+}
+
+// --- DELETE /api/admin/event-inquiry/:id/delete ---
+if ($action === 'event-inquiry-delete' && $method === 'DELETE' && $id) {
+    $db->prepare('DELETE FROM event_inquiries WHERE id = ?')->execute([$id]);
+    jsonResponse(['success' => true]);
+}
+
+// --- POST /api/admin/event-inquiry/:id/draft --- enqueue an AI reply draft request
+if ($action === 'event-inquiry-draft' && $method === 'POST' && $id) {
+    $stmt = $db->prepare('SELECT id FROM event_inquiries WHERE id = ?');
+    $stmt->execute([$id]);
+    if (!$stmt->fetch()) jsonResponse(['error' => 'Not found'], 404);
+
+    $ins = $db->prepare('INSERT INTO email_draft_queue (inquiry_id) VALUES (?)');
+    $ins->execute([$id]);
+    jsonResponse(['queued' => true, 'queue_id' => (int) $db->lastInsertId()]);
+}
+
+// --- GET /api/admin/email-draft-queue --- pending draft requests (consumed by local poller)
+if ($action === 'email-draft-queue') {
+    $sql = 'SELECT q.id, q.inquiry_id, q.account,
+                   e.name, e.email, e.event_slug, e.event_name, e.current_level, e.message
+            FROM email_draft_queue q
+            JOIN event_inquiries e ON e.id = q.inquiry_id
+            WHERE q.status = "pending"
+            ORDER BY q.id ASC';
+    echo json_encode($db->query($sql)->fetchAll());
+    exit;
+}
+
+// --- POST /api/admin/email-draft-done --- poller marks a queue row processed
+if ($action === 'email-draft-done' && $method === 'POST') {
+    $body = getJsonBody();
+    $queueId = (int) ($body['queue_id'] ?? 0);
+    $status = ($body['status'] ?? '') === 'done' ? 'done' : 'failed';
+    $error = $body['error'] ?? null;
+    if (!$queueId) jsonResponse(['error' => 'queue_id required'], 400);
+
+    $stmt = $db->prepare('UPDATE email_draft_queue SET status = ?, error = ?, processed_at = NOW() WHERE id = ?');
+    $stmt->execute([$status, $error, $queueId]);
+    jsonResponse(['success' => true]);
+}
+
 // --- GET /api/admin/qa-sessions ---
 if ($action === 'qa-sessions-admin') {
     $rows = $db->query('SELECT * FROM qa_sessions ORDER BY scheduled_at DESC')->fetchAll();

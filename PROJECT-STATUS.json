@@ -1,7 +1,7 @@
 {
-  "lastDev": "Reply-page player swapped to video.js 8.16.1 + videojs-landscape-fullscreen (matches Tricktionary mobile app). Mirror + 0.25-2x speeds + landscape-on-rotate.",
-  "lastDevDate": "2026-04-18",
-  "phase": "active",
-  "milestone": null,
+  "lastDev": "Event Inquiries admin: detail drawer (full message + parsed quiz answers), archive/delete, AI reply drafts to info@ Drafts via himalaya poller bridge",
+  "lastDevDate": "2026-06-09",
+  "phase": "migrating",
+  "milestone": "Absorb into wingfoil app per https://ari.tricktionary.com/handoff/wing-coaching.md",
   "blockedBy": null
 }

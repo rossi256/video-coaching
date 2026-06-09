@@ -84,6 +84,21 @@ RewriteRule ^admin/event-inquiries$ admin.php?_action=event-inquiries [L,QSA]
 # /api/admin/event-inquiry/ID/respond → admin.php
 RewriteRule ^admin/event-inquiry/(\d+)/respond$ admin.php?_action=event-inquiry-respond&id=$1 [L,QSA]
 
+# /api/admin/event-inquiry/ID/archive → admin.php
+RewriteRule ^admin/event-inquiry/(\d+)/archive$ admin.php?_action=event-inquiry-archive&id=$1 [L,QSA]
+
+# /api/admin/event-inquiry/ID/delete → admin.php
+RewriteRule ^admin/event-inquiry/(\d+)/delete$ admin.php?_action=event-inquiry-delete&id=$1 [L,QSA]
+
+# /api/admin/event-inquiry/ID/draft → admin.php (enqueue AI reply draft)
+RewriteRule ^admin/event-inquiry/(\d+)/draft$ admin.php?_action=event-inquiry-draft&id=$1 [L,QSA]
+
+# /api/admin/email-draft-queue → admin.php (poller reads pending)
+RewriteRule ^admin/email-draft-queue$ admin.php?_action=email-draft-queue [L,QSA]
+
+# /api/admin/email-draft-done → admin.php (poller marks processed)
+RewriteRule ^admin/email-draft-done$ admin.php?_action=email-draft-done [L,QSA]
+
 # /api/admin/qa-sessions → admin.php (list/create)
 RewriteRule ^admin/qa-sessions$ admin.php?_action=qa-sessions-admin [L,QSA]
 

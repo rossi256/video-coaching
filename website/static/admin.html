@@ -24,6 +24,12 @@
     .tab-btn { border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; background: transparent; }
     .tab-btn:hover { color: #fff; border-color: rgba(14,165,233,0.4); }
     .tab-btn.active { color: #000; background: #0ea5e9; border-color: #0ea5e9; font-weight: 600; }
+    /* Row highlight for hash-based deep links (e.g. #events/123) */
+    @keyframes row-flash {
+      0%, 100% { background-color: transparent; }
+      50%      { background-color: rgba(14,165,233,0.28); }
+    }
+    tr.row-highlight td { animation: row-flash 0.8s ease-in-out 3; }
     .mini-table { width: 100%; font-size: 13px; }
     .mini-table thead tr { background: rgba(255,255,255,0.05); color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
     .mini-table th { text-align: left; padding: 10px 16px; font-weight: 600; }
@@ -111,6 +117,9 @@
         <select id="events-filter" onchange="renderEvents()" class="bg-[#0d1b2e] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-300">
           <option value="">All events</option>
         </select>
+        <label class="flex items-center gap-1.5 text-sm text-slate-400 select-none cursor-pointer">
+          <input id="events-show-archived" type="checkbox" onchange="renderEvents()" class="accent-[#0ea5e9]"> show archived
+        </label>
         <button onclick="loadEvents()" class="text-sm text-slate-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-lg transition-colors">Refresh</button>
       </div>
     </div>
@@ -742,36 +751,137 @@ async function loadEvents() {
     wrap.innerHTML = '<div class="p-8 text-red-400 text-center">Error loading event inquiries.</div>';
   }
 }
+function eventStatusChip(status) {
+  if (status === 'responded') return '<span class="chip chip-ok">responded</span>';
+  if (status === 'archived')  return '<span class="chip" style="background:rgba(148,163,184,0.15);color:#94a3b8">archived</span>';
+  return '<span class="chip chip-warn">new</span>';
+}
+function msgSnippet(message) {
+  const line = (message || '').split('\n').map(s => s.trim()).find(Boolean) || '';
+  return line.length > 64 ? line.slice(0, 64) + '…' : line;
+}
 function renderEvents() {
   const wrap = document.getElementById('events-wrap');
   const filter = document.getElementById('events-filter').value;
-  const rows = filter ? eventsCache.filter(e => e.event_slug === filter) : eventsCache;
+  const showArchived = document.getElementById('events-show-archived')?.checked;
+  let rows = filter ? eventsCache.filter(e => e.event_slug === filter) : eventsCache.slice();
+  if (!showArchived) rows = rows.filter(e => e.status !== 'archived');
   document.getElementById('events-count').textContent = `(${rows.length})`;
   if (!rows.length) { wrap.innerHTML = '<div class="p-8 text-slate-500 text-center">No inquiries.</div>'; return; }
   wrap.innerHTML = `
     <table class="mini-table">
       <thead><tr>
-        <th>Date</th><th>Event</th><th>Name</th><th>Email</th><th>Level</th><th>Message</th><th>Status</th><th></th>
+        <th>Date</th><th>Event</th><th>Name</th><th>Email</th><th>Level</th><th>Message</th><th>Status</th>
       </tr></thead>
       <tbody>
         ${rows.map(r => `
-          <tr>
+          <tr data-row-id="${r.id}" onclick="openEventDetail(${r.id})" title="Open inquiry">
             <td class="cell-dim">${fmtDate(r.created_at)}</td>
             <td><span class="chip">${esc(r.event_slug || '-')}</span></td>
             <td>${esc(r.name || '-')}</td>
-            <td class="cell-dim"><a href="mailto:${esc(r.email)}" class="hover:text-[#38bdf8]">${esc(r.email || '-')}</a></td>
+            <td class="cell-dim">${esc(r.email || '-')}</td>
             <td class="cell-dim">${esc(r.current_level || '-')}</td>
-            <td style="max-width:280px"><div class="line-clamp-3 text-slate-300" style="white-space:pre-wrap">${esc(r.message || '')}</div></td>
-            <td>${r.status === 'responded' ? '<span class="chip chip-ok">responded</span>' : '<span class="chip chip-warn">new</span>'}</td>
-            <td>${r.status === 'responded' ? '' : `<button onclick="markEventResponded(${r.id})" class="text-xs text-[#0ea5e9] hover:underline">Mark responded</button>`}</td>
+            <td class="cell-dim" style="max-width:320px">${esc(msgSnippet(r.message))}</td>
+            <td>${eventStatusChip(r.status)}</td>
           </tr>`).join('')}
       </tbody>
     </table>`;
+  tryDeepLinkScroll();
+}
+
+// Heuristic parser for the inquiry message blob (Wing Genius quiz, waitlist, freetext).
+// Quiz answer keys are single lowercase words (level, goal, block, …); WhatsApp/Profile/etc are
+// capitalised and naturally excluded. Always falls back to showing the raw message.
+function parseInquiry(message) {
+  const text = message || '';
+  const whatsapp = (text.match(/WhatsApp:\s*(\+?[\d ()\-]{6,})/i) || [])[1] || '';
+  const qaOptIn = /\[Opted in for next Q&A MEETUP\]/i.test(text);
+  const answers = [];
+  const seen = new Set();
+  for (const raw of text.split('\n')) {
+    const m = raw.match(/^\s*([a-z][a-zA-Z]{1,14}):\s+(\S.*?)\s*$/);
+    if (!m) continue;
+    const [, key, val] = m;
+    if (val.length > 40 || val.includes('://') || seen.has(key)) continue;
+    seen.add(key);
+    answers.push([key, val]);
+  }
+  return { answers, whatsapp, qaOptIn };
+}
+
+function openEventDetail(id) {
+  const r = eventsCache.find(e => e.id === id);
+  if (!r) return;
+  const p = parseInquiry(r.message);
+  const subject = 'Re: ' + (r.event_name || r.event_slug || 'your inquiry');
+  const waNum = p.whatsapp.replace(/[^\d]/g, '');
+  const btn = 'text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors';
+  document.body.insertAdjacentHTML('beforeend', `
+    <div id="ev-modal" class="modal-bg" onclick="if(event.target===this)this.remove()">
+      <div class="modal-card" style="max-width:640px">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold">${esc(r.name || '-')} ${eventStatusChip(r.status)}</h2>
+            <div class="text-sm text-slate-400 mt-0.5">
+              <a href="mailto:${esc(r.email)}" class="hover:text-[#38bdf8]">${esc(r.email || '-')}</a>
+              · <span class="chip">${esc(r.event_slug || '-')}</span>
+              · ${fmtDateTime(r.created_at)}
+            </div>
+            ${p.qaOptIn ? '<div class="text-xs text-[#4ade80] mt-1">✓ Opted in for next Q&A meetup</div>' : ''}
+          </div>
+          <button onclick="document.getElementById('ev-modal').remove()" class="text-slate-400 hover:text-white text-2xl leading-none">×</button>
+        </div>
+
+        <div class="flex flex-wrap gap-2 mt-4">
+          <button onclick="draftEventReply(${r.id})" class="${btn} bg-[#0ea5e9] hover:bg-[#38bdf8] text-black">✦ Draft reply</button>
+          <a href="mailto:${esc(r.email)}?subject=${encodeURIComponent(subject)}" class="${btn} border border-white/15 text-slate-200 hover:text-white">✉ Email</a>
+          ${waNum ? `<a href="https://wa.me/${waNum}" target="_blank" class="${btn} border border-white/15 text-slate-200 hover:text-white">WhatsApp</a>` : ''}
+          ${r.status !== 'responded' ? `<button onclick="markEventResponded(${r.id})" class="${btn} border border-white/15 text-slate-200 hover:text-white">Mark responded</button>` : ''}
+          ${r.status !== 'archived' ? `<button onclick="archiveEvent(${r.id})" class="${btn} border border-white/15 text-slate-400 hover:text-white">Archive</button>` : ''}
+          <button onclick="deleteEvent(${r.id})" class="${btn} border border-red-500/30 text-red-400 hover:bg-red-500/10">Delete</button>
+        </div>
+
+        ${p.answers.length ? `
+          <div class="mt-5">
+            <div class="detail-label">Quiz answers</div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
+              ${p.answers.map(([k, v]) => statCard(k, v)).join('')}
+            </div>
+          </div>` : ''}
+
+        <div class="mt-5">
+          <div class="flex items-center justify-between">
+            <div class="detail-label">Full message</div>
+            <button onclick="copyEventMessage(${r.id})" class="text-xs text-[#0ea5e9] hover:underline">Copy</button>
+          </div>
+          <div style="white-space:pre-wrap; max-height:320px; overflow-y:auto; background:#080f1c; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:12px; font-size:13px; color:#cbd5e1; margin-top:4px">${esc(r.message || '(empty)')}</div>
+        </div>
+      </div>
+    </div>`);
+}
+
+async function copyEventMessage(id) {
+  const r = eventsCache.find(e => e.id === id);
+  if (!r) return;
+  try { await navigator.clipboard.writeText(r.message || ''); } catch {}
+}
+async function draftEventReply(id) {
+  const r = await fetch(`${BP}/api/admin/event-inquiry/${id}/draft`, { method: 'POST' });
+  if (r.ok) alert('Draft queued — it will appear in the info@ Drafts folder within ~2 minutes for you to review and send.');
+  else alert('Failed to queue draft');
 }
 async function markEventResponded(id) {
-  if (!confirm('Mark inquiry #' + id + ' as responded?')) return;
   const r = await fetch(`${BP}/api/admin/event-inquiry/${id}/respond`, { method: 'POST' });
-  if (r.ok) loadEvents(); else alert('Failed');
+  if (r.ok) { document.getElementById('ev-modal')?.remove(); loadEvents(); } else alert('Failed');
+}
+async function archiveEvent(id) {
+  const r = await fetch(`${BP}/api/admin/event-inquiry/${id}/archive`, { method: 'POST' });
+  if (r.ok) { document.getElementById('ev-modal')?.remove(); loadEvents(); } else alert('Failed');
+}
+async function deleteEvent(id) {
+  if (!confirm('Delete inquiry #' + id + ' permanently? This cannot be undone.')) return;
+  const r = await fetch(`${BP}/api/admin/event-inquiry/${id}/delete`, { method: 'DELETE' });
+  if (r.ok) { document.getElementById('ev-modal')?.remove(); loadEvents(); } else alert('Failed');
 }
 
 // ── Q&A Sessions ────────────────────────────────────────────────────────────
@@ -790,7 +900,7 @@ async function loadQa() {
         </tr></thead>
         <tbody>
           ${qaCache.map(s => `
-            <tr>
+            <tr data-row-id="${s.id}">
               <td class="cell-dim">${fmtDateTime(s.scheduled_at)}</td>
               <td><div>${esc(s.title)}</div><div class="cell-dim text-xs">${esc((s.description||'').slice(0,90))}${(s.description||'').length>90?'…':''}</div></td>
               <td><span class="chip">${esc(s.type || 'meetup')}</span></td>
@@ -801,6 +911,7 @@ async function loadQa() {
         </tbody>
       </table>
       <div id="qa-signups-panel" class="hidden border-t border-white/10"></div>`;
+    tryDeepLinkScroll();
   } catch {
     wrap.innerHTML = '<div class="p-8 text-red-400 text-center">Error loading sessions.</div>';
   }
@@ -945,8 +1056,43 @@ async function loadPrivate() {
   }
 }
 
+// ── Hash-based deep linking ──────────────────────────────────────────────────
+// Email notifications point here. Examples:
+//   …/admin#events/123  → opens Events tab + scrolls to + flashes inquiry #123
+//   …/admin#qa/4        → opens Q&A tab + flashes session #4
+//   …/admin#events      → just opens Events tab
+let pendingDeepRow = null;
+
+function applyHashRoute() {
+  const raw = (location.hash || '').replace(/^#/, '');
+  if (!raw) return false;
+  const parts = raw.split('/');
+  const tabName = parts[0];
+  const id = parts[1] ? parseInt(parts[1], 10) : null;
+  const validTabs = ['video', 'events', 'qa', 'waitlist', 'private'];
+  if (!validTabs.includes(tabName)) return false;
+  pendingDeepRow = id ? { tab: tabName, id } : null;
+  switchTab(tabName);
+  // Try once now in case data is already cached + table already rendered.
+  setTimeout(tryDeepLinkScroll, 0);
+  return true;
+}
+
+function tryDeepLinkScroll() {
+  if (!pendingDeepRow) return;
+  if (pendingDeepRow.tab !== activeTab) return;
+  const row = document.querySelector('[data-row-id="' + pendingDeepRow.id + '"]');
+  if (!row) return; // Will retry after each render.
+  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  row.classList.add('row-highlight');
+  setTimeout(() => row.classList.remove('row-highlight'), 2400);
+  pendingDeepRow = null;
+}
+
+window.addEventListener('hashchange', applyHashRoute);
+
 // ── Init ─────────────────────────────────────────────────────────────────────
-switchTab('video');
+if (!applyHashRoute()) switchTab('video');
 </script>
 </body>
 </html>
