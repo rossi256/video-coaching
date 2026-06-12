@@ -302,7 +302,8 @@ if ($action === 'event-inquiry-draft' && $method === 'POST' && $id) {
 // --- GET /api/admin/email-draft-queue --- pending draft requests (consumed by local poller)
 if ($action === 'email-draft-queue') {
     $sql = 'SELECT q.id, q.inquiry_id, q.account,
-                   e.name, e.email, e.event_slug, e.event_name, e.current_level, e.message
+                   e.name, e.email, e.event_slug, e.event_name, e.current_level, e.message,
+                   e.created_at AS inquiry_created_at
             FROM email_draft_queue q
             JOIN event_inquiries e ON e.id = q.inquiry_id
             WHERE q.status = "pending"
