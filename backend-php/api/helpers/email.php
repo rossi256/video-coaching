@@ -52,6 +52,53 @@ function riderEmailWrap(string $bodyHtml): string {
 HTML;
 }
 
+/**
+ * Build a calendar invite (.ics) for a Q&A session so registrants can one-tap
+ * "save to calendar" with the Zoom link embedded. Times are interpreted in
+ * Europe/Berlin (how scheduled_at is stored) and emitted in UTC, so the skew
+ * that bites PHP strtotime() elsewhere cannot happen here.
+ */
+function buildQaIcs(array $session): string {
+    $tz    = new DateTimeZone('Europe/Berlin');
+    $start = new DateTime($session['scheduled_at'], $tz);
+    $end   = clone $start;
+    $end->modify('+' . max(1, (int) $session['duration_minutes']) . ' minutes');
+    $utc = new DateTimeZone('UTC');
+    $start->setTimezone($utc); $end->setTimezone($utc);
+
+    $stamp = gmdate('Ymd\THis\Z');
+    $link  = trim((string) ($session['meeting_link'] ?? ''));
+    $esc = function (string $s): string {
+        return str_replace(["\\", ",", ";", "\r\n", "\n"], ["\\\\", "\\,", "\\;", "\\n", "\\n"], $s);
+    };
+    $title = $esc('Live Q&A with Michi — ' . $session['title']);
+    $descParts = [trim((string) ($session['description'] ?? ''))];
+    if ($link !== '') $descParts[] = 'Join: ' . $link;
+    $desc = $esc(trim(implode("\n\n", array_filter($descParts))));
+    $loc  = $esc($link !== '' ? $link : 'Online');
+    $uid  = 'qa-' . ((int) ($session['id'] ?? 0)) . '-' . $start->format('Ymd') . '@coaching.tricktionary.com';
+
+    $lines = [
+        'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Tricktionary//WingCoach Q&A//EN',
+        'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
+        'UID:' . $uid, 'DTSTAMP:' . $stamp,
+        'DTSTART:' . $start->format('Ymd\THis\Z'), 'DTEND:' . $end->format('Ymd\THis\Z'),
+        'SUMMARY:' . $title, 'DESCRIPTION:' . $desc, 'LOCATION:' . $loc,
+    ];
+    if ($link !== '') $lines[] = 'URL:' . $link;
+    $lines[] = 'END:VEVENT'; $lines[] = 'END:VCALENDAR';
+    return implode("\r\n", $lines) . "\r\n";
+}
+
+/** Attach the Q&A calendar invite to an email, swallowing any build error. */
+function attachQaIcs(PHPMailer $mail, array $session): void {
+    try {
+        $mail->addStringAttachment(buildQaIcs($session), 'wingcoach-qa.ics', 'base64', 'text/calendar; charset=UTF-8; method=PUBLISH');
+    } catch (\Throwable $e) {
+        error_log('QA ics build failed: ' . $e->getMessage());
+    }
+}
+
 // 1. Admin notification — new payment received
 function sendAdminNotification(string $name, string $email): void {
     $mail = getMailer();
@@ -371,10 +418,11 @@ function sendQaSignupConfirmation(string $email, string $name, array $session): 
       <p style="margin:0 0 4px;color:#334155;font-size:14px;">$date</p>
       <p style="margin:0;color:#64748b;font-size:13px;">Duration: {$duration} minutes</p>
     </div>
-    <p style="color:#334155;">You'll receive the meeting link by email before the session starts. If you have any questions in the meantime, just reply to this email.</p>
+    <p style="color:#334155;">I've attached a calendar invite so you can save the time (and the meeting link) in one tap. You'll get the join link and reminders by email before we start. If you have any questions in the meantime, just reply to this email.</p>
 HTML;
 
     $mail->Body = riderEmailWrap($body);
+    attachQaIcs($mail, $session);
     $mail->send();
 }
 
@@ -462,5 +510,6 @@ function sendQaReminder(string $email, string $name, array $session, string $off
 HTML;
 
     $mail->Body = riderEmailWrap($body);
+    attachQaIcs($mail, $session);
     $mail->send();
 }
