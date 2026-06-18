@@ -12,6 +12,14 @@ Full coaching platform: coaching hub landing page, video coaching app (Stripe pa
 - **Deploy:** `bash deploy-coaching.sh [hub|backend|website|private|assets|all]`
 - **GitHub:** rossi256/video-coaching (GitHub Actions enabled)
 
+## Ecosystem context
+
+**Tier 3 Core** of the KPoI ladder, status: **migrating (dual-surface)**. The **video coaching** feature (paid video review + uploads) is being absorbed into the wingfoil Tricktionary mobile app (Rails 8 backend + Vue/Capacitor frontend in `tricktionary-apps/`); Mac Claude session owns that execution per `wingcoach_absorption_decision.md` memory.
+
+**Decision 2026-06-18 (Michi):** the PHP web backend is NOT being fully retired — it **stays as a real management surface** for **events & Q&A** (create/schedule Q&A calls, meeting links, registrant lists, reminder funnels, event inquiries & quotes). Goal is to manage in **both** places: video coaching mostly in the mobile app, events/Q&A management on the computer/web backend. So new PHP work on the **events/Q&A funnel surface is in scope**; avoid new PHP only on the **video-coaching/payment core** that is moving to mobile. Coordinate with the Mac session on shared schema. Funnel pages stay (events, Q&A, private-inquiry, **and the `/api/waitlist.php` endpoint that the the-lineup hub forms post to**).
+
+Master plan: `~/.openclaw/workspace/kb/strategy/brand-ecosystem-2026-04.md` — single source of truth for the Michi Rossmeier KPoI ladder, brand architecture, and the 6-tier ATM ladder.
+
 ## Detailed Spec
 
 See `CLAUDE_CODE_PROMPT.md` for the full project specification, feature requirements, and architecture details.

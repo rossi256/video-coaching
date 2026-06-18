@@ -105,6 +105,9 @@ RewriteRule ^admin/qa-sessions$ admin.php?_action=qa-sessions-admin [L,QSA]
 # /api/admin/qa-session/create → admin.php
 RewriteRule ^admin/qa-session/create$ admin.php?_action=qa-session-create [L,QSA]
 
+# /api/admin/qa-session/update → admin.php (edit reminder schedule / meeting link)
+RewriteRule ^admin/qa-session/update$ admin.php?_action=qa-session-update [L,QSA]
+
 # /api/admin/qa-signups?session_id=ID → admin.php
 RewriteRule ^admin/qa-signups$ admin.php?_action=qa-signups [L,QSA]
 

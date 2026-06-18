@@ -123,10 +123,16 @@ CREATE TABLE IF NOT EXISTS qa_sessions (
     type VARCHAR(32) DEFAULT 'meetup',
     meeting_link VARCHAR(500),
     external_url VARCHAR(500) DEFAULT NULL,
+    -- Per-session reminder funnel: schedule key understood by helpers/qa_schedules.php
+    -- ('off' | '24h' | '24h_1h' | '7d_24h_1h'). Default off = no reminders sent.
+    reminder_schedule VARCHAR(32) NOT NULL DEFAULT 'off',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_scheduled (scheduled_at),
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Idempotent migration for existing installs (MariaDB supports IF NOT EXISTS here).
+ALTER TABLE qa_sessions ADD COLUMN IF NOT EXISTS reminder_schedule VARCHAR(32) NOT NULL DEFAULT 'off';
 
 -- Email draft queue: admin "Draft reply" button enqueues here; a local
 -- poller (scripts/coaching-draft-poller.py) picks up pending rows, generates
@@ -148,7 +154,25 @@ CREATE TABLE IF NOT EXISTS qa_signups (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     message TEXT,
+    -- Optional acquisition channel (e.g. 'web', 'instagram', 'events-site'); informational only.
+    source VARCHAR(64) NOT NULL DEFAULT 'web',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_session_email (session_id, email),
     FOREIGN KEY (session_id) REFERENCES qa_sessions(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Idempotent migration for existing installs.
+ALTER TABLE qa_signups ADD COLUMN IF NOT EXISTS source VARCHAR(64) NOT NULL DEFAULT 'web';
+
+-- Q&A reminder send-log: one row per (signup, offset) actually emailed.
+-- The UNIQUE constraint makes the reminder cron idempotent — re-runs never double-send.
+CREATE TABLE IF NOT EXISTS qa_reminder_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    signup_id INT NOT NULL,
+    session_id INT NOT NULL,
+    offset_key VARCHAR(16) NOT NULL,        -- e.g. '7d' | '24h' | '1h'
+    sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_signup_offset (signup_id, offset_key),
+    FOREIGN KEY (signup_id) REFERENCES qa_signups(id) ON DELETE CASCADE,
+    INDEX idx_session (session_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

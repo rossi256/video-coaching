@@ -896,7 +896,7 @@ async function loadQa() {
     wrap.innerHTML = `
       <table class="mini-table">
         <thead><tr>
-          <th>When</th><th>Title</th><th>Type</th><th>Status</th><th>Signups</th><th></th>
+          <th>When</th><th>Title</th><th>Type</th><th>Status</th><th>Reminders</th><th>Signups</th><th></th>
         </tr></thead>
         <tbody>
           ${qaCache.map(s => `
@@ -905,6 +905,7 @@ async function loadQa() {
               <td><div>${esc(s.title)}</div><div class="cell-dim text-xs">${esc((s.description||'').slice(0,90))}${(s.description||'').length>90?'…':''}</div></td>
               <td><span class="chip">${esc(s.type || 'meetup')}</span></td>
               <td>${esc(s.status || 'upcoming')}</td>
+              <td>${qaReminderSelect(s)}</td>
               <td><button onclick="viewQaSignups(${s.id})" class="text-[#0ea5e9] hover:underline">View →</button></td>
               <td class="cell-dim text-xs">${s.meeting_link ? `<a href="${esc(s.meeting_link)}" target="_blank" class="hover:text-[#38bdf8]">link</a>` : ''}</td>
             </tr>`).join('')}
@@ -914,6 +915,31 @@ async function loadQa() {
     tryDeepLinkScroll();
   } catch {
     wrap.innerHTML = '<div class="p-8 text-red-400 text-center">Error loading sessions.</div>';
+  }
+}
+const QA_REMINDER_OPTS = [
+  ['off', 'Off'],
+  ['24h', '24h before'],
+  ['24h_1h', '24h + 1h'],
+  ['7d_24h_1h', '7d + 24h + 1h'],
+];
+function qaReminderSelect(s) {
+  const cur = s.reminder_schedule || 'off';
+  const opts = QA_REMINDER_OPTS.map(([v, l]) =>
+    `<option value="${v}"${v === cur ? ' selected' : ''}>${l}</option>`).join('');
+  return `<select onchange="updateQaReminder(${s.id}, this.value)" class="bg-transparent border border-white/15 rounded px-1 py-0.5 text-xs">${opts}</select>`;
+}
+async function updateQaReminder(sessionId, schedule) {
+  const r = await fetch(`${BP}/api/admin/qa-session/update`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id: sessionId, reminder_schedule: schedule })
+  });
+  if (r.ok) {
+    const s = qaCache.find(x => +x.id === +sessionId);
+    if (s) s.reminder_schedule = schedule;
+  } else {
+    alert('Failed to update reminders: ' + (await r.text()));
+    loadQa();
   }
 }
 async function viewQaSignups(sessionId) {
@@ -957,6 +983,13 @@ function openQaCreate() {
         <label>Duration (min)</label><input id="qa-dur" type="number" value="60">
         <label>Max participants</label><input id="qa-max" type="number" value="50">
         <label>Meeting link</label><input id="qa-link" placeholder="https://meet…">
+        <label>Reminder emails</label>
+        <select id="qa-reminder">
+          <option value="off">Off — no reminders</option>
+          <option value="24h">24 hours before</option>
+          <option value="24h_1h">24 hours + 1 hour before</option>
+          <option value="7d_24h_1h">7 days + 24 hours + 1 hour before</option>
+        </select>
         <div class="flex gap-2 mt-5">
           <button onclick="submitQaCreate()" class="flex-1 bg-[#0ea5e9] hover:bg-[#38bdf8] text-black font-semibold py-2 rounded-lg">Create</button>
           <button onclick="document.getElementById('qa-modal').remove()" class="px-4 text-slate-300 hover:text-white border border-white/10 rounded-lg">Cancel</button>
@@ -971,7 +1004,8 @@ async function submitQaCreate() {
     scheduled_at: document.getElementById('qa-when').value.replace('T', ' ') + ':00',
     duration_minutes: +document.getElementById('qa-dur').value || 60,
     max_participants: +document.getElementById('qa-max').value || 50,
-    meeting_link: document.getElementById('qa-link').value.trim()
+    meeting_link: document.getElementById('qa-link').value.trim(),
+    reminder_schedule: document.getElementById('qa-reminder').value
   };
   if (!payload.title || !payload.scheduled_at) { alert('Title and date/time are required.'); return; }
   const r = await fetch(`${BP}/api/admin/qa-session/create`, {

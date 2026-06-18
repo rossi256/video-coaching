@@ -9,6 +9,7 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/helpers/email.php';
 require_once __DIR__ . '/helpers/file-serve.php';
+require_once __DIR__ . '/helpers/qa_schedules.php';
 
 requireAdmin();
 setApiHeaders();
@@ -341,14 +342,39 @@ if ($action === 'qa-session-create' && $method === 'POST') {
     $duration = (int) ($data['duration_minutes'] ?? 60);
     $maxPart = (int) ($data['max_participants'] ?? 50);
     $meetingLink = trim($data['meeting_link'] ?? '');
+    $reminderSchedule = qaNormalizeSchedule($data['reminder_schedule'] ?? 'off');
 
     if (!$title || !$scheduledAt) {
         jsonResponse(['error' => 'Title and scheduled_at are required.'], 400);
     }
 
-    $stmt = $db->prepare('INSERT INTO qa_sessions (title, description, scheduled_at, duration_minutes, max_participants, meeting_link) VALUES (?, ?, ?, ?, ?, ?)');
-    $stmt->execute([$title, $description, $scheduledAt, $duration, $maxPart, $meetingLink]);
+    $stmt = $db->prepare('INSERT INTO qa_sessions (title, description, scheduled_at, duration_minutes, max_participants, meeting_link, reminder_schedule) VALUES (?, ?, ?, ?, ?, ?, ?)');
+    $stmt->execute([$title, $description, $scheduledAt, $duration, $maxPart, $meetingLink, $reminderSchedule]);
     jsonResponse(['ok' => true, 'id' => (int) $db->lastInsertId()]);
+}
+
+// --- POST /api/admin/qa-session/update --- (edit meeting link + reminder schedule on an existing session)
+if ($action === 'qa-session-update' && $method === 'POST') {
+    $data = getJsonBody();
+    $sid = (int) ($data['id'] ?? 0);
+    if (!$sid) jsonResponse(['error' => 'id required'], 400);
+
+    $sets = [];
+    $params = [];
+    if (array_key_exists('reminder_schedule', $data)) {
+        $sets[] = 'reminder_schedule = ?';
+        $params[] = qaNormalizeSchedule($data['reminder_schedule']);
+    }
+    if (array_key_exists('meeting_link', $data)) {
+        $sets[] = 'meeting_link = ?';
+        $params[] = trim($data['meeting_link']);
+    }
+    if (!$sets) jsonResponse(['error' => 'nothing to update'], 400);
+
+    $params[] = $sid;
+    $stmt = $db->prepare('UPDATE qa_sessions SET ' . implode(', ', $sets) . ' WHERE id = ?');
+    $stmt->execute($params);
+    jsonResponse(['ok' => true]);
 }
 
 // --- GET /api/admin/qa-signups?session_id=ID ---

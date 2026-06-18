@@ -281,6 +281,7 @@ function sendEventInquiryNotification(int $inquiryId, string $name, string $emai
     $eWhatsapp = htmlspecialchars($whatsapp ?: '—');
     $eMessage = nl2br(htmlspecialchars($message ?: '—'));
     $qaLabel  = $qaSignup ? '<span style="color:#22c55e;font-weight:600;">Yes — wants to join</span>' : '<span style="color:#94a3b8;">No</span>';
+    $manageUrl = "https://coaching.tricktionary.com/video-coaching/admin#events/{$inquiryId}";
 
     $mail->Body = <<<HTML
 <div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f2035;border-radius:12px;overflow:hidden;border:1px solid #1e3a5f;">
@@ -298,6 +299,10 @@ function sendEventInquiryNotification(int $inquiryId, string $name, string $emai
     <div style="margin-top:16px;">
       <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#7dd3fc;margin:0 0 6px;">Message</p>
       <p style="font-size:13px;color:#e2e8f0;background:#1e3a5f;padding:12px 14px;border-radius:8px;margin:0;border-left:3px solid #0ea5e9;">$eMessage</p>
+    </div>
+    <div style="margin-top:24px;text-align:center;">
+      <a href="$manageUrl" style="display:inline-block;padding:11px 22px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;border-radius:8px;letter-spacing:0.02em;">Manage in admin &rarr;</a>
+      <p style="margin:10px 0 0;font-size:11px;color:#64748b;">Opens inquiry #{$inquiryId} in the WingCoach admin (basic auth).</p>
     </div>
   </div>
 </div>
@@ -385,6 +390,8 @@ function sendQaSignupNotification(string $name, string $email, array $session, s
     $eTitle   = htmlspecialchars($session['title']);
     $eMessage = nl2br(htmlspecialchars($message ?: '—'));
     $date     = date('M j, Y H:i', strtotime($session['scheduled_at']));
+    $sessionId = (int) ($session['id'] ?? 0);
+    $manageUrl = "https://coaching.tricktionary.com/video-coaching/admin#qa/{$sessionId}";
 
     $mail->Body = <<<HTML
 <div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f2035;border-radius:12px;overflow:hidden;border:1px solid #1e3a5f;">
@@ -400,9 +407,60 @@ function sendQaSignupNotification(string $name, string $email, array $session, s
       <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#7dd3fc;margin:0 0 6px;">Question / Message</p>
       <p style="font-size:13px;color:#e2e8f0;background:#1e3a5f;padding:12px 14px;border-radius:8px;margin:0;border-left:3px solid #0ea5e9;">$eMessage</p>
     </div>
+    <div style="margin-top:24px;text-align:center;">
+      <a href="$manageUrl" style="display:inline-block;padding:11px 22px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;border-radius:8px;letter-spacing:0.02em;">View Q&amp;A signups in admin &rarr;</a>
+    </div>
   </div>
 </div>
 HTML;
 
+    $mail->send();
+}
+
+// 11. Q&A reminder — sent to a registrant ahead of the session per the
+//     session's reminder schedule. $offsetKey is '7d' | '24h' | '1h'.
+//     Edit the copy here; voice = Michi (warm, practical, no long dashes).
+function sendQaReminder(string $email, string $name, array $session, string $offsetKey): void {
+    require_once __DIR__ . '/qa_schedules.php';
+
+    $mail = getMailer('Michi @ WingCoach');
+    $mail->addAddress($email);
+
+    $eName     = htmlspecialchars($name);
+    $eTitle    = htmlspecialchars($session['title']);
+    $date      = date('l, F j, Y \a\t g:i A', strtotime($session['scheduled_at']));
+    $duration  = (int) $session['duration_minutes'];
+    $link      = trim((string) ($session['meeting_link'] ?? ''));
+    $when      = qaOffsetPhrase($offsetKey); // "in 24 hours" / "in about an hour" / "in 7 days"
+
+    $soon = $offsetKey === '1h';
+    $mail->Subject = $soon
+        ? "Starting soon: Q&A with Michi — {$session['title']}"
+        : "Reminder: your Q&A with Michi is {$when} — {$session['title']}";
+    $mail->isHTML(true);
+
+    $linkBlock = $link !== ''
+        ? '<div style="text-align:center;margin:24px 0;">'
+          . '<a href="' . htmlspecialchars($link) . '" style="display:inline-block;padding:13px 26px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;border-radius:8px;">Join the session</a>'
+          . '<p style="margin:10px 0 0;font-size:12px;color:#64748b;">Or paste this into your browser:<br>' . htmlspecialchars($link) . '</p></div>'
+        : '<p style="color:#334155;">I will send the meeting link in a follow-up email before we start. Keep an eye on your inbox.</p>';
+
+    $intro = $soon
+        ? "We go live $when. Here is everything you need to jump in:"
+        : "Quick reminder that your live Q&A with me is coming up $when. Save the time and the link so you are ready:";
+
+    $body = <<<HTML
+    <h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey $eName, see you $when</h2>
+    <p style="color:#334155;">$intro</p>
+    <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:16px 20px;margin:20px 0;">
+      <p style="margin:0 0 4px;font-weight:700;color:#0c1929;font-size:16px;">$eTitle</p>
+      <p style="margin:0 0 4px;color:#334155;font-size:14px;">$date</p>
+      <p style="margin:0;color:#64748b;font-size:13px;">Duration: {$duration} minutes</p>
+    </div>
+    $linkBlock
+    <p style="color:#334155;">Bring a question. The best sessions are the ones where you come ready to dig into your own riding. If something changed and you cannot make it, just reply and let me know.</p>
+HTML;
+
+    $mail->Body = riderEmailWrap($body);
     $mail->send();
 }
