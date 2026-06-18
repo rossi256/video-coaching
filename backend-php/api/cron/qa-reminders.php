@@ -9,8 +9,8 @@
  * Sessions with reminder_schedule = 'off' are ignored — nothing sends until
  * Michi picks a schedule on a session in the admin.
  *
- * Cron (every 15 min):
- *   */15 * * * * php /home/coaching/public_html/video-coaching/api/cron/qa-reminders.php >> /home/coaching/logs/wingcoach-cron.log 2>&1
+ * Cron (every 15 min, written without a slash-star to keep this block comment valid):
+ *   0,15,30,45 * * * * php /home/coaching/public_html/video-coaching/api/cron/qa-reminders.php >> /home/coaching/logs/wingcoach-cron.log 2>&1
  */
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/email.php';
@@ -19,8 +19,11 @@ require_once __DIR__ . '/../helpers/qa_schedules.php';
 $db = getDb();
 $schedules = qaReminderSchedules();
 
+// NOTE: scheduled_ts comes from MySQL UNIX_TIMESTAMP() so it is a correct epoch in
+// the DB's timezone. Do NOT use PHP strtotime() on scheduled_at here — PHP runs in
+// UTC while MySQL stores local (CEST), which would skew every reminder by hours.
 $sessions = $db->query("
-    SELECT * FROM qa_sessions
+    SELECT *, UNIX_TIMESTAMP(scheduled_at) AS scheduled_ts FROM qa_sessions
     WHERE status = 'upcoming'
       AND reminder_schedule <> 'off'
       AND scheduled_at > NOW()
@@ -30,11 +33,13 @@ if (empty($sessions)) {
     exit; // nothing to do
 }
 
-// Recipients for one (session, offset): registered by the due moment and not yet reminded for this offset.
+// Recipients for one (session, offset): everyone registered for the session who
+// hasn't already been sent this offset. The catch-up window below bounds how late
+// an offset may fire, so late registrants only ever get near-term, correctly-worded
+// reminders (e.g. a last-minute signup gets the "1h" nudge, never a stale "24h" one).
 $signupStmt = $db->prepare("
     SELECT su.* FROM qa_signups su
     WHERE su.session_id = ?
-      AND su.created_at <= ?
       AND NOT EXISTS (
           SELECT 1 FROM qa_reminder_log l
           WHERE l.signup_id = su.id AND l.offset_key = ?
@@ -48,7 +53,7 @@ $now = time();
 
 foreach ($sessions as $session) {
     $offsets = $schedules[$session['reminder_schedule']] ?? [];
-    $start = strtotime($session['scheduled_at']);
+    $start = (int) $session['scheduled_ts'];
 
     foreach ($offsets as $off) {
         $dueAt   = $start - ((int) $off['hours'] * 3600);
@@ -60,7 +65,7 @@ foreach ($sessions as $session) {
         if ($now >= $start)           continue; // session already started
         if ($now - $dueAt > $catchUp) continue; // missed window, don't send stale
 
-        $signupStmt->execute([$session['id'], date('Y-m-d H:i:s', $dueAt), $off['key']]);
+        $signupStmt->execute([$session['id'], $off['key']]);
         $recipients = $signupStmt->fetchAll();
 
         foreach ($recipients as $r) {

@@ -5,7 +5,7 @@
  * Finds checkout_attempts older than 30 min that haven't been reminded
  * and haven't converted, then sends reminder emails.
  *
- * Cron: */5 * * * * php /path/to/cron/abandoned-checkout.php
+ * Cron (every 5 min): 0,5,10,15,20,25,30,35,40,45,50,55 * * * * php /path/to/cron/abandoned-checkout.php
  */
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/email.php';
