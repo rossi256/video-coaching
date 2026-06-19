@@ -907,7 +907,11 @@ async function loadQa() {
               <td>${esc(s.status || 'upcoming')}</td>
               <td>${qaReminderSelect(s)}</td>
               <td><button onclick="viewQaSignups(${s.id})" class="text-[#0ea5e9] hover:underline">View →</button></td>
-              <td class="cell-dim text-xs">${s.meeting_link ? `<a href="${esc(s.meeting_link)}" target="_blank" class="hover:text-[#38bdf8]">link</a>` : ''}</td>
+              <td class="cell-dim text-xs whitespace-nowrap">
+                ${s.meeting_link ? `<a href="${esc(s.meeting_link)}" target="_blank" class="hover:text-[#38bdf8]">link</a> · ` : ''}
+                <button onclick="openQaEdit(${s.id})" class="text-[#0ea5e9] hover:underline">Edit</button> ·
+                <button onclick="deleteQaSession(${s.id})" class="text-red-400 hover:underline">Delete</button>
+              </td>
             </tr>`).join('')}
         </tbody>
       </table>
@@ -1013,6 +1017,64 @@ async function submitQaCreate() {
   });
   if (r.ok) { document.getElementById('qa-modal').remove(); loadQa(); }
   else alert('Failed to create session: ' + (await r.text()));
+}
+function toLocalInput(dt) {
+  // 'YYYY-MM-DD HH:MM:SS' (server local) -> 'YYYY-MM-DDTHH:MM' for datetime-local
+  return (dt || '').replace(' ', 'T').slice(0, 16);
+}
+function openQaEdit(id) {
+  const s = qaCache.find(x => +x.id === +id);
+  if (!s) return;
+  const cur = s.reminder_schedule || 'off';
+  const opt = (v, l) => `<option value="${v}"${v === cur ? ' selected' : ''}>${l}</option>`;
+  document.body.insertAdjacentHTML('beforeend', `
+    <div id="qa-emodal" class="modal-bg" onclick="if(event.target===this)this.remove()">
+      <div class="modal-card">
+        <h2 class="text-lg font-bold mb-2">Edit Q&A Session</h2>
+        <label>Title *</label><input id="qae-title" value="${esc(s.title || '')}">
+        <label>Description</label><textarea id="qae-desc" rows="3">${esc(s.description || '')}</textarea>
+        <label>When (local time) *</label><input id="qae-when" type="datetime-local" value="${toLocalInput(s.scheduled_at)}">
+        <label>Duration (min)</label><input id="qae-dur" type="number" value="${+s.duration_minutes || 60}">
+        <label>Max participants</label><input id="qae-max" type="number" value="${+s.max_participants || 50}">
+        <label>Meeting link (Zoom)</label><input id="qae-link" placeholder="https://zoom…" value="${esc(s.meeting_link || '')}">
+        <label>Reminder emails</label>
+        <select id="qae-reminder">
+          ${opt('off','Off — no reminders')}${opt('24h','24 hours before')}${opt('24h_1h','24 hours + 1 hour before')}${opt('7d_24h_1h','7 days + 24 hours + 1 hour before')}
+        </select>
+        <p class="cell-dim text-xs mt-2">Changing the date re-times any unsent reminders automatically.</p>
+        <div class="flex gap-2 mt-5">
+          <button onclick="submitQaEdit(${id})" class="flex-1 bg-[#0ea5e9] hover:bg-[#38bdf8] text-black font-semibold py-2 rounded-lg">Save changes</button>
+          <button onclick="document.getElementById('qa-emodal').remove()" class="px-4 text-slate-300 hover:text-white border border-white/10 rounded-lg">Cancel</button>
+        </div>
+      </div>
+    </div>`);
+}
+async function submitQaEdit(id) {
+  const payload = {
+    id: id,
+    title: document.getElementById('qae-title').value.trim(),
+    description: document.getElementById('qae-desc').value.trim(),
+    scheduled_at: document.getElementById('qae-when').value.replace('T', ' ') + ':00',
+    duration_minutes: +document.getElementById('qae-dur').value || 60,
+    max_participants: +document.getElementById('qae-max').value || 50,
+    meeting_link: document.getElementById('qae-link').value.trim(),
+    reminder_schedule: document.getElementById('qae-reminder').value
+  };
+  if (!payload.title || !payload.scheduled_at.trim()) { alert('Title and date/time are required.'); return; }
+  const r = await fetch(`${BP}/api/admin/qa-session/update`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+  });
+  if (r.ok) { document.getElementById('qa-emodal').remove(); loadQa(); }
+  else alert('Failed to save: ' + (await r.text()));
+}
+async function deleteQaSession(id) {
+  const s = qaCache.find(x => +x.id === +id) || {};
+  if (!confirm('Delete "' + (s.title || ('session #' + id)) + '" and all its signups? This cannot be undone.')) return;
+  const r = await fetch(`${BP}/api/admin/qa-session/delete`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: id })
+  });
+  if (r.ok) loadQa();
+  else alert('Failed to delete: ' + (await r.text()));
 }
 
 // ── Waitlist ────────────────────────────────────────────────────────────────

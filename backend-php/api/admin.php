@@ -353,7 +353,9 @@ if ($action === 'qa-session-create' && $method === 'POST') {
     jsonResponse(['ok' => true, 'id' => (int) $db->lastInsertId()]);
 }
 
-// --- POST /api/admin/qa-session/update --- (edit meeting link + reminder schedule on an existing session)
+// --- POST /api/admin/qa-session/update --- (edit any field on an existing session)
+// Reminders recompute automatically from scheduled_at on the next cron run, so
+// changing the date is safe: unsent reminders just re-time themselves.
 if ($action === 'qa-session-update' && $method === 'POST') {
     $data = getJsonBody();
     $sid = (int) ($data['id'] ?? 0);
@@ -361,19 +363,36 @@ if ($action === 'qa-session-update' && $method === 'POST') {
 
     $sets = [];
     $params = [];
-    if (array_key_exists('reminder_schedule', $data)) {
-        $sets[] = 'reminder_schedule = ?';
-        $params[] = qaNormalizeSchedule($data['reminder_schedule']);
+    // Free-text / passthrough fields
+    foreach (['title' => 'title', 'description' => 'description', 'meeting_link' => 'meeting_link'] as $key => $col) {
+        if (array_key_exists($key, $data)) { $sets[] = "$col = ?"; $params[] = trim((string) $data[$key]); }
     }
-    if (array_key_exists('meeting_link', $data)) {
-        $sets[] = 'meeting_link = ?';
-        $params[] = trim($data['meeting_link']);
+    if (array_key_exists('scheduled_at', $data)) {
+        $when = trim((string) $data['scheduled_at']);
+        if ($when === '' || !strtotime($when)) jsonResponse(['error' => 'invalid scheduled_at'], 400);
+        $sets[] = 'scheduled_at = ?'; $params[] = $when;
+    }
+    if (array_key_exists('duration_minutes', $data)) { $sets[] = 'duration_minutes = ?'; $params[] = max(1, (int) $data['duration_minutes']); }
+    if (array_key_exists('max_participants', $data)) { $sets[] = 'max_participants = ?'; $params[] = max(1, (int) $data['max_participants']); }
+    if (array_key_exists('reminder_schedule', $data)) { $sets[] = 'reminder_schedule = ?'; $params[] = qaNormalizeSchedule($data['reminder_schedule']); }
+    if (array_key_exists('status', $data)) {
+        $st = trim((string) $data['status']);
+        if (in_array($st, ['upcoming', 'draft', 'past', 'cancelled'], true)) { $sets[] = 'status = ?'; $params[] = $st; }
     }
     if (!$sets) jsonResponse(['error' => 'nothing to update'], 400);
 
     $params[] = $sid;
     $stmt = $db->prepare('UPDATE qa_sessions SET ' . implode(', ', $sets) . ' WHERE id = ?');
     $stmt->execute($params);
+    jsonResponse(['ok' => true]);
+}
+
+// --- POST /api/admin/qa-session/delete ---
+if ($action === 'qa-session-delete' && $method === 'POST') {
+    $data = getJsonBody();
+    $sid = (int) ($data['id'] ?? 0);
+    if (!$sid) jsonResponse(['error' => 'id required'], 400);
+    $db->prepare('DELETE FROM qa_sessions WHERE id = ?')->execute([$sid]); // cascades signups + reminder log
     jsonResponse(['ok' => true]);
 }
 
