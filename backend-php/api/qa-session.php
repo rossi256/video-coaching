@@ -47,6 +47,10 @@ if ($method === 'POST' && $action === 'signup') {
     $name    = trim($data['name'] ?? '');
     $email   = trim($data['email'] ?? '');
     $message = trim($data['message'] ?? '');
+    $source  = trim($data['source'] ?? 'web');
+    if (!in_array($source, ['web', 'instagram', 'facebook', 'telegram', 'whatsapp'], true)) {
+        $source = 'web';
+    }
 
     if (!$name || !$email) {
         jsonResponse(['error' => 'Name and email are required.'], 400);
@@ -82,8 +86,8 @@ if ($method === 'POST' && $action === 'signup') {
 
     // Insert signup (UNIQUE constraint handles duplicate email per session)
     try {
-        $ins = $db->prepare('INSERT INTO qa_signups (session_id, name, email, message) VALUES (?, ?, ?, ?)');
-        $ins->execute([$sessionId, $name, $email, $message]);
+        $ins = $db->prepare('INSERT INTO qa_signups (session_id, name, email, message, source) VALUES (?, ?, ?, ?, ?)');
+        $ins->execute([$sessionId, $name, $email, $message, $source]);
     } catch (\PDOException $e) {
         if ($e->getCode() == 23000) {
             jsonResponse(['error' => 'You are already registered for this session.'], 409);
