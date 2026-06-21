@@ -19,6 +19,11 @@ require_once __DIR__ . '/../helpers/qa_schedules.php';
 $db = getDb();
 $schedules = qaReminderSchedules();
 
+// Housekeeping: a session whose time has passed is no longer "upcoming". Flip it
+// to 'past' so the admin list and status stay honest. Safe — every reminder offset
+// fires before scheduled_at, so a past session has nothing left to send.
+$db->exec("UPDATE qa_sessions SET status = 'past' WHERE status = 'upcoming' AND scheduled_at < NOW()");
+
 // NOTE: scheduled_ts comes from MySQL UNIX_TIMESTAMP() so it is a correct epoch in
 // the DB's timezone. Do NOT use PHP strtotime() on scheduled_at here — PHP runs in
 // UTC while MySQL stores local (CEST), which would skew every reminder by hours.

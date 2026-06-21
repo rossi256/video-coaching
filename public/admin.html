@@ -893,33 +893,55 @@ async function loadQa() {
     const r = await fetch(`${BP}/api/admin/qa-sessions`);
     qaCache = await r.json();
     if (!qaCache.length) { wrap.innerHTML = '<div class="p-8 text-slate-500 text-center">No Q&A sessions yet. Click "+ New Session".</div>'; return; }
-    wrap.innerHTML = `
-      <table class="mini-table">
-        <thead><tr>
-          <th>When</th><th>Title</th><th>Type</th><th>Status</th><th>Reminders</th><th>Signups</th><th></th>
-        </tr></thead>
-        <tbody>
-          ${qaCache.map(s => `
-            <tr data-row-id="${s.id}">
-              <td class="cell-dim">${fmtDateTime(s.scheduled_at)}</td>
-              <td><div>${esc(s.title)}</div><div class="cell-dim text-xs">${esc((s.description||'').slice(0,90))}${(s.description||'').length>90?'…':''}</div></td>
-              <td><span class="chip">${esc(s.type || 'meetup')}</span></td>
-              <td>${esc(s.status || 'upcoming')}</td>
-              <td>${qaReminderSelect(s)}</td>
-              <td><button onclick="viewQaSignups(${s.id})" class="text-[#0ea5e9] hover:underline">View →</button></td>
-              <td class="cell-dim text-xs whitespace-nowrap">
-                ${s.meeting_link ? `<a href="${esc(s.meeting_link)}" target="_blank" class="hover:text-[#38bdf8]">link</a> · ` : ''}
-                <button onclick="openQaEdit(${s.id})" class="text-[#0ea5e9] hover:underline">Edit</button> ·
-                <button onclick="deleteQaSession(${s.id})" class="text-red-400 hover:underline">Delete</button>
-              </td>
-            </tr>`).join('')}
-        </tbody>
-      </table>
-      <div id="qa-signups-panel" class="hidden border-t border-white/10"></div>`;
+    const upcoming = qaCache.filter(s => !qaIsPast(s));
+    const past = qaCache.filter(s => qaIsPast(s));
+    const head = `<thead><tr><th>When</th><th>Title</th><th>Type</th><th>Status</th><th>Reminders</th><th>Signups</th><th></th></tr></thead>`;
+    const table = rows => `<table class="mini-table">${head}<tbody>${rows.map(qaRow).join('')}</tbody></table>`;
+    let html = upcoming.length
+      ? table(upcoming)
+      : '<div class="p-6 text-slate-500 text-center text-sm">No upcoming sessions. Click "+ New Session".</div>';
+    if (past.length) {
+      html += `<details class="mt-5 border border-white/10 rounded-lg overflow-hidden">
+        <summary class="cursor-pointer select-none px-4 py-3 text-sm text-slate-300 hover:text-white">Past sessions (${past.length})</summary>
+        <div class="opacity-75">${table(past)}</div>
+      </details>`;
+    }
+    html += '<div id="qa-signups-panel" class="hidden border-t border-white/10"></div>';
+    wrap.innerHTML = html;
     tryDeepLinkScroll();
   } catch {
     wrap.innerHTML = '<div class="p-8 text-red-400 text-center">Error loading sessions.</div>';
   }
+}
+// A session counts as "past" once its end time (start + duration) has passed, or
+// it was explicitly marked past/cancelled. Grouping is by real date so the list
+// stays correct even before the cron flips the stored status.
+function qaIsPast(s) {
+  const t = Date.parse(String(s.scheduled_at || '').replace(' ', 'T'));
+  if (isNaN(t)) return false;
+  const end = t + (parseInt(s.duration_minutes || 60, 10) || 60) * 60000;
+  return end < Date.now() || s.status === 'past' || s.status === 'cancelled';
+}
+function qaStatusBadge(s) {
+  const label = s.status === 'cancelled' ? 'cancelled' : (qaIsPast(s) ? 'past' : (s.status || 'upcoming'));
+  const cls = label === 'upcoming' ? 'text-emerald-400' : (label === 'cancelled' ? 'text-red-400' : 'text-slate-400');
+  return `<span class="${cls}">${label}</span>`;
+}
+function qaRow(s) {
+  return `
+    <tr data-row-id="${s.id}">
+      <td class="cell-dim">${fmtDateTime(s.scheduled_at)}</td>
+      <td><div>${esc(s.title)}</div><div class="cell-dim text-xs">${esc((s.description||'').slice(0,90))}${(s.description||'').length>90?'…':''}</div></td>
+      <td><span class="chip">${esc(s.type || 'meetup')}</span></td>
+      <td>${qaStatusBadge(s)}</td>
+      <td>${qaReminderSelect(s)}</td>
+      <td><button onclick="viewQaSignups(${s.id})" class="text-[#0ea5e9] hover:underline">View →</button></td>
+      <td class="cell-dim text-xs whitespace-nowrap">
+        ${s.meeting_link ? `<a href="${esc(s.meeting_link)}" target="_blank" class="hover:text-[#38bdf8]">link</a> · ` : ''}
+        <button onclick="openQaEdit(${s.id})" class="text-[#0ea5e9] hover:underline">Edit</button> ·
+        <button onclick="deleteQaSession(${s.id})" class="text-red-400 hover:underline">Delete</button>
+      </td>
+    </tr>`;
 }
 const QA_REMINDER_OPTS = [
   ['off', 'Off'],
