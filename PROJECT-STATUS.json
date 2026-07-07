@@ -1,5 +1,5 @@
 {
-  "lastDev": "Q&A funnel deep review: 9 bug fixes shipped (reminders, cancellation emails, capacity race, Berlin-time admin, honest IG DMs, Sendy list) + QA-FUNNEL-ROADMAP.md phases 0-6",
+  "lastDev": "Q&A funnel deep review: 9 bugs fixed + deployed (reminder wipe on reschedule, cancellation emails, capacity race, Berlin-time admin, honest IG DMs, webhook dedup, working Sendy list); roadmap QA-FUNNEL-ROADMAP.md phases 0-6",
   "lastDevDate": "2026-07-07",
   "phase": "active",
   "milestone": "Phase 1: Zoom links + first promotion for Jul 14 / Jul 28 sessions",
