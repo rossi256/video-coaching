@@ -75,24 +75,35 @@ if ($method === 'POST' && $action === 'signup') {
         jsonResponse(['error' => 'Session not found or no longer available.'], 404);
     }
 
-    // Check capacity
-    $countStmt = $db->prepare('SELECT COUNT(*) FROM qa_signups WHERE session_id = ?');
-    $countStmt->execute([$sessionId]);
-    $currentSignups = (int) $countStmt->fetchColumn();
-
-    if ($currentSignups >= (int) $session['max_participants']) {
-        jsonResponse(['error' => 'This session is full.'], 400);
-    }
-
-    // Insert signup (UNIQUE constraint handles duplicate email per session)
+    // Atomic capacity-checked insert: the row only lands while the session still
+    // has room, so two racing signups can never overbook. The UNIQUE constraint
+    // still catches duplicate emails per session.
     try {
-        $ins = $db->prepare('INSERT INTO qa_signups (session_id, name, email, message, source) VALUES (?, ?, ?, ?, ?)');
-        $ins->execute([$sessionId, $name, $email, $message, $source]);
+        $ins = $db->prepare('
+            INSERT INTO qa_signups (session_id, name, email, message, source)
+            SELECT ?, ?, ?, ?, ? FROM DUAL
+            WHERE (SELECT COUNT(*) FROM qa_signups WHERE session_id = ?) < ?
+        ');
+        $ins->execute([$sessionId, $name, $email, $message, $source, $sessionId, (int) $session['max_participants']]);
     } catch (\PDOException $e) {
         if ($e->getCode() == 23000) {
-            jsonResponse(['error' => 'You are already registered for this session.'], 409);
+            // Already registered: answer exactly like a fresh signup (idempotent,
+            // no repeat emails). A distinct "already registered" reply would let
+            // anyone probe which emails are on the list.
+            jsonResponse(['ok' => true]);
         }
         throw $e;
+    }
+
+    if ($ins->rowCount() === 0) {
+        // Insert was blocked by the capacity guard. If this email is already on
+        // the list, keep the idempotent success answer instead of "full".
+        $dup = $db->prepare('SELECT 1 FROM qa_signups WHERE session_id = ? AND email = ?');
+        $dup->execute([$sessionId, $email]);
+        if ($dup->fetchColumn()) {
+            jsonResponse(['ok' => true]);
+        }
+        jsonResponse(['error' => 'This session is full.'], 400);
     }
 
     // Send confirmation to registrant

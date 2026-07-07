@@ -513,3 +513,29 @@ HTML;
     attachQaIcs($mail, $session);
     $mail->send();
 }
+
+// 12. Q&A cancellation — sent to every registrant when a session is cancelled
+//     in the admin. Voice = Michi (warm, practical, no long dashes).
+function sendQaCancellation(string $email, string $name, array $session): void {
+    $mail = getMailer('Michi @ WingCoach');
+    $mail->addAddress($email);
+    $mail->Subject = "Session cancelled: " . $session['title'];
+    $mail->isHTML(true);
+
+    $eName  = htmlspecialchars($name);
+    $eTitle = htmlspecialchars($session['title']);
+    $date   = date('l, F j, Y \a\t g:i A', strtotime($session['scheduled_at']));
+
+    $body = <<<HTML
+    <h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey $eName, a quick heads-up</h2>
+    <p style="color:#334155;">I have to cancel this live Q&amp;A session:</p>
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:16px 20px;margin:20px 0;">
+      <p style="margin:0 0 4px;font-weight:700;color:#0c1929;font-size:16px;">$eTitle</p>
+      <p style="margin:0;color:#334155;font-size:14px;text-decoration:line-through;">$date</p>
+    </div>
+    <p style="color:#334155;">Sorry for the change of plans. As soon as a new date is set you'll hear from me, and any question you sent in stays on my list. If there is anything urgent in the meantime, just reply to this email.</p>
+HTML;
+
+    $mail->Body = riderEmailWrap($body);
+    $mail->send();
+}

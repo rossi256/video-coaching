@@ -721,17 +721,39 @@ function switchTab(name) {
 }
 document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
 
+// DB datetimes are Berlin wall-clock strings ('YYYY-MM-DD HH:MM:SS'). Parse the
+// components directly and render them unchanged, so the admin shows the same
+// times no matter what timezone the browser is in.
+function dbParts(s) {
+  const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/);
+  return m ? { y:+m[1], mo:+m[2], d:+m[3], h:+m[4], mi:+m[5], se:+(m[6]||0) } : null;
+}
 function fmtDate(s) {
   if (!s) return '-';
-  const d = new Date(s.replace(' ', 'T'));
-  if (isNaN(d)) return esc(s);
-  return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  const p = dbParts(s);
+  if (!p) return esc(s);
+  return new Date(Date.UTC(p.y, p.mo-1, p.d)).toLocaleDateString('en-GB', { timeZone:'UTC', day:'2-digit', month:'short', year:'numeric' });
 }
 function fmtDateTime(s) {
   if (!s) return '-';
-  const d = new Date(s.replace(' ', 'T'));
-  if (isNaN(d)) return esc(s);
-  return d.toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  const p = dbParts(s);
+  if (!p) return esc(s);
+  return new Date(Date.UTC(p.y, p.mo-1, p.d, p.h, p.mi)).toLocaleString('en-GB', { timeZone:'UTC', day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+// True epoch ms for a Berlin wall-clock DB string (handles summer/winter time).
+function berlinEpoch(s) {
+  const p = dbParts(s);
+  if (!p) return NaN;
+  const asUtc = Date.UTC(p.y, p.mo-1, p.d, p.h, p.mi, p.se);
+  const offAt = (t) => {
+    const part = new Intl.DateTimeFormat('en-US', { timeZone:'Europe/Berlin', timeZoneName:'longOffset' })
+      .formatToParts(t).find(x => x.type === 'timeZoneName');
+    const m = part && part.value.match(/GMT([+-])(\d{2}):(\d{2})/);
+    return m ? (m[1] === '-' ? -1 : 1) * ((+m[2]) * 60 + (+m[3])) * 60000 : 0;
+  };
+  let t = asUtc - offAt(asUtc);
+  t = asUtc - offAt(t); // second pass settles DST boundary cases
+  return t;
 }
 
 // ── Event Inquiries ─────────────────────────────────────────────────────────
@@ -917,7 +939,7 @@ async function loadQa() {
 // it was explicitly marked past/cancelled. Grouping is by real date so the list
 // stays correct even before the cron flips the stored status.
 function qaIsPast(s) {
-  const t = Date.parse(String(s.scheduled_at || '').replace(' ', 'T'));
+  const t = berlinEpoch(s.scheduled_at);
   if (isNaN(t)) return false;
   const end = t + (parseInt(s.duration_minutes || 60, 10) || 60) * 60000;
   return end < Date.now() || s.status === 'past' || s.status === 'cancelled';
@@ -976,36 +998,40 @@ async function viewQaSignups(sessionId) {
   panel.innerHTML = `<div class="p-6"><h3 class="font-semibold mb-3">Signups — ${esc(title)}</h3><div class="text-slate-400">Loading…</div></div>`;
   const r = await fetch(`${BP}/api/admin/qa-signups?session_id=${sessionId}`);
   const rows = await r.json();
+  const srcCounts = rows.reduce((m, s) => { const k = s.source || 'web'; m[k] = (m[k] || 0) + 1; return m; }, {});
+  const srcSummary = Object.entries(srcCounts).map(([k, n]) => `${esc(k)}: ${n}`).join(' · ');
   panel.innerHTML = `
     <div class="p-6">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="font-semibold">Signups — ${esc(title)} <span class="cell-dim font-normal">(${rows.length})</span></h3>
+        <h3 class="font-semibold">Signups — ${esc(title)} <span class="cell-dim font-normal">(${rows.length}${srcSummary ? ' · ' + srcSummary : ''})</span></h3>
         <button onclick="document.getElementById('qa-signups-panel').classList.add('hidden')" class="text-xs text-slate-400 hover:text-white">Close</button>
       </div>
       ${rows.length ? `
         <table class="mini-table">
-          <thead><tr><th>Date</th><th>Name</th><th>Email</th><th>Message</th></tr></thead>
+          <thead><tr><th>Date</th><th>Name</th><th>Email</th><th>Source</th><th>Message</th></tr></thead>
           <tbody>${rows.map(s => `
             <tr>
               <td class="cell-dim">${fmtDate(s.created_at)}</td>
               <td>${esc(s.name)}</td>
               <td class="cell-dim"><a href="mailto:${esc(s.email)}" class="hover:text-[#38bdf8]">${esc(s.email)}</a></td>
+              <td><span class="chip">${esc(s.source || 'web')}</span></td>
               <td style="max-width:320px; white-space:pre-wrap">${esc(s.message || '')}</td>
             </tr>`).join('')}</tbody>
         </table>` : '<p class="text-slate-500">No signups yet.</p>'}
     </div>`;
 }
 function openQaCreate() {
-  const today = new Date();
-  today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
-  const defaultDt = today.toISOString().slice(0, 16);
+  // Default to "now" in Berlin (sv-SE locale gives YYYY-MM-DD HH:MM)
+  const defaultDt = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Berlin', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'
+  }).format(new Date()).replace(' ', 'T');
   document.body.insertAdjacentHTML('beforeend', `
     <div id="qa-modal" class="modal-bg" onclick="if(event.target===this)this.remove()">
       <div class="modal-card">
         <h2 class="text-lg font-bold mb-2">New Q&A Session</h2>
         <label>Title *</label><input id="qa-title" placeholder="e.g. April Wingfoil Q&A">
         <label>Description</label><textarea id="qa-desc" rows="3" placeholder="What this session covers"></textarea>
-        <label>When (local time) *</label><input id="qa-when" type="datetime-local" value="${defaultDt}">
+        <label>When (Berlin time) *</label><input id="qa-when" type="datetime-local" value="${defaultDt}">
         <label>Duration (min)</label><input id="qa-dur" type="number" value="60">
         <label>Max participants</label><input id="qa-max" type="number" value="50">
         <label>Meeting link</label><input id="qa-link" placeholder="https://meet…">
@@ -1055,7 +1081,7 @@ function openQaEdit(id) {
         <h2 class="text-lg font-bold mb-2">Edit Q&A Session</h2>
         <label>Title *</label><input id="qae-title" value="${esc(s.title || '')}">
         <label>Description</label><textarea id="qae-desc" rows="3">${esc(s.description || '')}</textarea>
-        <label>When (local time) *</label><input id="qae-when" type="datetime-local" value="${toLocalInput(s.scheduled_at)}">
+        <label>When (Berlin time) *</label><input id="qae-when" type="datetime-local" value="${toLocalInput(s.scheduled_at)}">
         <label>Duration (min)</label><input id="qae-dur" type="number" value="${+s.duration_minutes || 60}">
         <label>Max participants</label><input id="qae-max" type="number" value="${+s.max_participants || 50}">
         <label>Meeting link (Zoom)</label><input id="qae-link" placeholder="https://zoom…" value="${esc(s.meeting_link || '')}">
@@ -1063,7 +1089,7 @@ function openQaEdit(id) {
         <select id="qae-reminder">
           ${opt('off','Off — no reminders')}${opt('24h','24 hours before')}${opt('24h_1h','24 hours + 1 hour before')}${opt('7d_24h_1h','7 days + 24 hours + 1 hour before')}
         </select>
-        <p class="cell-dim text-xs mt-2">Changing the date re-times any unsent reminders automatically.</p>
+        <p class="cell-dim text-xs mt-2">Changing the date restarts the reminder emails for the new date. Cancelling the session emails everyone who signed up.</p>
         <div class="flex gap-2 mt-5">
           <button onclick="submitQaEdit(${id})" class="flex-1 bg-[#0ea5e9] hover:bg-[#38bdf8] text-black font-semibold py-2 rounded-lg">Save changes</button>
           <button onclick="document.getElementById('qa-emodal').remove()" class="px-4 text-slate-300 hover:text-white border border-white/10 rounded-lg">Cancel</button>

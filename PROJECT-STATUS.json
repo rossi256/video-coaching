@@ -1,7 +1,7 @@
 {
-  "lastDev": "Event Inquiries admin: detail drawer (full message + parsed quiz answers), archive/delete, and AI reply drafts to info@ ",
-  "lastDevDate": "2026-06-09",
+  "lastDev": "Q&A funnel deep review: 9 bug fixes shipped (reminders, cancellation emails, capacity race, Berlin-time admin, honest IG DMs, Sendy list) + QA-FUNNEL-ROADMAP.md phases 0-6",
+  "lastDevDate": "2026-07-07",
   "phase": "active",
-  "milestone": null,
-  "blockedBy": null
+  "milestone": "Phase 1: Zoom links + first promotion for Jul 14 / Jul 28 sessions",
+  "blockedBy": "Michi: Zoom links for sessions 11+12; decide fate of broken 'Lineup Insider' Sendy list"
 }

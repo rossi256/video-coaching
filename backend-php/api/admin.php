@@ -354,12 +354,18 @@ if ($action === 'qa-session-create' && $method === 'POST') {
 }
 
 // --- POST /api/admin/qa-session/update --- (edit any field on an existing session)
-// Reminders recompute automatically from scheduled_at on the next cron run, so
-// changing the date is safe: unsent reminders just re-time themselves.
+// Changing the date clears the session's reminder log so the full reminder cycle
+// re-fires for the new date (the UNIQUE key still prevents double-sends within a
+// cycle). Setting status to 'cancelled' emails every registrant.
 if ($action === 'qa-session-update' && $method === 'POST') {
     $data = getJsonBody();
     $sid = (int) ($data['id'] ?? 0);
     if (!$sid) jsonResponse(['error' => 'id required'], 400);
+
+    $prevStmt = $db->prepare('SELECT * FROM qa_sessions WHERE id = ?');
+    $prevStmt->execute([$sid]);
+    $prev = $prevStmt->fetch();
+    if (!$prev) jsonResponse(['error' => 'session not found'], 404);
 
     $sets = [];
     $params = [];
@@ -384,6 +390,36 @@ if ($action === 'qa-session-update' && $method === 'POST') {
     $params[] = $sid;
     $stmt = $db->prepare('UPDATE qa_sessions SET ' . implode(', ', $sets) . ' WHERE id = ?');
     $stmt->execute($params);
+
+    // Date changed → wipe this session's reminder log so every offset re-fires
+    // against the new date. Without this, offsets already sent for the old date
+    // stay marked "sent" forever and registrants get no reminders at all.
+    $dateChanged = array_key_exists('scheduled_at', $data)
+        && trim((string) $data['scheduled_at']) !== (string) $prev['scheduled_at'];
+    if ($dateChanged) {
+        $db->prepare('DELETE FROM qa_reminder_log WHERE session_id = ?')->execute([$sid]);
+    }
+
+    // Transition into 'cancelled' → tell every registrant. Best effort per
+    // recipient; one bad address must not block the rest.
+    $nowCancelled = array_key_exists('status', $data)
+        && trim((string) $data['status']) === 'cancelled'
+        && $prev['status'] !== 'cancelled';
+    if ($nowCancelled) {
+        $freshStmt = $db->prepare('SELECT * FROM qa_sessions WHERE id = ?');
+        $freshStmt->execute([$sid]);
+        $freshSession = $freshStmt->fetch();
+        $suStmt = $db->prepare('SELECT name, email FROM qa_signups WHERE session_id = ?');
+        $suStmt->execute([$sid]);
+        foreach ($suStmt->fetchAll() as $su) {
+            try {
+                sendQaCancellation($su['email'], $su['name'], $freshSession);
+            } catch (\Exception $e) {
+                error_log('QA cancellation email failed for ' . $su['email'] . ': ' . $e->getMessage());
+            }
+        }
+    }
+
     jsonResponse(['ok' => true]);
 }
 
@@ -408,7 +444,7 @@ if ($action === 'qa-signups') {
 
 // --- GET /api/admin/qa-signups-all ---  (every signup across all sessions, session title joined)
 if ($action === 'qa-signups-all') {
-    $sql = 'SELECT s.id, s.session_id, s.name, s.email, s.message, s.created_at,
+    $sql = 'SELECT s.id, s.session_id, s.name, s.email, s.message, s.source, s.created_at,
                    q.title AS session_title, q.scheduled_at
             FROM qa_signups s
             LEFT JOIN qa_sessions q ON q.id = s.session_id
