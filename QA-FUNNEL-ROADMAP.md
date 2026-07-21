@@ -10,10 +10,11 @@ ladder (`kb/strategy/brand-ecosystem-2026-04.md`). Its one job: capture wingfoil
 where they already are (Instagram, events page) and qualify them upward to Tier 2
 (workshop, book) and Tier 3 (coaching, camps). Every phase below serves that.
 
-Scope guard: the coaching PHP app is migrating into the mobile app, but the
-events/Q&A funnel layer explicitly stays PHP (`video-coaching/CLAUDE.md`). Funnel
-work here is in scope; keep the API clean so the mobile app can absorb it later
-unchanged (Phase 6).
+Scope guard: the coaching PHP app is being integrated into the new **Coaching OS**
+platform (NOT the wingfoil mobile app — that was a merge idea, not a decision; see
+`video-coaching/CLAUDE.md`). The events/Q&A funnel layer stays PHP for now. Funnel
+work here is in scope; keep the API clean so the Coaching OS can absorb it later
+unchanged.
 
 ---
 
