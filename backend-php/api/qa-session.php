@@ -52,6 +52,14 @@ if ($method === 'POST' && $action === 'signup') {
         $source = 'web';
     }
 
+    // Optional interest topics (multi-choice on the signup form). Whitelisted
+    // keys only, stored as CSV — informational, helps Michi prep the session.
+    $allowedInterests = ['gear', 'technique', 'events', 'coaching', 'books', 'footstraps', 'other'];
+    $interests = $data['interests'] ?? [];
+    if (!is_array($interests)) $interests = [];
+    $interests = array_values(array_intersect($allowedInterests, array_map('strval', $interests)));
+    $interestsCsv = implode(',', $interests);
+
     if (!$name || !$email) {
         jsonResponse(['error' => 'Name and email are required.'], 400);
     }
@@ -80,11 +88,11 @@ if ($method === 'POST' && $action === 'signup') {
     // still catches duplicate emails per session.
     try {
         $ins = $db->prepare('
-            INSERT INTO qa_signups (session_id, name, email, message, source)
-            SELECT ?, ?, ?, ?, ? FROM DUAL
+            INSERT INTO qa_signups (session_id, name, email, message, source, interests)
+            SELECT ?, ?, ?, ?, ?, ? FROM DUAL
             WHERE (SELECT COUNT(*) FROM qa_signups WHERE session_id = ?) < ?
         ');
-        $ins->execute([$sessionId, $name, $email, $message, $source, $sessionId, (int) $session['max_participants']]);
+        $ins->execute([$sessionId, $name, $email, $message, $source, $interestsCsv, $sessionId, (int) $session['max_participants']]);
     } catch (\PDOException $e) {
         if ($e->getCode() == 23000) {
             // Already registered: answer exactly like a fresh signup (idempotent,

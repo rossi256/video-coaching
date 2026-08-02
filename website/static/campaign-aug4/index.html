@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Q&A Launch Campaign - Aug 4</title>
+<style>
+  :root{
+    --bg:#f4f7fa; --card:#ffffff; --ink:#0d1b2e; --body:#33414f; --mut:#7e93a6;
+    --line:#e3eaf1; --accent:#0ea5e9; --ok:#16a34a;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0d1b2e; --card:#142740; --ink:#f2f7fb; --body:#c8d6e2; --mut:#7e93a6; --line:#23405f; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--body);font:16px/1.6 'Helvetica Neue',Helvetica,Arial,sans-serif;padding:24px 16px 60px;}
+  .wrap{max-width:860px;margin:0 auto;}
+  h1{color:var(--ink);font-size:26px;margin:0 0 4px;}
+  h2{color:var(--ink);font-size:19px;margin:34px 0 12px;}
+  .sub{color:var(--mut);margin:0 0 22px;font-size:14.5px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:14px;}
+  label.task{display:flex;gap:12px;align-items:flex-start;padding:10px 4px;border-bottom:1px solid var(--line);cursor:pointer;}
+  label.task:last-child{border-bottom:0;}
+  label.task input{width:20px;height:20px;margin-top:3px;accent-color:var(--ok);flex:none;}
+  label.task .t{color:var(--ink);font-weight:600;}
+  label.task .d{font-size:14px;color:var(--mut);}
+  label.task.done .t,label.task.done .d{text-decoration:line-through;opacity:.55;}
+  .assets{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;}
+  .asset{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;text-align:center;}
+  .asset img{width:100%;height:170px;object-fit:cover;display:block;}
+  .asset .n{font-size:13.5px;color:var(--ink);font-weight:600;padding:10px 10px 2px;}
+  .asset a{display:inline-block;margin:8px 0 12px;padding:7px 16px;background:var(--accent);color:#fff;border-radius:7px;font-size:13.5px;font-weight:700;text-decoration:none;}
+  .copyblock{position:relative;}
+  .copyblock pre{white-space:pre-wrap;font:14px/1.55 'Helvetica Neue',Helvetica,Arial,sans-serif;background:none;border:0;margin:0;padding:0 0 6px;color:var(--body);}
+  .copybtn{position:absolute;top:14px;right:14px;padding:7px 14px;border:0;border-radius:7px;background:var(--accent);color:#fff;font-weight:700;font-size:13px;cursor:pointer;}
+  .copybtn.copied{background:var(--ok);}
+  .links a{color:var(--accent);text-decoration:none;font-weight:600;}
+  .tag{display:inline-block;font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);font-weight:800;margin-bottom:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="tag">Launch campaign</div>
+  <h1>Live Q&A - Tuesday, August 4, 7 PM</h1>
+  <p class="sub">Everything for the launch in one place. Checkboxes save automatically on this device.</p>
+
+  <h2>Checklist</h2>
+  <div class="card" id="checklist">
+    <label class="task"><input type="checkbox" data-k="nl_review"><span><span class="t">Read the newsletter preview in your GMX inbox</span><br><span class="d">Newest one is [PREVIEW v3] with the footstraps exclusive. If something is off, tell ARI what to change.</span></span></label>
+    <label class="task"><input type="checkbox" data-k="nl_send"><span><span class="t">Send the newsletter</span><br><span class="d">Tell ARI "send it" - goes to the big list (23,109 people). Or send the draft yourself in Sendy.</span></span></label>
+    <label class="task"><input type="checkbox" data-k="nl_cleanup"><span><span class="t">Delete the old draft in Sendy</span><br><span class="d">Keep only the newest one, subject ends with "a footstraps exclusive". The two older drafts are outdated.</span></span></label>
+    <label class="task"><input type="checkbox" data-k="ig_feed"><span><span class="t">Post the Instagram feed photo</span><br><span class="d">Use image A (portrait) or B (action) below with the Instagram caption. People comment "QA" and get the link by DM automatically.</span></span></label>
+    <label class="task"><input type="checkbox" data-k="ig_story"><span><span class="t">Post the Instagram story</span><br><span class="d">Story image below + link sticker to events.tricktionary.com/live-qa.</span></span></label>
+    <label class="task"><input type="checkbox" data-k="wa"><span><span class="t">WhatsApp broadcast to gear + coaching contacts</span><br><span class="d">Copy the text below (English or German). Tip: attach feed image A to the message.</span></span></label>
+    <label class="task"><input type="checkbox" data-k="medano"><span><span class="t">Prepare El Medano details + the footstraps announcement</span><br><span class="d">Both are teased everywhere as exclusives - have the footstraps news and the El Medano basics ready to reveal.</span></span></label>
+    <label class="task"><input type="checkbox" data-k="story_tue_am"><span><span class="t">Tuesday morning: "tonight" story</span><br><span class="d">Same story image, text "TONIGHT 7 PM" + link sticker.</span></span></label>
+    <label class="task"><input type="checkbox" data-k="story_tue_pm"><span><span class="t">Tuesday 6 PM: "1 hour to go" story</span><br><span class="d">Last push, one hour before the call.</span></span></label>
+    <label class="task"><input type="checkbox" data-k="zoom"><span><span class="t">Tuesday 7 PM: start the Zoom call</span><br><span class="d">Open Zoom and start "Wingfoil Q&A with Michi" - everyone signed up has the join link.</span></span></label>
+  </div>
+
+  <h2>Images - tap to download</h2>
+  <div class="assets">
+    <div class="asset"><img src="ig-feed-A-portrait.jpg" alt="Feed image A - portrait"><div class="n">Feed A - Portrait</div><a href="ig-feed-A-portrait.jpg" download>Download</a></div>
+    <div class="asset"><img src="ig-feed-B-action.jpg" alt="Feed image B - action"><div class="n">Feed B - Action</div><a href="ig-feed-B-action.jpg" download>Download</a></div>
+    <div class="asset"><img src="ig-story-portrait.jpg" alt="Story image"><div class="n">Story (9:16)</div><a href="ig-story-portrait.jpg" download>Download</a></div>
+    <div class="asset"><img src="qa-aug4-books.jpg" alt="Books mockup"><div class="n">Books mockup (email)</div><a href="qa-aug4-books.jpg" download>Download</a></div>
+  </div>
+
+  <h2>Instagram caption</h2>
+  <div class="card copyblock">
+    <button class="copybtn" data-copy="ig">Copy</button>
+    <pre id="copy-ig">LIVE Q&A. This Tuesday, August 4, 7 PM CEST 🎙️🌊
+
+One hour, live on Zoom, free. You ask, I answer.
+
+What I am most excited to talk about: the next Wing Tricktionary books. The Freestyle Edition is in the making, aiming for Christmas 2026, and the Wave Edition follows in 2027. Ask me anything about how these books get made - the shoots, the riders, the writing.
+
+Big on the agenda: the two Lake Garda events. All-levels camp next weekend (Aug 7-9), and the Freestyle Camp at the Duotone Pro Center Torbole the weekend after (Aug 14-16). Wondering if the freestyle camp is for you or how to join last minute? Ask me live.
+
+Plus a first look at a brand new event: El Medano, Tenerife, mid-November 👀
+
+And one exclusive: there is news coming for the Tricktionary footstraps - and you will hear it on this call first, before anywhere else 🔥
+
+Also on the table: coaching, Tarifa, Lake Garda, and gear talk - especially Duotone.
+
+Young and old, beginner or looping already - everyone is welcome. English, and please sign up so I know you are coming :)
+
+Want in? Comment "QA" and the signup link lands in your DMs 🤙🏼
+
+#wingfoil #wingfoiling #tricktionary #wingtricktionary #duotone</pre>
+  </div>
+
+  <h2>WhatsApp - English</h2>
+  <div class="card copyblock">
+    <button class="copybtn" data-copy="waen">Copy</button>
+    <pre id="copy-waen">Hey! Quick personal invite 🤙🏼
+
+I'm doing a live Q&A on Zoom this Tuesday (Aug 4, 7 PM CEST) - free, one hour, ask me anything.
+
+I'll talk about the new Wing Tricktionary books in the making (Freestyle Edition coming Christmas 2026), the two Lake Garda camps coming up, and I'll reveal a brand new event in El Medano this November plus exclusive footstraps news you'll hear there first 👀
+
+Gear questions, coaching, technique - all welcome too.
+
+Would be great to see you there! Just sign up quickly here so I know you're coming:
+events.tricktionary.com/live-qa</pre>
+  </div>
+
+  <h2>WhatsApp - Deutsch</h2>
+  <div class="card copyblock">
+    <button class="copybtn" data-copy="wade">Copy</button>
+    <pre id="copy-wade">Hey! Kurze persönliche Einladung 🤙🏼
+
+Ich mache diesen Dienstag ein Live Q&A auf Zoom (4. August, 19 Uhr) - gratis, eine Stunde, frag mich was du willst.
+
+Es geht um die neuen Wing Tricktionary Bücher (Freestyle Edition kommt Weihnachten 2026), die beiden Gardasee-Camps in den nächsten Wochen, ein brandneues Event in El Medano im November, und exklusive Footstraps-News die du dort zuerst hörst 👀
+
+Fragen zu Material, Coaching, Technik - alles willkommen.
+
+Wär super dich dabei zu haben! Meld dich kurz hier an, damit ich weiß dass du kommst:
+events.tricktionary.com/live-qa</pre>
+  </div>
+
+  <h2>Story text ideas</h2>
+  <div class="card copyblock">
+    <button class="copybtn" data-copy="story">Copy</button>
+    <pre id="copy-story">Today: "LIVE Q&A with me - Tuesday 7 PM" + link sticker "Save my spot"
+Tuesday morning: "TONIGHT 7 PM - ask me anything" + link sticker
+Tuesday 6 PM: "We go live in 1 hour ⚡ last chance" + link sticker</pre>
+  </div>
+
+  <h2>Quick links</h2>
+  <div class="card links">
+    <p style="margin:6px 0;"><a href="https://events.tricktionary.com/live-qa" target="_blank">Signup page (what people see)</a></p>
+    <p style="margin:6px 0;"><a href="https://coaching.tricktionary.com/video-coaching/admin#qa/11" target="_blank">Signups list (who is coming)</a></p>
+    <p style="margin:6px 0;"><a href="https://sendy.tricktionary.com" target="_blank">Sendy (newsletter drafts)</a></p>
+    <p style="margin:6px 0;"><a href="newsletter-qa-aug4.html" target="_blank">Newsletter HTML (view / save)</a></p>
+  </div>
+</div>
+<script>
+  var KEY='qa-campaign-aug4';
+  var state={}; try{ state=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  document.querySelectorAll('#checklist input').forEach(function(cb){
+    var k=cb.dataset.k;
+    if(state[k]){ cb.checked=true; cb.closest('.task').classList.add('done'); }
+    cb.addEventListener('change',function(){
+      state[k]=cb.checked; localStorage.setItem(KEY,JSON.stringify(state));
+      cb.closest('.task').classList.toggle('done',cb.checked);
+    });
+  });
+  document.querySelectorAll('.copybtn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var txt=document.getElementById('copy-'+btn.dataset.copy).innerText;
+      navigator.clipboard.writeText(txt).then(function(){
+        btn.textContent='Copied!'; btn.classList.add('copied');
+        setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('copied'); },1600);
+      });
+    });
+  });
+</script>
+</body>
+</html>

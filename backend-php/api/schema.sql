@@ -163,6 +163,8 @@ CREATE TABLE IF NOT EXISTS qa_signups (
 
 -- Idempotent migration for existing installs.
 ALTER TABLE qa_signups ADD COLUMN IF NOT EXISTS source VARCHAR(64) NOT NULL DEFAULT 'web';
+-- Interest topics chosen on the signup form (CSV of whitelisted keys, see qa-session.php).
+ALTER TABLE qa_signups ADD COLUMN IF NOT EXISTS interests VARCHAR(255) NOT NULL DEFAULT '';
 
 -- Q&A reminder send-log: one row per (signup, offset) actually emailed.
 -- The UNIQUE constraint makes the reminder cron idempotent — re-runs never double-send.
