@@ -95,9 +95,16 @@ if ($method === 'POST' && $action === 'signup') {
         $ins->execute([$sessionId, $name, $email, $message, $source, $interestsCsv, $sessionId, (int) $session['max_participants']]);
     } catch (\PDOException $e) {
         if ($e->getCode() == 23000) {
-            // Already registered: answer exactly like a fresh signup (idempotent,
-            // no repeat emails). A distinct "already registered" reply would let
-            // anyone probe which emails are on the list.
+            // Already registered: answer exactly like a fresh signup (a distinct
+            // "already registered" reply would let anyone probe which emails are
+            // on the list) — but RE-SEND the confirmation. The mail only ever
+            // goes to the address owner, and "signed up again because I lost the
+            // link" is the common real-world case.
+            try {
+                sendQaSignupConfirmation($email, $name, $session);
+            } catch (\Exception $mailErr) {
+                error_log('QA duplicate-signup resend failed: ' . $mailErr->getMessage());
+            }
             jsonResponse(['ok' => true]);
         }
         throw $e;
@@ -109,6 +116,12 @@ if ($method === 'POST' && $action === 'signup') {
         $dup = $db->prepare('SELECT 1 FROM qa_signups WHERE session_id = ? AND email = ?');
         $dup->execute([$sessionId, $email]);
         if ($dup->fetchColumn()) {
+            // Same re-send courtesy as the UNIQUE-violation path above.
+            try {
+                sendQaSignupConfirmation($email, $name, $session);
+            } catch (\Exception $mailErr) {
+                error_log('QA duplicate-signup resend failed: ' . $mailErr->getMessage());
+            }
             jsonResponse(['ok' => true]);
         }
         jsonResponse(['error' => 'This session is full.'], 400);
