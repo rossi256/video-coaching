@@ -496,6 +496,10 @@ function sendQaReminder(string $email, string $name, array $session, string $off
           . '<p style="margin:10px 0 0;font-size:12px;color:#64748b;">Or paste this into your browser:<br>' . htmlspecialchars($link) . '</p></div>'
         : '<p style="color:#334155;">I will send the meeting link in a follow-up email before we start. Keep an eye on your inbox.</p>';
 
+    $closing = $live
+        ? 'Bring your questions - or just jump in and listen 🤙🏼'
+        : 'Bring a question - or just come and listen. See you there 🤙🏼';
+
     $intro = $live
         ? "We just went live! Come on in, we are getting started:"
         : ($soon
@@ -512,7 +516,7 @@ function sendQaReminder(string $email, string $name, array $session, string $off
       <p style="margin:0;color:#64748b;font-size:13px;">Duration: {$duration} minutes</p>
     </div>
     $linkBlock
-    <p style="color:#334155;">Bring a question. The best sessions are the ones where you come ready to dig into your own riding. If something changed and you cannot make it, just reply and let me know.</p>
+    <p style="color:#334155;">$closing</p>
 HTML;
 
     $mail->Body = riderEmailWrap($body);
