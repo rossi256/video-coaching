@@ -24,7 +24,7 @@ $schedules = qaReminderSchedules();
 // fires before scheduled_at, so a past session has nothing left to send.
 // Grace period: keep just-started sessions 'upcoming' for 20 minutes so the
 // 'live' (0h) reminder can fire; flip to 'past' only after the window closes.
-$db->exec("UPDATE qa_sessions SET status = 'past' WHERE status = 'upcoming' AND scheduled_at < NOW() - INTERVAL 20 MINUTE");
+$db->exec("UPDATE qa_sessions SET status = 'past' WHERE status = 'upcoming' AND DATE_ADD(scheduled_at, INTERVAL duration_minutes + 20 MINUTE) < NOW()");
 
 // NOTE: scheduled_ts comes from MySQL UNIX_TIMESTAMP() so it is a correct epoch in
 // the DB's timezone. Do NOT use PHP strtotime() on scheduled_at here — PHP runs in

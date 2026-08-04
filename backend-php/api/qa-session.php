@@ -16,20 +16,24 @@ $sessionId = (int) ($_GET['session_id'] ?? 0);
 // GET — list upcoming sessions
 if ($method === 'GET' && !$action) {
     $db = getDb();
+    // Sessions stay listed through their live window (start .. end + 15 min).
+    // is_live is computed in SQL because PHP runs UTC while the DB stores CEST.
     $rows = $db->query("
         SELECT s.id, s.title, s.description, s.scheduled_at, s.duration_minutes,
                s.max_participants, s.status, s.type, s.external_url, s.created_at,
+               s.meeting_link,
+               (s.scheduled_at <= NOW() AND DATE_ADD(s.scheduled_at, INTERVAL s.duration_minutes + 15 MINUTE) > NOW()) AS is_live,
             (SELECT COUNT(*) FROM qa_signups WHERE session_id = s.id) AS signups
         FROM qa_sessions s
-        WHERE s.status = 'upcoming' AND s.scheduled_at > NOW()
+        WHERE s.status = 'upcoming' AND DATE_ADD(s.scheduled_at, INTERVAL s.duration_minutes + 15 MINUTE) > NOW()
         ORDER BY s.scheduled_at ASC
     ")->fetchAll();
 
-    // Add spots_remaining to each row
+    // Add spots_remaining to each row; the Zoom link is public ONLY while live
     foreach ($rows as &$row) {
+        $row['is_live'] = (bool) $row['is_live'];
+        if (!$row['is_live']) $row['meeting_link'] = null;
         $row['spots_remaining'] = max(0, (int)$row['max_participants'] - (int)$row['signups']);
-        // Don't expose meeting link publicly
-        unset($row['meeting_link']);
     }
 
     jsonResponse($rows);
@@ -75,7 +79,7 @@ if ($method === 'POST' && $action === 'signup') {
     $db = getDb();
 
     // Check session exists and is upcoming
-    $stmt = $db->prepare("SELECT * FROM qa_sessions WHERE id = ? AND status = 'upcoming' AND scheduled_at > NOW()");
+    $stmt = $db->prepare("SELECT * FROM qa_sessions WHERE id = ? AND status = 'upcoming' AND DATE_ADD(scheduled_at, INTERVAL duration_minutes + 15 MINUTE) > NOW()");
     $stmt->execute([$sessionId]);
     $session = $stmt->fetch();
 
