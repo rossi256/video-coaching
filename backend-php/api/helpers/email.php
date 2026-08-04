@@ -482,9 +482,12 @@ function sendQaReminder(string $email, string $name, array $session, string $off
     $when      = qaOffsetPhrase($offsetKey); // "in 24 hours" / "in about an hour" / "in 7 days"
 
     $soon = $offsetKey === '1h';
-    $mail->Subject = $soon
-        ? "Starting soon: Q&A with Michi — {$session['title']}"
-        : "Reminder: your Q&A with Michi is {$when} — {$session['title']}";
+    $live = $offsetKey === 'live';
+    $mail->Subject = $live
+        ? "🔴 We're LIVE now — {$session['title']}"
+        : ($soon
+            ? "Starting soon: Q&A with Michi — {$session['title']}"
+            : "Reminder: your Q&A with Michi is {$when} — {$session['title']}");
     $mail->isHTML(true);
 
     $linkBlock = $link !== ''
@@ -493,12 +496,15 @@ function sendQaReminder(string $email, string $name, array $session, string $off
           . '<p style="margin:10px 0 0;font-size:12px;color:#64748b;">Or paste this into your browser:<br>' . htmlspecialchars($link) . '</p></div>'
         : '<p style="color:#334155;">I will send the meeting link in a follow-up email before we start. Keep an eye on your inbox.</p>';
 
-    $intro = $soon
-        ? "We go live $when. Here is everything you need to jump in:"
-        : "Quick reminder that your live Q&A with me is coming up $when. Save the time and the link so you are ready:";
+    $intro = $live
+        ? "We just went live! Come on in, we are getting started:"
+        : ($soon
+            ? "We go live $when. Here is everything you need to jump in:"
+            : "Quick reminder that your live Q&A with me is coming up $when. Save the time and the link so you are ready:");
 
+    $heading = $live ? "Hey $eName, we're live!" : "Hey $eName, see you $when";
     $body = <<<HTML
-    <h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey $eName, see you $when</h2>
+    <h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">$heading</h2>
     <p style="color:#334155;">$intro</p>
     <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:16px 20px;margin:20px 0;">
       <p style="margin:0 0 4px;font-weight:700;color:#0c1929;font-size:16px;">$eTitle</p>

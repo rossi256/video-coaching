@@ -26,6 +26,8 @@ function qaReminderSchedules(): array {
             ['key' => '7d',  'hours' => 168],
             ['key' => '24h', 'hours' => 24],
             ['key' => '1h',  'hours' => 1],
+            // 0h = "we're live" mail, sent AT start time (15 min catch-up window)
+            ['key' => 'live', 'hours' => 0],
         ],
     ];
 }
@@ -52,6 +54,7 @@ function qaOffsetPhrase(string $offsetKey): string {
         case '7d':  return 'in 7 days';
         case '24h': return 'in 24 hours';
         case '1h':  return 'in about an hour';
+        case 'live': return 'right now';
         default:    return 'soon';
     }
 }

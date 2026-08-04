@@ -22,7 +22,9 @@ $schedules = qaReminderSchedules();
 // Housekeeping: a session whose time has passed is no longer "upcoming". Flip it
 // to 'past' so the admin list and status stay honest. Safe — every reminder offset
 // fires before scheduled_at, so a past session has nothing left to send.
-$db->exec("UPDATE qa_sessions SET status = 'past' WHERE status = 'upcoming' AND scheduled_at < NOW()");
+// Grace period: keep just-started sessions 'upcoming' for 20 minutes so the
+// 'live' (0h) reminder can fire; flip to 'past' only after the window closes.
+$db->exec("UPDATE qa_sessions SET status = 'past' WHERE status = 'upcoming' AND scheduled_at < NOW() - INTERVAL 20 MINUTE");
 
 // NOTE: scheduled_ts comes from MySQL UNIX_TIMESTAMP() so it is a correct epoch in
 // the DB's timezone. Do NOT use PHP strtotime() on scheduled_at here — PHP runs in
@@ -31,7 +33,7 @@ $sessions = $db->query("
     SELECT *, UNIX_TIMESTAMP(scheduled_at) AS scheduled_ts FROM qa_sessions
     WHERE status = 'upcoming'
       AND reminder_schedule <> 'off'
-      AND scheduled_at > NOW()
+      AND scheduled_at > NOW() - INTERVAL 20 MINUTE
 ")->fetchAll();
 
 if (empty($sessions)) {
@@ -64,11 +66,13 @@ foreach ($sessions as $session) {
         $dueAt   = $start - ((int) $off['hours'] * 3600);
         // Catch-up window: if the cron was down and we blew well past the due
         // moment, skip rather than send a reminder with stale "in 24 hours" wording.
-        $catchUp = min((int) $off['hours'], 6) * 3600;
+        // The 'live' offset (0h) fires AT start and stays valid 15 minutes in.
+        $isLive  = $off['key'] === 'live';
+        $catchUp = $isLive ? 900 : min((int) $off['hours'], 6) * 3600;
 
-        if ($now < $dueAt)            continue; // not due yet
-        if ($now >= $start)           continue; // session already started
-        if ($now - $dueAt > $catchUp) continue; // missed window, don't send stale
+        if ($now < $dueAt)                      continue; // not due yet
+        if (!$isLive && $now >= $start)         continue; // session already started
+        if ($now - $dueAt > $catchUp)           continue; // missed window, don't send stale
 
         $signupStmt->execute([$session['id'], $off['key']]);
         $recipients = $signupStmt->fetchAll();
