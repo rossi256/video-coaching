@@ -62,6 +62,14 @@ $organizerEmails = [
 
 // Admin notification
 try {
+        // Lifecycle: replay unlocks join the Q&A audience too.
+    if (strpos($eventSlug, 'qa-replay') === 0) {
+        try {
+            $db->prepare("INSERT INTO qa_audience (email, name, first_source) VALUES (?, ?, 'replay')
+                          ON DUPLICATE KEY UPDATE last_activity = NOW(), name = IF(name = '', VALUES(name), name)")
+               ->execute([strtolower($email), $name]);
+        } catch (\Throwable $t) { error_log('qa_audience upsert: ' . $t->getMessage()); }
+    }
     sendEventInquiryNotification($inquiryId, $name, $email, $eventSlug, $eventName, $level, $fullMessage, $whatsapp, $qaSignup);
 } catch (\Exception $e) {
     error_log('Event inquiry email failed: ' . $e->getMessage());

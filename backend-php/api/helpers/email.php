@@ -549,3 +549,67 @@ HTML;
     $mail->Body = riderEmailWrap($body);
     $mail->send();
 }
+
+
+/**
+ * Cross-sell block appended to lifecycle emails. Offers live in
+ * api/qa-offers.json so Michi can change them without touching code:
+ * [{"title": "...", "text": "...", "url": "...", "cta": "..."}]
+ */
+function qaOffersBlock(): string {
+    $path = __DIR__ . '/../qa-offers.json';
+    if (!file_exists($path)) return '';
+    $offers = json_decode((string) file_get_contents($path), true);
+    if (!is_array($offers) || !$offers) return '';
+    $html = '<div style="margin-top:22px;padding-top:16px;border-top:1px solid #e2e8f0;">'
+          . '<p style="color:#64748b;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:0 0 10px;">Also happening</p>';
+    foreach (array_slice($offers, 0, 3) as $o) {
+        $t = htmlspecialchars($o['title'] ?? ''); $x = htmlspecialchars($o['text'] ?? '');
+        $u = htmlspecialchars($o['url'] ?? '#'); $c = htmlspecialchars($o['cta'] ?? 'More');
+        $html .= "<p style=\"color:#334155;margin:0 0 10px;\"><strong>$t</strong> - $x <a href=\"$u\" style=\"color:#0ea5e9;\">$c &rarr;</a></p>";
+    }
+    return $html . '</div>';
+}
+
+// Lifecycle: replay email, sent automatically once replay_url is set on a past session.
+function sendQaReplayEmail(string $email, string $name, array $session, ?array $next): void {
+    $mail = getMailer('Michi @ Tricktionary');
+    $mail->addAddress($email, $name);
+    $date = date('F j', strtotime($session['scheduled_at']));
+    $mail->Subject = "The replay is here - thank you! ({$session['title']}, $date)";
+    $mail->isHTML(true);
+    $eName = htmlspecialchars($name ?: 'there');
+    $url = htmlspecialchars($session['replay_url']);
+    $nextBlock = '';
+    if ($next) {
+        $nd = date('l, F j \a\t g:i A', strtotime($next['scheduled_at']));
+        $nextBlock = '<p style="color:#334155;">The next live Q&A is already set: <strong>' . $nd . ' (CEST)</strong> - first Tuesday every month. <a href="https://events.tricktionary.com/live-qa/#upcoming" style="color:#0ea5e9;">Save your spot</a>.</p>';
+    }
+    $body = '<h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey ' . $eName . ', the replay is up</h2>'
+      . '<p style="color:#334155;">Thanks for being part of the live Q&A. Whether you were on the call or missed it - here is the full recording with clickable chapters.</p>'
+      . '<p style="margin:18px 0;text-align:center;"><a href="' . $url . '" style="display:inline-block;padding:14px 30px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px;">Watch the replay</a></p>'
+      . $nextBlock
+      . '<p style="color:#334155;">Got a question I did not get to? Just reply to this email.</p>'
+      . qaOffersBlock()
+      . '<p style="color:#334155;margin-top:20px;">See you on the water,<br><strong>Michi</strong></p>';
+    $mail->Body = riderEmailWrap($body);
+    $mail->send();
+}
+
+// Lifecycle: invite to the whole Q&A audience ~7 days before each session.
+function sendQaInviteEmail(string $email, string $name, array $session): void {
+    $mail = getMailer('Michi @ Tricktionary');
+    $mail->addAddress($email, $name);
+    $date = date('l, F j \a\t g:i A', strtotime($session['scheduled_at']));
+    $mail->Subject = 'Next live Q&A: ' . date('l, F j', strtotime($session['scheduled_at'])) . ' - you in?';
+    $mail->isHTML(true);
+    $eName = htmlspecialchars($name ?: 'there');
+    $body = '<h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey ' . $eName . ',</h2>'
+      . '<p style="color:#334155;">the next live Q&A is coming up: <strong>' . $date . ' (CEST)</strong>, free on Zoom, English &amp; German. Ask me anything - books, camps, gear, technique - or just listen in.</p>'
+      . '<p style="margin:18px 0;text-align:center;"><a href="https://events.tricktionary.com/live-qa/?signup=next" style="display:inline-block;padding:14px 30px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px;">Save my spot</a></p>'
+      . '<p style="color:#334155;">You get this because you joined a Q&A or watched a replay. Not interested in these invites? Just reply "no more" and I will take you off.</p>'
+      . qaOffersBlock()
+      . '<p style="color:#334155;margin-top:20px;">See you there,<br><strong>Michi</strong></p>';
+    $mail->Body = riderEmailWrap($body);
+    $mail->send();
+}

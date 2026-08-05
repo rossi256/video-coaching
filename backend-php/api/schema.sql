@@ -178,3 +178,22 @@ CREATE TABLE IF NOT EXISTS qa_reminder_log (
     FOREIGN KEY (signup_id) REFERENCES qa_signups(id) ON DELETE CASCADE,
     INDEX idx_session (session_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Q&A lifecycle automation (2026-08-05)
+ALTER TABLE qa_sessions ADD COLUMN IF NOT EXISTS replay_url VARCHAR(500) DEFAULT NULL;
+ALTER TABLE qa_sessions ADD COLUMN IF NOT EXISTS replay_email_sent_at DATETIME DEFAULT NULL;
+ALTER TABLE qa_sessions ADD COLUMN IF NOT EXISTS invite_email_sent_at DATETIME DEFAULT NULL;
+
+-- The growing Q&A audience: everyone who ever signed up for a session or
+-- unlocked a replay. Seed of the future community feature; the app imports this.
+CREATE TABLE IF NOT EXISTS qa_audience (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255) DEFAULT '',
+    first_source VARCHAR(64) DEFAULT 'signup',   -- signup | replay | import
+    first_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_activity DATETIME DEFAULT CURRENT_TIMESTAMP,
+    sessions_attended INT DEFAULT 0,
+    unsubscribed TINYINT(1) NOT NULL DEFAULT 0,
+    INDEX idx_unsub (unsubscribed)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

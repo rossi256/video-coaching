@@ -131,6 +131,13 @@ if ($method === 'POST' && $action === 'signup') {
         jsonResponse(['error' => 'This session is full.'], 400);
     }
 
+
+    // Lifecycle: everyone who signs up joins the Q&A audience (community seed).
+    try {
+        $db->prepare("INSERT INTO qa_audience (email, name, first_source) VALUES (?, ?, 'signup')
+                      ON DUPLICATE KEY UPDATE last_activity = NOW(), name = IF(name = '', VALUES(name), name)")
+           ->execute([strtolower($email), $name]);
+    } catch (\Throwable $t) { error_log('qa_audience upsert: ' . $t->getMessage()); }
     // Send confirmation to registrant
     try {
         sendQaSignupConfirmation($email, $name, $session);
