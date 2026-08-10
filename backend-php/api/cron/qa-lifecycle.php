@@ -59,10 +59,13 @@ $sessions = $db->query("
 ")->fetchAll();
 
 foreach ($sessions as $session) {
+    // COLLATE pins both sides to one collation: qa_audience was created with the
+    // newer server default (uca1400) while qa_signups is unicode_ci, and a bare
+    // comparison throws "Illegal mix of collations" (found 2026-08-10).
     $aud = $db->prepare("
         SELECT a.name, a.email FROM qa_audience a
         WHERE a.unsubscribed = 0
-          AND a.email NOT IN (SELECT LOWER(email) FROM qa_signups WHERE session_id = ?)
+          AND LOWER(a.email) COLLATE utf8mb4_unicode_ci NOT IN (SELECT LOWER(email) FROM qa_signups WHERE session_id = ?)
     ");
     $aud->execute([$session['id']]);
     $rows = $aud->fetchAll();

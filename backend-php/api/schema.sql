@@ -196,4 +196,6 @@ CREATE TABLE IF NOT EXISTS qa_audience (
     sessions_attended INT DEFAULT 0,
     unsubscribed TINYINT(1) NOT NULL DEFAULT 0,
     INDEX idx_unsub (unsubscribed)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    -- Explicit collation: must match qa_signups (utf8mb4_unicode_ci) or the
+    -- lifecycle cron's cross-table email comparison throws an illegal-mix error.
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
