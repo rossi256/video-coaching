@@ -1,0 +1,660 @@
+<title>Sept 1 Q&A Prep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+
+<style>
+  :root {
+    --ground:   #FBFCFD;
+    --surface:  #FFFFFF;
+    --raised:   #F1F5F8;
+    --line:     #DCE5EC;
+    --ink:      #12232F;
+    --ink-soft: #4A6172;
+    --muted:    #6B8194;
+    --accent:   #1183BC;
+    --accent-soft: #E4F2FA;
+    --signal:   #B4761B;
+    --signal-soft: #FBF1DF;
+    --good:     #1D7A5F;
+
+    --measure: 68ch;
+    --display: "Barlow Condensed", "Helvetica Neue", Arial, sans-serif;
+    --body: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:   #0B1622;
+      --surface:  #152736;
+      --raised:   #1D3245;
+      --line:     #27435A;
+      --ink:      #E8EEF4;
+      --ink-soft: #B4C6D4;
+      --muted:    #8FA3B5;
+      --accent:   #4FB8E8;
+      --accent-soft: #12303F;
+      --signal:   #E0A340;
+      --signal-soft: #33280F;
+      --good:     #4FC49C;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:   #0B1622;
+    --surface:  #152736;
+    --raised:   #1D3245;
+    --line:     #27435A;
+    --ink:      #E8EEF4;
+    --ink-soft: #B4C6D4;
+    --muted:    #8FA3B5;
+    --accent:   #4FB8E8;
+    --accent-soft: #12303F;
+    --signal:   #E0A340;
+    --signal-soft: #33280F;
+    --good:     #4FC49C;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.65;
+    margin: 0;
+    padding: 0 20px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: var(--measure); margin: 0 auto; }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    padding: 56px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .eyebrow {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 0.82rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(2.4rem, 8vw, 3.6rem);
+    line-height: 1.02;
+    letter-spacing: -0.005em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .standfirst {
+    color: var(--ink-soft);
+    font-size: 1.06rem;
+    margin: 4px 0 0;
+    max-width: 56ch;
+  }
+
+  /* ---------- fact strip ---------- */
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(126px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 36px 0 0;
+  }
+
+  .fact {
+    background: var(--surface);
+    padding: 14px 16px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .fact dt {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .fact dd {
+    margin: 0;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 1.12rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+
+  .fact dd small {
+    display: block;
+    font-family: var(--body);
+    font-weight: 400;
+    font-size: 0.78rem;
+    color: var(--muted);
+    letter-spacing: 0;
+  }
+
+  /* ---------- sections ---------- */
+
+  section { margin: 56px 0 0; }
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.62rem;
+    letter-spacing: 0.005em;
+    margin: 0 0 6px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--ink);
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 1.16rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 30px 0 10px;
+  }
+
+  p { margin: 0 0 14px; }
+  p:last-child { margin-bottom: 0; }
+
+  .lede { color: var(--ink-soft); margin-top: 14px; }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  code, .mono { font-family: var(--mono); font-size: 0.88em; }
+
+  code {
+    background: var(--raised);
+    padding: 1px 5px;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+
+  /* ---------- verdict callout ---------- */
+
+  .verdict {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 3px;
+    padding: 18px 20px;
+    margin: 20px 0;
+  }
+
+  .verdict.attention { border-left-color: var(--signal); }
+
+  .verdict .tag {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 0.74rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .verdict.attention .tag { color: var(--signal); }
+
+  /* ---------- people ---------- */
+
+  .people {
+    list-style: none;
+    padding: 0;
+    margin: 18px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .person {
+    background: var(--surface);
+    padding: 15px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .person-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 12px;
+  }
+
+  .person-name { font-weight: 700; }
+
+  .person-when {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    margin-left: auto;
+  }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+
+  .chip {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 0.74rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    background: var(--raised);
+    border-radius: 2px;
+    padding: 2px 7px;
+  }
+
+  .chip.hot { color: var(--accent); background: var(--accent-soft); }
+
+  .asked {
+    border-left: 2px solid var(--accent);
+    padding-left: 12px;
+    color: var(--ink);
+    font-style: italic;
+  }
+
+  .asked span { font-style: normal; color: var(--muted); font-size: 0.86rem; display: block; }
+
+  /* ---------- run-up timeline ---------- */
+
+  .runup {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .leg {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    gap: 16px;
+    padding: 15px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .leg:last-child { border-bottom: 1px solid var(--line); }
+
+  .leg-when {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 0.84rem;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    padding-top: 2px;
+  }
+
+  .leg-when small {
+    display: block;
+    font-family: var(--body);
+    font-weight: 400;
+    font-size: 0.74rem;
+    color: var(--muted);
+  }
+
+  .leg-what strong { display: block; margin-bottom: 2px; }
+  .leg-what span { color: var(--ink-soft); font-size: 0.94rem; }
+
+  .leg.auto .leg-when { color: var(--muted); }
+  .leg.you .leg-what strong::after {
+    content: "you";
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--signal);
+    background: var(--signal-soft);
+    border-radius: 2px;
+    padding: 1px 6px;
+    margin-left: 8px;
+    vertical-align: 1px;
+  }
+
+  /* ---------- change log ---------- */
+
+  .changes {
+    list-style: none;
+    padding: 0;
+    margin: 18px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .changes li {
+    display: grid;
+    grid-template-columns: 20px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .changes li::before {
+    content: "";
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--good);
+    margin-top: 8px;
+    margin-left: 5px;
+  }
+
+  .changes strong { display: block; }
+  .changes span { color: var(--ink-soft); font-size: 0.95rem; }
+
+  /* ---------- leads table ---------- */
+
+  .scroller { overflow-x: auto; margin: 18px 0 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.94rem;
+    min-width: 460px;
+  }
+
+  th {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 0.76rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 0 14px 8px 0;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 11px 14px 11px 0;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  td.when { font-family: var(--mono); font-size: 0.84rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+  /* ---------- footer ---------- */
+
+  footer {
+    margin: 64px 0 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.86rem;
+  }
+
+  @media (max-width: 540px) {
+    .leg { grid-template-columns: 1fr; gap: 4px; }
+    .person-when { margin-left: 0; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Live Q&amp;A / Session 12</p>
+    <h1>Tuesday, September 1</h1>
+    <p class="standfirst">Where the next call stands, who is on it, what they asked, and the four things worth doing between now and then.</p>
+  </header>
+
+  <dl class="facts">
+    <div class="fact"><dt>Starts</dt><dd>19:00<small>CEST, 60 min</small></dd></div>
+    <div class="fact"><dt>Registered</dt><dd>6<small>of 50 spots</small></dd></div>
+    <div class="fact"><dt>Invite list</dt><dd>44<small>0 unsubscribed</small></dd></div>
+    <div class="fact"><dt>Invited</dt><dd>38<small>33 at 19:05, +5 backfilled</small></dd></div>
+  </dl>
+
+  <section>
+    <h2>The email you spotted</h2>
+    <p class="lede">You were right, and it was a live bug rather than a one-off typo.</p>
+
+    <div class="verdict">
+      <span class="tag">Who got it</span>
+      <p><strong>Not all customers. 33 people.</strong> The T-7 invite goes only to <code>qa_audience</code>, the list of everyone who has ever signed up for a Q&amp;A or unlocked a replay, minus anyone already registered for this session. That was 39 people minus the 6 already signed up. It never touches the Sendy newsletter lists or the shop's customer base.</p>
+    </div>
+
+    <p>The Lake Garda line came from <code>qa-offers.json</code>, the shared cross-sell block appended to every invite and replay email. It still advertised the freestyle camp that ran 14 to 16 August. Nothing rereads that file on its own, so it would have gone out again in September and October.</p>
+
+    <div class="verdict">
+      <span class="tag">Fixed and live</span>
+      <p>The block now promotes <strong>Tenerife, 14 to 21 November</strong> and the <strong>Tarifa Mastery 50+</strong> week, with WingCoach video coaching third. Worth a glance whenever camp dates move, because it is the one file that quietly rides along on every lifecycle email.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>The leak underneath it</h2>
+    <p class="lede">Looking for the stale offer turned up something that was costing you signups.</p>
+
+    <p>Every camp page carries a pre-ticked box: <em>"Also send me invites to the free Q&amp;A calls (camp or no camp)."</em> Ticking it appended one line of text to the inquiry email and did nothing else. It never wrote to the invite list, so those people asked for invites and were never sent one.</p>
+
+    <p>Five people were sitting in that gap, three of them warm camp leads. They are now on the list and have been sent the September 1 invite:</p>
+
+    <ul class="people">
+      <li class="person">
+        <div class="person-head"><span class="person-name">Doris Schindler</span><span class="chip hot">Tarifa 50+</span><span class="person-when">22 Aug</span></div>
+        <p>Teacher, can only travel during Austrian school holidays, asked whether you run camps in the main holiday weeks.</p>
+      </li>
+      <li class="person">
+        <div class="person-head"><span class="person-name">Jack Bradley</span><span class="chip hot">Tenerife Nov</span><span class="person-when">29 Jul, 12 Aug</span></div>
+        <p>Picked up wingfoiling last year, hooked, wants to push into downwinding. Asked twice.</p>
+      </li>
+      <li class="person">
+        <div class="person-head"><span class="person-name">Cristian Coliselli</span><span class="chip hot">Tarifa 50+</span><span class="person-when">6 Aug</span></div>
+        <p>Jibing and tacking toeside, working on the foot switch and heelside tack, starting into waves.</p>
+      </li>
+      <li class="person">
+        <div class="person-head"><span class="person-name">Monika</span><span class="chip">Garda freestyle</span><span class="person-when">30 Jun</span></div>
+      </li>
+      <li class="person">
+        <div class="person-head"><span class="person-name">Dania Gerhardt</span><span class="chip">Custom coaching</span><span class="person-when">13 Jun</span></div>
+      </li>
+    </ul>
+
+    <p style="margin-top:16px;">The box now writes straight into the invite list, so this stops happening.</p>
+  </section>
+
+  <section>
+    <h2>Who is coming</h2>
+    <p class="lede">Six registered so far. Every one of them ticked "events and camps", which is the strongest single signal on the list.</p>
+
+    <ul class="people">
+      <li class="person">
+        <div class="person-head"><span class="person-name">Alessandro</span><span class="person-when">18 Aug</span></div>
+        <div class="chips"><span class="chip">Gear</span><span class="chip">Technique</span><span class="chip hot">Events</span><span class="chip">Coaching</span><span class="chip">Books</span><span class="chip">Footstraps</span></div>
+        <p class="asked">Tarifa, spot description. How would you organize a holiday in Tarifa?<span>Also on the August 4 call, so this is his second one.</span></p>
+      </li>
+      <li class="person">
+        <div class="person-head"><span class="person-name">Peter Vana</span><span class="person-when">10 Aug</span></div>
+        <div class="chips"><span class="chip">Gear</span><span class="chip">Technique</span><span class="chip hot">Events</span><span class="chip">Coaching</span></div>
+        <p class="asked">What about camps in Germany (Ostsee, Nordsee, Chiemsee), Switzerland?<span>Third touch: August 4 call, Tarifa 50+ inquiry in July, now this.</span></p>
+      </li>
+      <li class="person">
+        <div class="person-head"><span class="person-name">Michaela Wiegele</span><span class="person-when">11 Aug</span></div>
+        <div class="chips"><span class="chip">Gear</span><span class="chip">Technique</span><span class="chip hot">Events</span></div>
+      </li>
+      <li class="person">
+        <div class="person-head"><span class="person-name">Cecilie Alfsen</span><span class="person-when">5 Aug</span></div>
+        <div class="chips"><span class="chip hot">Events</span><span class="chip">Coaching</span></div>
+        <p>Also asked about the Tenerife November camp the same afternoon.</p>
+      </li>
+      <li class="person">
+        <div class="person-head"><span class="person-name">Zsofia</span><span class="person-when">5 Aug</span></div>
+        <div class="chips"><span class="chip">Gear</span><span class="chip">Technique</span><span class="chip hot">Events</span><span class="chip">Coaching</span><span class="chip">Books</span><span class="chip">Footstraps</span></div>
+      </li>
+      <li class="person">
+        <div class="person-head"><span class="person-name">Jonas</span><span class="person-when">2 Aug</span></div>
+        <div class="chips"><span class="chip">Gear</span><span class="chip hot">Events</span></div>
+      </li>
+    </ul>
+
+    <h3>Interest tally</h3>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Topic</th><th>Ticked by</th><th>Read</th></tr></thead>
+        <tbody>
+          <tr><td>Events &amp; camps</td><td class="mono">6 of 6</td><td>Lead with 2027 dates, not gear</td></tr>
+          <tr><td>Gear</td><td class="mono">5 of 6</td><td>Duotone questions keep coming</td></tr>
+          <tr><td>Technique</td><td class="mono">4 of 6</td><td>Jibe and foot switch dominate</td></tr>
+          <tr><td>Coaching</td><td class="mono">4 of 6</td><td>Warm for the video coaching pitch</td></tr>
+          <tr><td>Books</td><td class="mono">2 of 6</td><td>See the French question below</td></tr>
+          <tr><td>Footstraps</td><td class="mono">2 of 6</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Questions worth answering on air</h2>
+    <p class="lede">Two came in with this session's signups. The rest are recurring, from the August call and the inbox, and none of them has a public answer yet.</p>
+
+    <div class="verdict attention">
+      <span class="tag">Asked three times in three weeks</span>
+      <p><strong>When does the French edition of Wingfoil Tricktionary Vol 1 come out?</strong> Benoît Lafaurie asked it in his Q&amp;A signup on 2 August. Two more came through the French contact form since: Duflos on 3 August ("I promised it to my brother a year ago, he doesn't believe me any more") and Rialland on 5 August. Three unprompted asks in three weeks makes this the most-wanted answer you have, and all three are still waiting.</p>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Question</th><th>From</th><th>When</th></tr></thead>
+        <tbody>
+          <tr><td>How would you organize a Tarifa holiday? Spot description.</td><td>Alessandro</td><td class="when">18 Aug</td></tr>
+          <tr><td>Camps in Germany (Ostsee, Nordsee, Chiemsee) or Switzerland?</td><td>Peter Vana</td><td class="when">10 Aug</td></tr>
+          <tr><td>The new Duotone Pop wing: pure flatwater, or waves too?</td><td>Tom</td><td class="when">4 Aug</td></tr>
+          <tr><td>Getting past mental blocks on jibe, tack and switch</td><td>Harald</td><td class="when">4 Aug</td></tr>
+          <tr><td>Intermediate stuck on jibe and waterstart, big lakes in Canada</td><td>JC</td><td class="when">3 Aug</td></tr>
+          <tr><td>Wing only, or windsurf too?</td><td>Richard Foliot</td><td class="when">3 Aug</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-top:18px;">Peter's question is the one to prepare properly. He has now touched three separate funnels in six weeks and is asking about camps close to home, which is a gap in the current lineup rather than a throwaway question.</p>
+  </section>
+
+  <section>
+    <h2>What changed today</h2>
+    <p class="lede">All four are live on production and verified in a browser, not just in code.</p>
+
+    <ul class="changes">
+      <li>
+        <div>
+          <strong>"Save my spot" is genuinely one click</strong>
+          <span>The invite button now carries a signed token tied to that person's address. Clicking it registers them and shows "Michi, you're in!" straight away. No name, no email, no form. A stale or broken token falls back to the normal signup form with a plain explanation instead of hanging.</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>The confirmation email finally carries the Zoom link</strong>
+          <span>It used to live only inside the calendar attachment, so anyone who did not import the .ics had no clickable link until the first reminder fired. The link is the same recurring room every month, so it is safe to keep.</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>Times are labelled CEST</strong>
+          <span>Confirmations and reminders said "7:00 PM" with no timezone. A third of the list is outside continental Europe (Canada, UK, Poland, Bulgaria, Sweden).</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>The camp-page opt-in reaches the invite list</strong>
+          <span>Plus the five people it had already dropped, now added and invited.</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>The run-up</h2>
+    <p class="lede">Everything marked automatic already runs itself. Only three things need you.</p>
+
+    <ul class="runup">
+      <li class="leg auto">
+        <div class="leg-when">Tue 25<small>19:00</small></div>
+        <div class="leg-what"><strong>7-day reminder to registrants</strong><span>Join link plus calendar invite, to the 6 who are in.</span></div>
+      </li>
+      <li class="leg you">
+        <div class="leg-when">This week</div>
+        <div class="leg-what"><strong>Run the Instagram promo</strong><span>This is the whole difference. August 4 finished on 34 registrations and about 30 of those landed in the 48 hours after the promo went out. The comment-keyword funnels are standing on all three accounts and register people into "next upcoming" automatically, so it is a post and a story, not a build.</span></div>
+      </li>
+      <li class="leg you">
+        <div class="leg-when">This week</div>
+        <div class="leg-what"><strong>Reply to the three warm camp leads</strong><span>Doris, Jack and Cristian. All three asked about a camp, opted into the Q&amp;A, and have had nothing back yet.</span></div>
+      </li>
+      <li class="leg you">
+        <div class="leg-when">Before Mon</div>
+        <div class="leg-what"><strong>Give the session a real agenda</strong><span>The card and the invite currently say "books, camps, gear, technique". August 4 listed the freestyle book, the Garda camps, the Tenerife announcement and the footstraps exclusive, and it filled. Specific beats generic here.</span></div>
+      </li>
+      <li class="leg auto">
+        <div class="leg-when">Mon 31<small>19:00</small></div>
+        <div class="leg-what"><strong>24-hour reminder</strong></div>
+      </li>
+      <li class="leg auto">
+        <div class="leg-when">Tue 1<small>18:00</small></div>
+        <div class="leg-what"><strong>One-hour reminder</strong></div>
+      </li>
+      <li class="leg auto">
+        <div class="leg-when">Tue 1<small>19:00</small></div>
+        <div class="leg-what"><strong>"We're live" email, page flips to live</strong><span>Red banner, join-now form, Zoom link exposed on the success screen.</span></div>
+      </li>
+      <li class="leg you">
+        <div class="leg-when">Tue 1<small>after</small></div>
+        <div class="leg-what"><strong>Recording, replay page, set replay_url</strong><span>The replay email then sends itself within the hour. Still the one manual block until Zoom grants the recording scope.</span></div>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Two things still open</h2>
+
+    <div class="verdict attention">
+      <span class="tag">Worth a decision</span>
+      <p><strong>There is no unsubscribe link.</strong> The invite says "reply no more and I will take you off", which means a human has to read it and set a flag by hand. The database column exists and the sending code already respects it. With the list at 44 this is fine. It stops being fine at a few hundred.</p>
+    </div>
+
+    <div class="verdict attention">
+      <span class="tag">Worth a decision</span>
+      <p><strong>Q&amp;A emails do not copy you.</strong> Your rule is that every automated customer-facing email BCCs rossi@tricktionary.com. The Q&amp;A confirmations, reminders, invites and replay emails do not. You only see the separate admin notification, which does not show what the person actually received.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Session 12, <code>qa_sessions</code> id 12, Zoom room 864 4473 2437, the same room every month. Figures read from the live coaching database on 24 August 2026 at 20:35 CEST.</p>
+  </footer>
+
+</div>
