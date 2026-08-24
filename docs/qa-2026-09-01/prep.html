@@ -578,13 +578,19 @@
 
   <section>
     <h2>What changed today</h2>
-    <p class="lede">All four are live on production and verified in a browser, not just in code.</p>
+    <p class="lede">All five are live on production and verified in a browser, not just in code.</p>
 
     <ul class="changes">
       <li>
         <div>
           <strong>"Save my spot" is genuinely one click</strong>
-          <span>The invite button now carries a signed token tied to that person's address. Clicking it registers them and shows "Michi, you're in!" straight away. No name, no email, no form. A stale or broken token falls back to the normal signup form with a plain explanation instead of hanging. <strong>One catch:</strong> today's invite went out at 19:05, before this went live at about 20:25, so the 33 who got it are holding the old link. Only the 5 backfilled people have the one-click version. It applies to everyone from the October invite onward.</span>
+          <span>The invite button now carries a signed token tied to that person's address. Clicking it registers them and shows "Michi, you're in!" straight away. No name, no email, no form. A stale or broken token falls back to the normal signup form with a plain explanation instead of hanging.</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>The old invite link is one tap too, on a known device</strong>
+          <span>Today's invite went out at 19:05, before the token shipped, so those 33 emails carry a plain link with no identity in it. The page now remembers anyone who has signed up on that browser before and offers a one-tap confirm card ("Save your spot as Peter Vana") instead of an empty form. Not the full one-click, since a new phone or a cleared browser cannot be recognised, but it covers the common case. Everyone gets the real one-click from the October invite onward.</span>
         </div>
       </li>
       <li>
