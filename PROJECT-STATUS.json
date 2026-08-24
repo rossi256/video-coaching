@@ -1,7 +1,7 @@
 {
-  "lastDev": "Q&A one-click 'Save my spot' via signed invite tokens; event-form Q&A opt-ins now reach qa_audience (5 backfilled); offers refreshed",
+  "lastDev": "Q&A Sept 1 prep: fixed stale offers block (Aug 14-16 Garda camp still in every invite), fixed event-form Q&A opt-in that",
   "lastDevDate": "2026-08-24",
   "phase": "active",
-  "milestone": "Sept 1 Q&A: 6 registered, 44 in audience; promo push still to run",
+  "milestone": null,
   "blockedBy": null
 }
