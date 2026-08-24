@@ -1,7 +1,7 @@
 {
-  "lastDev": "Q&A funnel deep review: 9 bugs fixed + deployed (reminder wipe on reschedule, cancellation emails, capacity race, Berlin-time admin, honest IG DMs, webhook dedup, working Sendy list); roadmap QA-FUNNEL-ROADMAP.md phases 0-6",
-  "lastDevDate": "2026-07-07",
+  "lastDev": "Q&A one-click 'Save my spot' via signed invite tokens; event-form Q&A opt-ins now reach qa_audience (5 backfilled); offers refreshed",
+  "lastDevDate": "2026-08-24",
   "phase": "active",
-  "milestone": "Phase 1: Zoom links + first promotion for Jul 14 / Jul 28 sessions",
-  "blockedBy": "Michi: Zoom links for sessions 11+12; decide fate of broken 'Lineup Insider' Sendy list"
+  "milestone": "Sept 1 Q&A: 6 registered, 44 in audience; promo push still to run",
+  "blockedBy": null
 }
