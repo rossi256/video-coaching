@@ -1,0 +1,434 @@
+<title>Sept 1 Q&A Promo Runsheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+
+<style>
+  :root {
+    --ground:   #FBFCFD;
+    --surface:  #FFFFFF;
+    --raised:   #F1F5F8;
+    --line:     #DCE5EC;
+    --ink:      #12232F;
+    --ink-soft: #4A6172;
+    --muted:    #6B8194;
+    --accent:   #1183BC;
+    --accent-soft: #E4F2FA;
+    --signal:   #B4761B;
+    --signal-soft: #FBF1DF;
+    --good:     #1D7A5F;
+
+    --measure: 68ch;
+    --display: "Barlow Condensed", "Helvetica Neue", Arial, sans-serif;
+    --body: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:   #0B1622;
+      --surface:  #152736;
+      --raised:   #1D3245;
+      --line:     #27435A;
+      --ink:      #E8EEF4;
+      --ink-soft: #B4C6D4;
+      --muted:    #8FA3B5;
+      --accent:   #4FB8E8;
+      --accent-soft: #12303F;
+      --signal:   #E0A340;
+      --signal-soft: #33280F;
+      --good:     #4FC49C;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:   #0B1622;
+    --surface:  #152736;
+    --raised:   #1D3245;
+    --line:     #27435A;
+    --ink:      #E8EEF4;
+    --ink-soft: #B4C6D4;
+    --muted:    #8FA3B5;
+    --accent:   #4FB8E8;
+    --accent-soft: #12303F;
+    --signal:   #E0A340;
+    --signal-soft: #33280F;
+    --good:     #4FC49C;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.65;
+    margin: 0;
+    padding: 0 20px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: var(--measure); margin: 0 auto; }
+
+  .masthead { padding: 56px 0 0; display: flex; flex-direction: column; gap: 10px; }
+
+  .eyebrow {
+    font-family: var(--display); font-weight: 600; font-size: 0.82rem;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); margin: 0;
+  }
+
+  h1 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(2.4rem, 8vw, 3.6rem); line-height: 1.02;
+    letter-spacing: -0.005em; text-wrap: balance; margin: 0;
+  }
+
+  .standfirst { color: var(--ink-soft); font-size: 1.06rem; margin: 4px 0 0; max-width: 56ch; }
+
+  .facts {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: var(--line); border: 1px solid var(--line);
+    border-radius: 3px; overflow: hidden; margin: 36px 0 0;
+  }
+  .fact { background: var(--surface); padding: 14px 16px 15px; display: flex; flex-direction: column; gap: 3px; }
+  .fact dt {
+    font-family: var(--display); font-weight: 600; font-size: 0.72rem;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+  }
+  .fact dd {
+    margin: 0; font-family: var(--mono); font-weight: 600; font-size: 1.12rem;
+    font-variant-numeric: tabular-nums; color: var(--ink);
+  }
+  .fact dd small {
+    display: block; font-family: var(--body); font-weight: 400;
+    font-size: 0.78rem; color: var(--muted); letter-spacing: 0;
+  }
+
+  section { margin: 56px 0 0; }
+
+  h2 {
+    font-family: var(--display); font-weight: 700; font-size: 1.62rem;
+    letter-spacing: 0.005em; margin: 0 0 6px; padding-bottom: 10px;
+    border-bottom: 2px solid var(--ink); text-wrap: balance;
+  }
+
+  h3 {
+    font-family: var(--display); font-weight: 600; font-size: 1.16rem;
+    letter-spacing: 0.03em; text-transform: uppercase; color: var(--ink-soft);
+    margin: 30px 0 10px;
+  }
+
+  p { margin: 0 0 14px; }
+  p:last-child { margin-bottom: 0; }
+  .lede { color: var(--ink-soft); margin-top: 14px; }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  code, .mono { font-family: var(--mono); font-size: 0.88em; }
+  code { background: var(--raised); padding: 1px 5px; border-radius: 3px; word-break: break-word; }
+
+  /* ---------- decisions ---------- */
+
+  .decide {
+    background: var(--surface); border: 1px solid var(--line);
+    border-left: 3px solid var(--signal); border-radius: 3px;
+    padding: 18px 20px; margin: 18px 0;
+  }
+  .decide .tag {
+    font-family: var(--display); font-weight: 600; font-size: 0.74rem;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--signal);
+    display: block; margin-bottom: 5px;
+  }
+  .decide .rec {
+    margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line);
+    font-size: 0.95rem; color: var(--ink-soft);
+  }
+  .decide .rec strong { color: var(--ink); }
+
+  /* ---------- copy blocks ---------- */
+
+  .copy {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 3px; margin: 14px 0 0; overflow: hidden;
+  }
+  .copy-head {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px;
+    padding: 11px 18px; background: var(--raised); border-bottom: 1px solid var(--line);
+  }
+  .copy-head strong {
+    font-family: var(--display); font-weight: 600; font-size: 0.86rem;
+    letter-spacing: 0.11em; text-transform: uppercase; color: var(--ink-soft);
+  }
+  .copy-head .to {
+    font-family: var(--mono); font-size: 0.76rem; color: var(--muted); margin-left: auto;
+  }
+  .copy-body { padding: 16px 18px; white-space: pre-wrap; line-height: 1.6; }
+  .copy-body .url { color: var(--accent); word-break: break-all; }
+
+  .subject {
+    font-family: var(--mono); font-size: 0.92rem; font-weight: 600;
+    background: var(--accent-soft); color: var(--ink);
+    padding: 10px 14px; border-radius: 3px; margin: 0 0 4px;
+    word-break: break-word;
+  }
+  .alts { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 6px; }
+  .alts li {
+    font-family: var(--mono); font-size: 0.86rem; color: var(--ink-soft);
+    padding: 7px 12px; border: 1px dashed var(--line); border-radius: 3px;
+  }
+
+  /* ---------- schedule ---------- */
+
+  .runup { list-style: none; padding: 0; margin: 20px 0 0; display: flex; flex-direction: column; }
+  .leg {
+    display: grid; grid-template-columns: 92px 1fr; gap: 16px;
+    padding: 15px 0; border-top: 1px solid var(--line);
+  }
+  .leg:last-child { border-bottom: 1px solid var(--line); }
+  .leg-when {
+    font-family: var(--mono); font-weight: 600; font-size: 0.84rem;
+    color: var(--accent); font-variant-numeric: tabular-nums; padding-top: 2px;
+  }
+  .leg-when small { display: block; font-family: var(--body); font-weight: 400; font-size: 0.74rem; color: var(--muted); }
+  .leg-what strong { display: block; margin-bottom: 2px; }
+  .leg-what span { color: var(--ink-soft); font-size: 0.94rem; }
+  .leg.auto .leg-when { color: var(--muted); }
+  .leg.auto .leg-what strong::after {
+    content: "runs itself"; font-family: var(--display); font-weight: 600;
+    font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--good); background: var(--raised); border-radius: 2px;
+    padding: 1px 6px; margin-left: 8px; vertical-align: 1px;
+  }
+
+  /* ---------- tables ---------- */
+
+  .scroller { overflow-x: auto; margin: 18px 0 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.94rem; min-width: 420px; }
+  th {
+    font-family: var(--display); font-weight: 600; font-size: 0.76rem;
+    letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted);
+    text-align: left; padding: 0 14px 8px 0; border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  td { padding: 11px 14px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.dim td { color: var(--muted); }
+
+  footer {
+    margin: 64px 0 0; padding-top: 18px; border-top: 1px solid var(--line);
+    color: var(--muted); font-size: 0.86rem;
+  }
+
+  @media (max-width: 700px) { .facts { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) {
+    .leg { grid-template-columns: 1fr; gap: 4px; }
+    .copy-head .to { margin-left: 0; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Promo campaign / Session 12</p>
+    <h1>Ready to send, nothing sent</h1>
+    <p class="standfirst">Every text below is a draft waiting on your yes. Four decisions first, because two of them change the copy.</p>
+  </header>
+
+  <dl class="facts">
+    <div class="fact"><dt>Registered</dt><dd>7<small>seats left: 43</small></dd></div>
+    <div class="fact"><dt>Email reach</dt><dd>450<small>B2C shop list</small></dd></div>
+    <div class="fact"><dt>WhatsApp</dt><dd>66<small>your 2026 camps</small></dd></div>
+    <div class="fact"><dt>Days out</dt><dd>8<small>call is 1 Sept</small></dd></div>
+  </dl>
+
+  <section>
+    <h2>Four decisions</h2>
+    <p class="lede">I've picked a default for each so you can just say "all good" if you agree.</p>
+
+    <div class="decide">
+      <span class="tag">1 / Who gets the email</span>
+      <p>Sendy has two realistic lists. <code>email-b2c-2026-04-26</code> holds <strong>450</strong> shop customers, current through 2 August. <code>TG ALL 07/2024</code> holds <strong>22,973</strong> and is the whole historic universe.</p>
+      <p class="rec"><strong>My pick: the 450.</strong> The 23k list is two years stale, and a blast that size risks bounces and spam complaints on the same domain your order confirmations and Q&amp;A reminders go out on. Not worth it to fill a room that seats 50.</p>
+    </div>
+
+    <div class="decide">
+      <span class="tag">2 / The 50-seat cap</span>
+      <p>The session is set to <code>max_participants: 50</code> and 7 are in, so 43 seats. Once it fills, the signup page tells everyone else "This session is full."</p>
+      <p>Email plus WhatsApp alone probably lands 15 to 30. Add the Instagram funnel, which brought about 30 in 48 hours last month, and you go past 50 with days still to run.</p>
+      <p class="rec"><strong>My pick: raise it before anything goes out.</strong> One question I could not answer: your Zoom plan's real ceiling. The API key can't read the account tier. Pro is normally 100. Tell me the number and I'll set it.</p>
+    </div>
+
+    <div class="decide">
+      <span class="tag">3 / Which WhatsApp groups</span>
+      <p>Your own 2026 camp groups are the clean audience. The bigger ones are events where you may be a guest rather than the host, so a promo post lands differently.</p>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Group</th><th>People</th><th>Read</th></tr></thead>
+          <tbody>
+            <tr><td>DT Young Blood Camp Torbole</td><td class="num">36</td><td>Your camp</td></tr>
+            <tr><td>Wingfoil Camp Torbole 7 to 9 Aug</td><td class="num">13</td><td>Your camp</td></tr>
+            <tr><td>Wing Camp 17 to 19 July, DPCT</td><td class="num">9</td><td>Your camp</td></tr>
+            <tr><td>Freestyle Camp Torbole 14 to 16 Aug</td><td class="num">8</td><td>Your camp, just finished</td></tr>
+            <tr class="dim"><td>S.K.L &amp; S.W.L Tarifa 2026</td><td class="num">138</td><td>Check first, not clearly yours</td></tr>
+            <tr class="dim"><td>Festival del Viento 2026</td><td class="num">75</td><td>Check first</td></tr>
+            <tr class="dim"><td>RIDERS SWL Chiclana 2026</td><td class="num">54</td><td>Check first</td></tr>
+            <tr class="dim"><td>DPC Clinics Michi / SC wing</td><td class="num">5</td><td>Staff, not participants</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="rec"><strong>My pick: the top four, 66 people.</strong> One post per group, not individual DMs. Four messages instead of 66 keeps it a note to a group you shared a week with, rather than a mailshot.</p>
+    </div>
+
+    <div class="decide">
+      <span class="tag">4 / When</span>
+      <p class="rec"><strong>My pick: Wednesday 26 August.</strong> Email in the morning, WhatsApp early evening when people actually read it. Six days of runway, close enough that "next Tuesday" is still true in the subject line.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>The email</h2>
+    <p class="lede">Built on the house template, already sitting in Sendy as a draft. 238 words, one button, no em dashes.</p>
+
+    <h3>Subject</h3>
+    <p class="subject">Live Q&amp;A next Tuesday. Bring a question.</p>
+    <p style="font-size:0.9rem;color:var(--muted);margin-top:8px;">Preheader: Tuesday 1 September, 19:00 CEST. One hour on Zoom, free, English and German.</p>
+
+    <ul class="alts">
+      <li>Alt A: One hour, your questions, next Tuesday</li>
+      <li>Alt B: Live Q&amp;A, Tuesday 1 September. You in?</li>
+      <li>Alt C: What is in your way on the water right now?</li>
+    </ul>
+
+    <div class="copy">
+      <div class="copy-head"><strong>Body</strong><span class="to">from Michi Rossmeier, reply-to rossi@</span></div>
+      <div class="copy-body">LIVE Q&amp;A
+Next Tuesday, 1 September
+19:00 CEST · one hour on Zoom · free · English and German
+
+Once a month I sit down on Zoom for an hour and answer whatever you bring.
+
+No slides, no theory hour. You ask, we work through it. Technique, gear, the move that has stopped progressing, the mental side of it, camps, the books. Whatever is actually in your way right now.
+
+Last month we went through jibes that will not come, the new Duotone wings, and what a camp week really looks like day to day. Some people bring a question, some just listen in. Both are fine.
+
+Bring a question when you sign up and I will make sure it gets answered.
+
+[ Save my spot ]
+You get the Zoom link and a calendar invite straight away.
+
+ALSO ON THE CALL
+Wingfoil Camp Tenerife, 14 to 21 November
+El Medano. Winter sun, trade winds, small group. Ask me anything about it live.
+
+Mastery Camp 50+ Tarifa, early October
+Built around riders 50 and up. Right pace, right group, dates going out shortly.
+
+See you on the water,
+Michi Rossmeier · Tricktionary</div>
+    </div>
+
+    <p style="margin-top:16px;font-size:0.94rem;color:var(--ink-soft);">The button goes to <span class="mono">events.tricktionary.com/live-qa/?signup=next</span>, which opens the signup straight away rather than dropping people on the page to hunt for it. Anyone who has signed up on that browser before gets the one-tap confirm card instead of a form.</p>
+  </section>
+
+  <section>
+    <h2>The WhatsApp posts</h2>
+    <p class="lede">One post per group. German for the Torbole and Young Blood groups, English if you add any of the international ones.</p>
+
+    <div class="copy">
+      <div class="copy-head"><strong>German</strong><span class="to">Torbole camps, Young Blood</span></div>
+      <div class="copy-body">Servus zusammen 🤙🏼
+
+Nächsten Dienstag, 1. September um 19:00 mache ich wieder ein Live Q&amp;A auf Zoom. Eine Stunde, gratis, deutsch und englisch.
+
+Ihr fragt, wir gehen es durch. Technik, Material, der Move der gerade nicht weitergeht, die mentale Seite, Camps, die Bücher.
+
+Wer dabei sein mag: <span class="url">https://events.tricktionary.com/live-qa</span>
+
+Freu mich auf euch 🌊</div>
+    </div>
+
+    <div class="copy">
+      <div class="copy-head"><strong>English</strong><span class="to">Tarifa, Chiclana, Festival, DPC</span></div>
+      <div class="copy-body">Hey everyone 🤙🏼
+
+Next Tuesday, 1 September at 19:00 CEST I'm doing another live Q&amp;A on Zoom. One hour, free, English and German.
+
+You ask, we work through it. Technique, gear, the move that has stopped progressing, the mental side, camps, the books.
+
+Want in? <span class="url">https://events.tricktionary.com/live-qa</span>
+
+See you there 🌊</div>
+    </div>
+
+    <div class="copy">
+      <div class="copy-head"><strong>Status</strong><span class="to">all contacts, day before</span></div>
+      <div class="copy-body">Live Q&amp;A tomorrow, 19:00 CEST.
+One hour on Zoom, free. Bring a question 🤙🏼
+
+events.tricktionary.com/live-qa</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The run</h2>
+
+    <ul class="runup">
+      <li class="leg auto">
+        <div class="leg-when">Tue 25<small>19:00</small></div>
+        <div class="leg-what"><strong>7-day reminder</strong><span>To the 7 registered. Join link and calendar invite.</span></div>
+      </li>
+      <li class="leg">
+        <div class="leg-when">Wed 26<small>10:00</small></div>
+        <div class="leg-what"><strong>Email to the B2C list</strong><span>Sendy draft is ready. One command once you say go.</span></div>
+      </li>
+      <li class="leg">
+        <div class="leg-when">Wed 26<small>18:00</small></div>
+        <div class="leg-what"><strong>WhatsApp to the camp groups</strong><span>Four posts. Needs a live WhatsApp connection, see below.</span></div>
+      </li>
+      <li class="leg">
+        <div class="leg-when">Fri 28</div>
+        <div class="leg-what"><strong>Instagram feed post</strong><span>Comment "QA" funnel is standing on all three accounts and registers people into this session automatically. This is the one that moved the number last month.</span></div>
+      </li>
+      <li class="leg">
+        <div class="leg-when">Mon 31</div>
+        <div class="leg-what"><strong>Stories plus WhatsApp Status</strong><span>Day-before nudge.</span></div>
+      </li>
+      <li class="leg auto">
+        <div class="leg-when">Mon 31<small>19:00</small></div>
+        <div class="leg-what"><strong>24-hour reminder</strong></div>
+      </li>
+      <li class="leg">
+        <div class="leg-when">Tue 1<small>morning</small></div>
+        <div class="leg-what"><strong>Story: tonight</strong></div>
+      </li>
+      <li class="leg auto">
+        <div class="leg-when">Tue 1<small>18:00</small></div>
+        <div class="leg-what"><strong>One-hour reminder</strong></div>
+      </li>
+      <li class="leg auto">
+        <div class="leg-when">Tue 1<small>19:00</small></div>
+        <div class="leg-what"><strong>Live email, page flips to live</strong><span>Red banner, join-now form, Zoom link on the success screen.</span></div>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Before anything can go out</h2>
+
+    <div class="decide">
+      <span class="tag">WhatsApp is disconnected</span>
+      <p>The local store is authenticated but shows <code>CONNECTED false</code>, last sync this morning. Sending needs a live link to your phone. Usually it reconnects on its own when a send runs, but if it asks for a QR you have to scan it, I cannot.</p>
+    </div>
+
+    <div class="decide">
+      <span class="tag">The seat cap</span>
+      <p>Still 50. If you want the promo to run properly this wants raising first, and I need your Zoom plan's ceiling to pick a safe number.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Sendy draft created 24 August against list <code>email-b2c-2026-04-26</code>, not sent. Group sizes read live from WhatsApp the same evening. Nothing in this campaign has been sent to anybody.</p>
+  </footer>
+
+</div>
