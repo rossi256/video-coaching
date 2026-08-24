@@ -53,6 +53,44 @@ HTML;
 }
 
 /**
+ * One-click "Save my spot" tokens.
+ *
+ * People on the invite list already gave us their email once; making them retype
+ * it in a modal is the reason invites convert badly. The invite CTA therefore
+ * carries a signed token that identifies the recipient, so the landing page can
+ * register them on the click alone.
+ *
+ * The secret is derived from credentials that already exist in config.php, so
+ * there is no new constant to keep in sync across the local/staging/prod copies.
+ * Tokens are scoped to one email and do not expire: the worst case for a leaked
+ * link is that someone books a free seat for an address they already control.
+ */
+function qaLinkSecret(): string {
+    return hash('sha256', ADMIN_PASSWORD . '|' . DB_PASS . '|qa-oneclick-v1');
+}
+
+function qaAudienceToken(string $email): string {
+    $email = strtolower(trim($email));
+    $payload = rtrim(strtr(base64_encode($email), '+/', '-_'), '=');
+    $sig = substr(hash_hmac('sha256', $email, qaLinkSecret()), 0, 16);
+    return $payload . '.' . $sig;
+}
+
+/** Verify a one-click token and return the email it was issued for, or null. */
+function qaVerifyAudienceToken(string $token): ?string {
+    $parts = explode('.', trim($token));
+    if (count($parts) !== 2) return null;
+    [$payload, $sig] = $parts;
+    $decoded = base64_decode(strtr($payload, '-_', '+/'), true);
+    if ($decoded === false || $decoded === '') return null;
+    $email = strtolower(trim($decoded));
+    $expected = substr(hash_hmac('sha256', $email, qaLinkSecret()), 0, 16);
+    if (!hash_equals($expected, $sig)) return null;
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return null;
+    return $email;
+}
+
+/**
  * Build a calendar invite (.ics) for a Q&A session so registrants can one-tap
  * "save to calendar" with the Zoom link embedded. Times are interpreted in
  * Europe/Berlin (how scheduled_at is stored) and emitted in UTC, so the skew
@@ -407,18 +445,29 @@ function sendQaSignupConfirmation(string $email, string $name, array $session): 
 
     $eName = htmlspecialchars($name);
     $eTitle = htmlspecialchars($session['title']);
-    $date = date('l, F j, Y \a\t g:i A', strtotime($session['scheduled_at']));
+    $date = date('l, F j, Y \a\t g:i A', strtotime($session['scheduled_at'])) . ' CEST';
     $duration = (int) $session['duration_minutes'];
 
+    // The join link belongs in the confirmation, not only in the .ics: people
+    // who do not import the calendar file had no clickable link at all until
+    // the first reminder fired (found 2026-08-24).
+    $link = trim((string) ($session['meeting_link'] ?? ''));
+    $linkBlock = $link !== ''
+        ? '<div style="text-align:center;margin:24px 0;">'
+          . '<a href="' . htmlspecialchars($link) . '" style="display:inline-block;padding:13px 26px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;border-radius:8px;">Join the session</a>'
+          . '<p style="margin:10px 0 0;font-size:12px;color:#64748b;">Same link every time. Or paste this into your browser:<br>' . htmlspecialchars($link) . '</p></div>'
+        : '';
+
     $body = <<<HTML
-    <h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey $eName &mdash; you're registered!</h2>
+    <h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey $eName, you're registered!</h2>
     <p style="color:#334155;">You've signed up for the upcoming live Q&amp;A session:</p>
     <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:16px 20px;margin:20px 0;">
       <p style="margin:0 0 4px;font-weight:700;color:#0c1929;font-size:16px;">$eTitle</p>
       <p style="margin:0 0 4px;color:#334155;font-size:14px;">$date</p>
       <p style="margin:0;color:#64748b;font-size:13px;">Duration: {$duration} minutes</p>
     </div>
-    <p style="color:#334155;">I've attached a calendar invite so you can save the time (and the meeting link) in one tap. You'll get the join link and reminders by email before we start. If you have any questions in the meantime, just reply to this email.</p>
+    $linkBlock
+    <p style="color:#334155;">I've attached a calendar invite so you can save the time and the link in one tap, and you'll get reminders before we start. If you have a question in the meantime, just reply to this email.</p>
 HTML;
 
     $mail->Body = riderEmailWrap($body);
@@ -476,7 +525,7 @@ function sendQaReminder(string $email, string $name, array $session, string $off
 
     $eName     = htmlspecialchars($name);
     $eTitle    = htmlspecialchars($session['title']);
-    $date      = date('l, F j, Y \a\t g:i A', strtotime($session['scheduled_at']));
+    $date      = date('l, F j, Y \a\t g:i A', strtotime($session['scheduled_at'])) . ' CEST';
     $duration  = (int) $session['duration_minutes'];
     $link      = trim((string) ($session['meeting_link'] ?? ''));
     $when      = qaOffsetPhrase($offsetKey); // "in 24 hours" / "in about an hour" / "in 7 days"
@@ -606,7 +655,7 @@ function sendQaInviteEmail(string $email, string $name, array $session): void {
     $eName = htmlspecialchars($name ?: 'there');
     $body = '<h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey ' . $eName . ',</h2>'
       . '<p style="color:#334155;">the next live Q&A is coming up: <strong>' . $date . ' (CEST)</strong>, free on Zoom, English &amp; German. Ask me anything - books, camps, gear, technique - or just listen in.</p>'
-      . '<p style="margin:18px 0;text-align:center;"><a href="https://events.tricktionary.com/live-qa/?signup=next" style="display:inline-block;padding:14px 30px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px;">Save my spot</a></p>'
+      . '<p style="margin:18px 0;text-align:center;"><a href="https://events.tricktionary.com/live-qa/?signup=next&amp;t=' . rawurlencode(qaAudienceToken($email)) . '" style="display:inline-block;padding:14px 30px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px;">Save my spot</a></p>'
       . '<p style="color:#334155;">You get this because you joined a Q&A or watched a replay. Not interested in these invites? Just reply "no more" and I will take you off.</p>'
       . qaOffersBlock()
       . '<p style="color:#334155;margin-top:20px;">See you there,<br><strong>Michi</strong></p>';

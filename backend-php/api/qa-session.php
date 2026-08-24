@@ -64,6 +64,26 @@ if ($method === 'POST' && $action === 'signup') {
     $interests = array_values(array_intersect($allowedInterests, array_map('strval', $interests)));
     $interestsCsv = implode(',', $interests);
 
+    // One-click "Save my spot": the invite email carries a signed token that
+    // identifies the recipient, so a returning person never retypes their
+    // address. The token is the identity - anything the client sent alongside
+    // it is ignored, and the stored name comes from qa_audience.
+    $oneClick = false;
+    $token = trim($data['token'] ?? '');
+    if ($token !== '') {
+        $tokenEmail = qaVerifyAudienceToken($token);
+        if ($tokenEmail === null) {
+            jsonResponse(['error' => 'This link is no longer valid. Please sign up on the page.'], 400);
+        }
+        $email = $tokenEmail;
+        $known = getDb()->prepare('SELECT name FROM qa_audience WHERE LOWER(email) = ? LIMIT 1');
+        $known->execute([$email]);
+        $name = trim((string) ($known->fetchColumn() ?: ''));
+        if ($name === '') $name = 'there';
+        $oneClick = true;
+        $source = 'invite';
+    }
+
     if (!$name || !$email) {
         jsonResponse(['error' => 'Name and email are required.'], 400);
     }
@@ -109,7 +129,7 @@ if ($method === 'POST' && $action === 'signup') {
             } catch (\Exception $mailErr) {
                 error_log('QA duplicate-signup resend failed: ' . $mailErr->getMessage());
             }
-            jsonResponse(['ok' => true]);
+            jsonResponse($oneClick ? ['ok' => true, 'name' => $name] : ['ok' => true]);
         }
         throw $e;
     }
@@ -126,7 +146,7 @@ if ($method === 'POST' && $action === 'signup') {
             } catch (\Exception $mailErr) {
                 error_log('QA duplicate-signup resend failed: ' . $mailErr->getMessage());
             }
-            jsonResponse(['ok' => true]);
+            jsonResponse($oneClick ? ['ok' => true, 'name' => $name] : ['ok' => true]);
         }
         jsonResponse(['error' => 'This session is full.'], 400);
     }
@@ -152,7 +172,7 @@ if ($method === 'POST' && $action === 'signup') {
         error_log('QA signup admin notification failed: ' . $e->getMessage());
     }
 
-    jsonResponse(['ok' => true]);
+    jsonResponse($oneClick ? ['ok' => true, 'name' => $name] : ['ok' => true]);
 }
 
 jsonResponse(['error' => 'Invalid request'], 400);

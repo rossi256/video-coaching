@@ -62,7 +62,19 @@ $organizerEmails = [
 
 // Admin notification
 try {
-        // Lifecycle: replay unlocks join the Q&A audience too.
+    // Lifecycle: ticking "also send me invites to the free Q&A calls" is what
+    // the Q&A audience IS - before 2026-08-24 the flag only appended a line to
+    // the inquiry message, so every opt-in from an event form was dropped and
+    // those people never received a single invite.
+    if ($qaSignup) {
+        try {
+            $db->prepare("INSERT INTO qa_audience (email, name, first_source) VALUES (?, ?, 'inquiry')
+                          ON DUPLICATE KEY UPDATE last_activity = NOW(), name = IF(name = '', VALUES(name), name)")
+               ->execute([strtolower($email), $name]);
+        } catch (\Throwable $t) { error_log('qa_audience opt-in upsert: ' . $t->getMessage()); }
+    }
+
+    // Lifecycle: replay unlocks join the Q&A audience too.
     if (strpos($eventSlug, 'qa-replay') === 0) {
         try {
             $db->prepare("INSERT INTO qa_audience (email, name, first_source) VALUES (?, ?, 'replay')
