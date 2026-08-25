@@ -1,0 +1,71 @@
+LIVE Q&A - SEPTEMBER 1, 2026
+Instagram pack. Accounts: wing.tricktionary, michirossmeier, loveallsurfallstyle
+Comment-keyword funnel: "QA" is live on all three and auto-registers into this session.
+
+Images (docs/qa-2026-09-01/assets/):
+  qa-sept1-feed-A-portrait.jpg   1080x1350  portrait
+  qa-sept1-feed-B-action.jpg     1080x1350  Garda, orange wing
+  qa-sept1-story.jpg             1080x1920  story, text inside IG safe zones
+
+===============================================================
+FEED POST CAPTION
+===============================================================
+
+LIVE Q&A. Tuesday, September 1, 7 PM CEST 🎙️🌊
+
+One hour, live on Zoom, free. You ask, I answer.
+
+No slides, no theory hour. Whatever is actually in your way on the water right now: the move that has stopped progressing, gear, the mental side, how to plan a trip.
+
+Already on the list for this one:
+🌊 How to organise a wingfoil holiday in Tarifa, spot by spot
+🏕️ Camps closer to home. Ostsee, Nordsee, Chiemsee, Switzerland. What is realistic and what I am actually planning
+📖 The French edition of Wing Tricktionary Vol 1. Three of you asked this month, so I will answer it properly
+🌋 Tenerife in November, El Medano. Small group, trade winds, what the week looks like
+🎯 Mastery 50+ in Tarifa this October
+
+Young or old, first flights or already looping. English or German, both welcome.
+
+Want in? Comment "QA" and the signup link lands in your DMs 🤙🏼
+
+#wingfoil #wingfoiling #tricktionary #wingtricktionary #duotone
+
+===============================================================
+STORY FRAMES
+===============================================================
+
+FRAME 1 (Fri 28 Aug) - announce
+  Image: qa-sept1-story.jpg
+  Link sticker -> https://events.tricktionary.com/live-qa/?signup=next&src=ig-story
+  Sticker text: "Save my spot"
+  Second sticker idea: "Or comment QA on my latest post"
+
+FRAME 2 (Fri 28 Aug, right after) - poll
+  Poll sticker: "Coming on Tuesday?"  Yes / Tell me more
+  Text: Bring one question. That is the whole format.
+
+FRAME 3 (Mon 31 Aug) - day before
+  Image: reuse qa-sept1-story.jpg
+  Text: "Tomorrow, 7 PM CEST"
+  Link sticker -> same link
+
+FRAME 4 (Tue 1 Sep, morning) - today
+  Text: "TONIGHT, 7 PM CEST 🎙️ last chance to grab a spot"
+  Link sticker -> same link
+
+FRAME 5 (Tue 1 Sep, ~18:00) - one hour
+  Text: "We go live in 1 hour ⚡"
+  Sub: "Zoom link is in your inbox if you signed up. Not signed up? Still time."
+  Link sticker -> same link
+
+===============================================================
+NOTES
+===============================================================
+
+- Every link carries ?signup=next so the signup opens straight away instead of
+  landing people on the page to hunt for it, and ?src= so we can finally tell
+  which channel produced the signups.
+- The comment funnel registers people into "next upcoming" automatically, so the
+  copy stays date-safe if a post runs late.
+- Voice: short paragraphs, direct ask, no long dashes, warm sign-off.
+  See kb/VOICEPRINT.md.
