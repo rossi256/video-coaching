@@ -152,3 +152,6 @@ RewriteRule ^qa-sessions$ qa-session.php [L,QSA]
 
 # /api/qa-sessions/ID/signup → qa-session.php?_action=signup&session_id=ID
 RewriteRule ^qa-sessions/(\d+)/signup$ qa-session.php?_action=signup&session_id=$1 [L,QSA]
+
+# /api/qa-unsubscribe -> qa-unsubscribe.php (one-click off the Q&A list)
+RewriteRule ^qa-unsubscribe$ qa-unsubscribe.php [L,QSA]

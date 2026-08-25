@@ -91,6 +91,61 @@ function qaVerifyAudienceToken(string $token): ?string {
 }
 
 /**
+ * Send Michi exactly one copy of each lifecycle email per session.
+ *
+ * The house rule is that automated customer email copies him, so he can see what
+ * people actually received. Taken literally on a list send that would mean one
+ * copy per recipient: 45 invites, then 45 more per reminder offset. So this
+ * claims the FIRST message of each (session, type) batch and re-sends it to him
+ * afterwards, labelled. It is a second message rather than a BCC because a BCC
+ * shares one envelope, so relabelling the subject would relabel the customer's
+ * copy too (found 2026-08-25, the first recipient got "[copy]" in their inbox).
+ *
+ * Call qaClaimSample() before send() and qaSendSampleCopy() after it.
+ */
+function qaClaimSample(int $sessionId, string $type): bool {
+    if ($sessionId <= 0) return false;
+    try {
+        $db = getDb();
+        $db->exec("CREATE TABLE IF NOT EXISTS qa_email_samples (
+            session_id INT NOT NULL,
+            email_type VARCHAR(32) NOT NULL,
+            sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (session_id, email_type)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $ins = $db->prepare('INSERT IGNORE INTO qa_email_samples (session_id, email_type) VALUES (?, ?)');
+        $ins->execute([$sessionId, $type]);
+        return $ins->rowCount() > 0;
+    } catch (\Throwable $t) {
+        error_log('qa sample claim failed: ' . $t->getMessage());
+        return false;
+    }
+}
+
+/** Re-send the message just sent to Michi, labelled, without touching the original. */
+function qaSendSampleCopy(PHPMailer $mail, bool $claimed): void {
+    if (!$claimed) return;
+    try {
+        $mail->clearAllRecipients();
+        $mail->addAddress(NOTIFY_EMAIL);
+        $mail->Subject = '[copy] ' . $mail->Subject;
+        $mail->send();
+    } catch (\Throwable $t) {
+        error_log('qa sample copy failed: ' . $t->getMessage());
+    }
+}
+
+/** One-click unsubscribe footer for the list emails (invite, replay). */
+function qaUnsubscribeLine(string $email): string {
+    $url = 'https://coaching.tricktionary.com/video-coaching/api/qa-unsubscribe?t='
+         . rawurlencode(qaAudienceToken($email));
+    return '<p style="color:#94a3b8;font-size:12px;margin-top:22px;">'
+         . 'You get this because you joined a Q&amp;A or watched a replay. '
+         . '<a href="' . $url . '" style="color:#94a3b8;">Unsubscribe from Q&amp;A invites</a>.'
+         . '</p>';
+}
+
+/**
  * Build a calendar invite (.ics) for a Q&A session so registrants can one-tap
  * "save to calendar" with the Zoom link embedded. Times are interpreted in
  * Europe/Berlin (how scheduled_at is stored) and emitted in UTC, so the skew
@@ -472,7 +527,9 @@ HTML;
 
     $mail->Body = riderEmailWrap($body);
     attachQaIcs($mail, $session);
+    $sampled = qaClaimSample((int)($session['id'] ?? 0), 'confirmation');
     $mail->send();
+    qaSendSampleCopy($mail, $sampled);
 }
 
 // 10. Q&A signup notification — sent to admin when someone registers
@@ -570,7 +627,9 @@ HTML;
 
     $mail->Body = riderEmailWrap($body);
     attachQaIcs($mail, $session);
+    $sampled = qaClaimSample((int)($session['id'] ?? 0), 'reminder-' . $offsetKey);
     $mail->send();
+    qaSendSampleCopy($mail, $sampled);
 }
 
 // 12. Q&A cancellation — sent to every registrant when a session is cancelled
@@ -640,9 +699,12 @@ function sendQaReplayEmail(string $email, string $name, array $session, ?array $
       . $nextBlock
       . '<p style="color:#334155;">Got a question I did not get to? Just reply to this email.</p>'
       . qaOffersBlock()
-      . '<p style="color:#334155;margin-top:20px;">See you on the water,<br><strong>Michi</strong></p>';
+      . '<p style="color:#334155;margin-top:20px;">See you on the water,<br><strong>Michi</strong></p>'
+      . qaUnsubscribeLine($email);
     $mail->Body = riderEmailWrap($body);
+    $sampled = qaClaimSample((int)($session['id'] ?? 0), 'replay');
     $mail->send();
+    qaSendSampleCopy($mail, $sampled);
 }
 
 // Lifecycle: invite to the whole Q&A audience ~7 days before each session.
@@ -656,9 +718,11 @@ function sendQaInviteEmail(string $email, string $name, array $session): void {
     $body = '<h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey ' . $eName . ',</h2>'
       . '<p style="color:#334155;">the next live Q&A is coming up: <strong>' . $date . ' (CEST)</strong>, free on Zoom, English &amp; German. Ask me anything - books, camps, gear, technique - or just listen in.</p>'
       . '<p style="margin:18px 0;text-align:center;"><a href="https://events.tricktionary.com/live-qa/?signup=next&amp;t=' . rawurlencode(qaAudienceToken($email)) . '" style="display:inline-block;padding:14px 30px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px;">Save my spot</a></p>'
-      . '<p style="color:#334155;">You get this because you joined a Q&A or watched a replay. Not interested in these invites? Just reply "no more" and I will take you off.</p>'
       . qaOffersBlock()
-      . '<p style="color:#334155;margin-top:20px;">See you there,<br><strong>Michi</strong></p>';
+      . '<p style="color:#334155;margin-top:20px;">See you there,<br><strong>Michi</strong></p>'
+      . qaUnsubscribeLine($email);
     $mail->Body = riderEmailWrap($body);
+    $sampled = qaClaimSample((int)($session['id'] ?? 0), 'invite');
     $mail->send();
+    qaSendSampleCopy($mail, $sampled);
 }
