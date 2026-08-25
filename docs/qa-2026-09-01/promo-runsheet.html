@@ -210,6 +210,7 @@
   .find-rank.big  { color: #ffffff; background: var(--accent); }
   .find-rank.mid  { color: var(--signal); background: var(--signal-soft); border: 1px solid var(--signal); }
   .find-rank.low  { color: var(--muted); background: var(--raised); }
+  .find-rank.done { color: #ffffff; background: var(--good); }
   .find-what strong { display: block; margin-bottom: 3px; }
   .find-what span { color: var(--ink-soft); font-size: 0.94rem; }
   .find-fix {
@@ -381,7 +382,7 @@ Nächsten Dienstag, 1. September um 19:00 mache ich wieder ein Live Q&amp;A auf 
 
 Ihr fragt, wir gehen es durch. Technik, Material, der Move der gerade nicht weitergeht, die mentale Seite, Camps, die Bücher.
 
-Wer dabei sein mag: <span class="url">https://events.tricktionary.com/live-qa</span>
+Wer dabei sein mag: <span class="url">https://events.tricktionary.com/live-qa/?signup=next&amp;src=whatsapp</span>
 
 Freu mich auf euch 🌊</div>
     </div>
@@ -394,7 +395,7 @@ Next Tuesday, 1 September at 19:00 CEST I'm doing another live Q&amp;A on Zoom. 
 
 You ask, we work through it. Technique, gear, the move that has stopped progressing, the mental side, camps, the books.
 
-Want in? <span class="url">https://events.tricktionary.com/live-qa</span>
+Want in? <span class="url">https://events.tricktionary.com/live-qa/?signup=next&amp;src=whatsapp</span>
 
 See you there 🌊</div>
     </div>
@@ -404,7 +405,7 @@ See you there 🌊</div>
       <div class="copy-body">Live Q&amp;A tomorrow, 19:00 CEST.
 One hour on Zoom, free. Bring a question 🤙🏼
 
-events.tricktionary.com/live-qa</div>
+events.tricktionary.com/live-qa/?signup=next&amp;src=whatsapp</div>
     </div>
   </section>
 
@@ -439,64 +440,74 @@ events.tricktionary.com/live-qa</div>
   </section>
 
   <section>
-    <h2>Where the funnel leaks</h2>
-    <p class="lede">You asked me to look at the whole registration process. Six things worth your attention, most consequential first. Nothing here is changed yet.</p>
+    <h2>What changed today</h2>
+    <p class="lede">Five of the six review items are live on production and verified. Each one was checked through the same path a real person takes, not just in code.</p>
 
     <ul class="finds">
       <li class="find">
-        <div class="find-rank big">Biggest</div>
+        <div class="find-rank done">Done</div>
         <div class="find-what">
-          <strong>You cannot tell which channel works</strong>
-          <span>44 of 45 signups are recorded as <code>source: web</code>. Exactly one says <code>instagram</code>. Last month you ran Instagram, stories, a WhatsApp broadcast and a newsletter, and the data cannot say which of them produced the 34 signups. Run the same push again and you learn the same nothing.</span>
-          <span class="find-fix">Cheap fix, and it makes this campaign measurable: put <code>?src=email</code>, <code>?src=wa</code>, <code>?src=ig</code> on each channel's link and pass it into the <code>source</code> column that already exists. About an hour, and it has to land before Wednesday to be worth anything.</span>
+          <strong>Channel attribution</strong>
+          <span>Every promo link carries <code>?src=</code>, captured into session storage so it survives a scroll or a reload, and written to the <code>source</code> column. Tested end to end: a signup arriving on <code>?src=email</code> landed in the database as <code>source: email</code>. A junk value is rejected and falls back to <code>web</code>.</span>
+          <span class="find-fix">The email draft and the WhatsApp copy below carry it. So does the Instagram pack. This campaign will tell you which channel worked.</span>
         </div>
       </li>
 
       <li class="find">
-        <div class="find-rank big">Biggest</div>
+        <div class="find-rank done">Done</div>
         <div class="find-what">
-          <strong>The date is not above the fold</strong>
-          <span>On a phone the hero says "Live Q&amp;A with Michi Rossmeier" and a generic line about meetups, with a button that only scrolls down. The next session's date and the actual signup button sit at 1257px on an 844px screen, so a cold visitor scrolls a screen and a half before learning when it is.</span>
-          <span class="find-fix">Put the next session's date, time and a real Save my spot button in the hero. Your paid and organic traffic both land here.</span>
+          <strong>The date is above the fold</strong>
+          <span>The hero now reads "Next session &middot; Tuesday, September 1 &middot; 07:00 PM CEST &middot; 60 min" with a working Save my spot button. On a 390 by 844 phone that button moved from <strong>1257px to 539px</strong>, so it is on the first screen instead of a screen and a half down. Falls back to the old scroll link if the API is slow.</span>
         </div>
       </li>
 
       <li class="find">
-        <div class="find-rank mid">Worth it</div>
+        <div class="find-rank done">Done</div>
         <div class="find-what">
-          <strong>Only the email deep-links</strong>
-          <span>Adding <code>?signup=next</code> opens the signup immediately instead of dropping people on the page. The new email does this. The Instagram funnel DM still sends people to the bare page, which is the slow path described above.</span>
-          <span class="find-fix">Change the link in the three comment-keyword rules in the funnels admin. Five minutes.</span>
+          <strong>The Instagram DM deep-links</strong>
+          <span>All three comment-keyword rules (wing.tricktionary, michirossmeier, loveallsurfallstyle) now send <code>?signup=next&amp;src=ig-dm</code> instead of <code>#upcoming</code>. Verified by opening the new link: the signup opens straight away and the source records as <code>ig-dm</code>.</span>
         </div>
       </li>
 
       <li class="find">
-        <div class="find-rank mid">Worth it</div>
+        <div class="find-rank done">Done</div>
         <div class="find-what">
-          <strong>Only a quarter leave a question</strong>
-          <span>11 of 45 signups wrote one, 28 of 45 picked interests. The submitted questions are what the companion builds your prep list from and what makes the hour feel made for the room. Three quarters arrive with nothing attached.</span>
-          <span class="find-fix">The field currently reads "Any questions for the session? (optional)". Ask for one thing directly: "What is in your way on the water right now?" Same field, better prompt.</span>
+          <strong>One-click unsubscribe</strong>
+          <span>The invite and replay emails carry a real unsubscribe link, signed with the same token as the one-click signup so nobody can unsubscribe anyone else. Tested on a seeded row: the flag went 0 to 1 and the lifecycle cron already skips unsubscribed people. A broken link says so instead of failing silently.</span>
         </div>
       </li>
 
       <li class="find">
-        <div class="find-rank mid">Worth it</div>
+        <div class="find-rank done">Done</div>
         <div class="find-what">
-          <strong>You still cannot count who attended</strong>
-          <span>Last month's real number is unknown. 9 people appear by name in the transcript and chat, against 34 registrations, and your own after-analysis says "plus silent attendees". The Zoom key has no reporting scope, so there is no attendee list.</span>
-          <span class="find-fix">The same Zoom app update fixes two things at once: <code>report:read:list_meeting_participants:admin</code> gives you attendance, and <code>cloud_recording:read</code> makes the replay pipeline fully automatic instead of the one manual block you still do after every call.</span>
-        </div>
-      </li>
-
-      <li class="find">
-        <div class="find-rank low">Housekeeping</div>
-        <div class="find-what">
-          <strong>No unsubscribe link, no copy to you, duplicate people</strong>
-          <span>The invite says "reply no more and I will take you off", which needs a human reading it. The Q&amp;A emails do not BCC you, against your own rule for automated customer mail, so you never see what people actually received. And the list now holds Techno Mike twice under two addresses, so he gets two invites next month.</span>
-          <span class="find-fix">Fine at 45 people. None of it is fine at a few hundred, which is where this ends up if the campaign works.</span>
+          <strong>You get a copy, once per batch</strong>
+          <span>Your rule is that automated customer email copies you. Taken literally on a list send that is 45 copies of the invite, then 45 more per reminder. So you get the <strong>first message of each batch</strong>, re-sent to you labelled <code>[copy]</code>: one per session for the confirmation, each reminder offset, the invite and the replay. Six emails per session instead of roughly 270.</span>
+          <span class="find-fix">First attempt used a BCC and put "[copy]" in the customer's subject line too, because a BCC shares one envelope. Caught by reading the test recipient's actual inbox. It is a separate message now.</span>
         </div>
       </li>
     </ul>
+
+    <h3>Still open</h3>
+
+    <div class="decide">
+      <span class="tag">Needs you: Zoom scopes</span>
+      <p>This is the one I cannot do. Scope changes are a Zoom UI action on your account.</p>
+      <p style="margin-top:10px;">In the Zoom App Marketplace, open <strong>Manage &rarr; Build App</strong>, pick the Server-to-Server OAuth app, go to <strong>Scopes</strong> and add:</p>
+      <p style="margin:8px 0;"><code>report:read:list_meeting_participants:admin</code><br><code>cloud_recording:read:list_recording_files:admin</code></p>
+      <p>Then <strong>Continue</strong> to re-activate. Tell me when it is done and I will confirm both work against the live API and wire the attendance number into the after-analysis.</p>
+      <p class="rec">It buys two things: a real attendee count per session instead of "9 named plus unknown silent ones", and the end of the manual replay block you do after every call.</p>
+    </div>
+
+    <div class="decide">
+      <span class="tag">Needs you: one duplicate</span>
+      <p><strong>Techno Mike is on the list twice.</strong> <code>sbcpro.mikem@gmail.com</code> from 2 August and <code>technomikelbws@gmail.com</code> from 24 August. Same person, so he gets two invites in October.</p>
+      <p class="rec">I did not merge them. Which address someone actually reads is not something the data can tell you, and he used the older one on the August call and the newer one to register for this one. Say which to keep and I will suppress the other. A detector now ships at <code>backend-php/api/cron/qa-duplicates.php</code> so this stays visible as the list grows.</p>
+    </div>
+
+    <div class="decide">
+      <span class="tag">Heads up: two Sendy drafts</span>
+      <p>There are now two drafts with the same subject on the B2C list. The first has a plain link, the second carries <code>src=email</code>. <strong>Use the newer one</strong>, at the top of the campaign list, and delete the older one in the Sendy UI. Sendy's API has no delete-campaign, so I cannot tidy it from here.</p>
+    </div>
   </section>
 
   <section>
