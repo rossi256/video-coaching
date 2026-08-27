@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Q&A Campaign - Sept 1</title>
+<style>
+  :root{
+    --bg:#f4f7fa; --card:#ffffff; --ink:#0d1b2e; --body:#33414f; --mut:#7e93a6;
+    --line:#e3eaf1; --accent:#0ea5e9; --ok:#16a34a;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0d1b2e; --card:#142740; --ink:#f2f7fb; --body:#c8d6e2; --mut:#7e93a6; --line:#23405f; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--body);font:16px/1.6 'Helvetica Neue',Helvetica,Arial,sans-serif;padding:24px 16px 60px;}
+  .wrap{max-width:860px;margin:0 auto;}
+  h1{color:var(--ink);font-size:26px;margin:0 0 4px;}
+  h2{color:var(--ink);font-size:19px;margin:34px 0 12px;}
+  .sub{color:var(--mut);margin:0 0 22px;font-size:14.5px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:14px;}
+  label.task{display:flex;gap:12px;align-items:flex-start;padding:10px 4px;border-bottom:1px solid var(--line);cursor:pointer;}
+  label.task:last-child{border-bottom:0;}
+  label.task input{width:20px;height:20px;margin-top:3px;accent-color:var(--ok);flex:none;}
+  label.task .t{color:var(--ink);font-weight:600;}
+  label.task .d{font-size:14px;color:var(--mut);}
+  label.task.done .t,label.task.done .d{text-decoration:line-through;opacity:.55;}
+  .assets{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;}
+  .asset{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;text-align:center;}
+  .asset img{width:100%;height:170px;object-fit:cover;display:block;}
+  .asset .n{font-size:13.5px;color:var(--ink);font-weight:600;padding:10px 10px 2px;}
+  .asset a{display:inline-block;margin:8px 0 12px;padding:7px 16px;background:var(--accent);color:#fff;border-radius:7px;font-size:13.5px;font-weight:700;text-decoration:none;}
+  .copyblock{position:relative;}
+  .copyblock pre{white-space:pre-wrap;font:14px/1.55 'Helvetica Neue',Helvetica,Arial,sans-serif;background:none;border:0;margin:0;padding:0 0 6px;color:var(--body);}
+  .copybtn{position:absolute;top:14px;right:14px;padding:7px 14px;border:0;border-radius:7px;background:var(--accent);color:#fff;font-weight:700;font-size:13px;cursor:pointer;}
+  .copybtn.copied{background:var(--ok);}
+  .links a{color:var(--accent);text-decoration:none;font-weight:600;}
+  .done-strip{background:rgba(22,163,74,.10);border:1px solid rgba(22,163,74,.35);border-radius:12px;padding:14px 18px;margin-bottom:18px;font-size:14.5px;}
+  .done-strip b{color:var(--ink);}
+  .asset img{height:190px;}
+  .when{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.6px;color:#fff;background:var(--accent);border-radius:5px;padding:2px 8px;margin-right:8px;}
+  .tag{display:inline-block;font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);font-weight:800;margin-bottom:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="tag">Campaign</div>
+  <h1>Live Q&amp;A - Tuesday, September 1, 7 PM</h1>
+  <p class="sub">Everything you need to post, in one place. Checkboxes save on this device. 5 days out, 7 signed up.</p>
+
+  <div class="done-strip">
+    <b>Already running without you:</b> the 7-day reminder went out to everyone registered, and the 24h, 1h and live emails are scheduled. The comment-keyword funnel is live on all three accounts, so "QA" in a comment auto-registers people.
+  </div>
+
+  <h2>Checklist</h2>
+  <div class="card" id="checklist">
+    <label class="task"><input type="checkbox" data-k="ig_feed"><span><span class="t"><span class="when">NOW</span>Post the Instagram feed photo</span><br><span class="d">Image A (portrait) or B (Garda action) below, with the caption. People comment "QA" and get the signup link by DM automatically.</span></span></label>
+    <label class="task"><input type="checkbox" data-k="ig_story"><span><span class="t"><span class="when">NOW</span>Post the Instagram story</span><br><span class="d">Story image below, plus a link sticker. Use the link in Quick links so the signup opens straight away.</span></span></label>
+    <label class="task"><input type="checkbox" data-k="wa"><span><span class="t"><span class="when">TODAY</span>WhatsApp to the camp groups</span><br><span class="d">One post per group, not individual DMs. Young Blood (36), Torbole 7-9 Aug (13), July DPCT (9), Freestyle 14-16 Aug (8). German text below, English if you add the international groups.</span></span></label>
+    <label class="task"><input type="checkbox" data-k="email"><span><span class="t"><span class="when">TODAY</span>Send the newsletter</span><br><span class="d">Draft is ready in Sendy on the B2C list (450 people). Use the NEWER of the two drafts, its button link ends in src=email. Delete the older one.</span></span></label>
+    <label class="task"><input type="checkbox" data-k="story_mon"><span><span class="t"><span class="when">MON 31</span>"Tomorrow" story</span><br><span class="d">Same story image, text "Tomorrow, 7 PM CEST" plus link sticker.</span></span></label>
+    <label class="task"><input type="checkbox" data-k="story_tue_am"><span><span class="t"><span class="when">TUE 1</span>"Tonight" story</span><br><span class="d">Morning of the call. "TONIGHT 7 PM CEST, last chance to grab a spot."</span></span></label>
+    <label class="task"><input type="checkbox" data-k="story_tue_pm"><span><span class="t"><span class="when">TUE 18:00</span>"1 hour to go" story</span><br><span class="d">Last push, one hour before.</span></span></label>
+    <label class="task"><input type="checkbox" data-k="prep"><span><span class="t"><span class="when">TUE</span>Have three answers ready</span><br><span class="d">Tarifa trip planning (Alessandro asked), camps closer to home in DE/AT/CH (Peter Vana, asked twice), and the French edition of Vol 1 (three people asked this month).</span></span></label>
+    <label class="task"><input type="checkbox" data-k="zoom"><span><span class="t"><span class="when">TUE 19:00</span>Start the Zoom call</span><br><span class="d">Open "Wingfoil Q&amp;A with Michi". Everyone registered already has the join link. Recording starts automatically.</span></span></label>
+  </div>
+
+  <h2>Images - tap to download</h2>
+  <div class="assets">
+    <div class="asset"><img src="qa-sept1-feed-A-portrait.jpg" alt="Feed image A, portrait"><div class="n">Feed A - Portrait</div><a href="qa-sept1-feed-A-portrait.jpg" download>Download</a></div>
+    <div class="asset"><img src="qa-sept1-feed-B-action.jpg" alt="Feed image B, Garda action"><div class="n">Feed B - Garda</div><a href="qa-sept1-feed-B-action.jpg" download>Download</a></div>
+    <div class="asset"><img src="qa-sept1-story.jpg" alt="Story image"><div class="n">Story - Base</div><a href="qa-sept1-story.jpg" download>Download</a></div>
+  </div>
+
+  <h2>Story frames for each day</h2>
+  <p class="sub" style="margin-top:-6px;">Ready to post as they are, no typing in Instagram. Add the link sticker from the block further down.</p>
+  <div class="assets">
+    <div class="asset"><img src="qa-sept1-story-this-tue.jpg" alt="This Tuesday"><div class="n">Now &rarr; Sun</div><a href="qa-sept1-story-this-tue.jpg" download>Download</a></div>
+    <div class="asset"><img src="qa-sept1-story-tomorrow.jpg" alt="Tomorrow"><div class="n">Mon 31</div><a href="qa-sept1-story-tomorrow.jpg" download>Download</a></div>
+    <div class="asset"><img src="qa-sept1-story-tonight.jpg" alt="Tonight"><div class="n">Tue morning</div><a href="qa-sept1-story-tonight.jpg" download>Download</a></div>
+    <div class="asset"><img src="qa-sept1-story-1hour.jpg" alt="Live in 1 hour"><div class="n">Tue 18:00</div><a href="qa-sept1-story-1hour.jpg" download>Download</a></div>
+  </div>
+
+  <h2>Instagram caption</h2>
+  <div class="card copyblock">
+    <button class="copybtn" data-copy="ig">Copy</button>
+    <pre id="copy-ig">LIVE Q&amp;A. Tuesday, September 1, 7 PM CEST &#127908;&#127754;
+
+One hour, live on Zoom, free. You ask, I answer.
+
+No slides, no theory hour. Whatever is actually in your way on the water right now: the move that has stopped progressing, gear, the mental side, how to plan a trip.
+
+Already on the list for this one:
+&#127754; How to organise a wingfoil holiday in Tarifa, spot by spot
+&#127957;&#65039; Camps closer to home. Ostsee, Nordsee, Chiemsee, Switzerland. What is realistic and what I am actually planning
+&#128214; The French edition of Wing Tricktionary Vol 1. Three of you asked this month, so I will answer it properly
+&#127755; Tenerife in November, El Medano. Small group, trade winds, what the week looks like
+&#127919; Mastery 50+ in Tarifa this October
+
+Young or old, first flights or already looping. English or German, both welcome.
+
+Want in? Comment "QA" and the signup link lands in your DMs &#129305;&#127996;
+
+#wingfoil #wingfoiling #tricktionary #wingtricktionary #duotone</pre>
+  </div>
+
+  <h2>WhatsApp - Deutsch</h2>
+  <div class="card copyblock">
+    <button class="copybtn" data-copy="wade">Copy</button>
+    <pre id="copy-wade">Servus zusammen &#129305;&#127996;
+
+N&auml;chsten Dienstag, 1. September um 19:00 mache ich wieder ein Live Q&amp;A auf Zoom. Eine Stunde, gratis, deutsch und englisch.
+
+Ihr fragt, wir gehen es durch. Technik, Material, der Move der gerade nicht weitergeht, die mentale Seite, Camps, die B&uuml;cher.
+
+Wer dabei sein mag: https://events.tricktionary.com/live-qa/?signup=next&amp;src=whatsapp
+
+Freu mich auf euch &#127754;</pre>
+  </div>
+
+  <h2>WhatsApp - English</h2>
+  <div class="card copyblock">
+    <button class="copybtn" data-copy="waen">Copy</button>
+    <pre id="copy-waen">Hey everyone &#129305;&#127996;
+
+Next Tuesday, 1 September at 19:00 CEST I'm doing another live Q&amp;A on Zoom. One hour, free, English and German.
+
+You ask, we work through it. Technique, gear, the move that has stopped progressing, the mental side, camps, the books.
+
+Want in? https://events.tricktionary.com/live-qa/?signup=next&amp;src=whatsapp
+
+See you there &#127754;</pre>
+  </div>
+
+  <h2>Story text</h2>
+  <div class="card copyblock">
+    <button class="copybtn" data-copy="story">Copy</button>
+    <pre id="copy-story">Now: "LIVE Q&amp;A - Tuesday 7 PM CEST" + link sticker "Save my spot"
+Also add: "Or comment QA on my latest post"
+Mon 31: "Tomorrow, 7 PM CEST" + link sticker
+Tue morning: "TONIGHT 7 PM CEST - last chance to grab a spot" + link sticker
+Tue 18:00: "We go live in 1 hour" + link sticker</pre>
+  </div>
+
+  <h2>Link for the story sticker</h2>
+  <div class="card copyblock">
+    <button class="copybtn" data-copy="link">Copy</button>
+    <pre id="copy-link">https://events.tricktionary.com/live-qa/?signup=next&amp;src=ig-story</pre>
+  </div>
+
+  <h2>What to reuse next month</h2>
+  <div class="card" style="font-size:14.5px;">
+    <p style="margin:0 0 6px;"><b style="color:var(--ink);">Never changes.</b> Set once, leave alone.</p>
+    <ul style="margin:0 0 16px;padding-left:20px;">
+      <li>The Zoom room. Same link every month, already on every session through December.</li>
+      <li>The comment keyword "QA" on all three accounts. It registers people into whichever session is next, so it never needs re-pointing.</li>
+      <li>The signup link <code>?signup=next</code>. Always resolves to the next session.</li>
+      <li>The reminder chain, the invite, the replay email. All automatic and stamped.</li>
+      <li>The layout of these graphics: grey header, blue rule, photo, footer band.</li>
+    </ul>
+
+    <p style="margin:0 0 6px;"><b style="color:var(--ink);">Reuse with a new date.</b> Ten minutes of work.</p>
+    <ul style="margin:0 0 16px;padding-left:20px;">
+      <li>All seven images. The templates live in <code>docs/qa-2026-09-01/assets/*.html</code>, change the date line and re-render.</li>
+      <li>The Instagram caption skeleton. Swap the five bullets for whatever people actually asked in their signups.</li>
+      <li>The WhatsApp texts. Only the date changes.</li>
+      <li>The newsletter. Same house template, swap the date and the two camp boxes.</li>
+      <li>This checklist.</li>
+    </ul>
+
+    <p style="margin:0 0 6px;"><b style="color:var(--ink);">Rewrite every time.</b></p>
+    <ul style="margin:0;padding-left:20px;">
+      <li>The five caption bullets. This is the bit that makes it feel like the call was made for the room, and it comes from the questions people submitted at signup.</li>
+      <li>The two camps promoted in <code>api/qa-offers.json</code>. That file rides along on every invite and replay email, so a stale camp goes out everywhere. Check it before each session.</li>
+      <li>The three answers you want ready on air.</li>
+    </ul>
+  </div>
+
+  <h2>Quick links</h2>
+  <div class="card links">
+    <p style="margin:6px 0;"><a href="https://events.tricktionary.com/live-qa/" target="_blank">Signup page (what people see)</a></p>
+    <p style="margin:6px 0;"><a href="https://coaching.tricktionary.com/video-coaching/admin#qa/12" target="_blank">Signups list (who is coming)</a></p>
+    <p style="margin:6px 0;"><a href="https://sendy.tricktionary.com" target="_blank">Sendy (newsletter draft)</a></p>
+    <p style="margin:6px 0;"><a href="https://forge.tricktionary.com/instagram/funnels" target="_blank">Comment funnel admin (the "QA" keyword)</a></p>
+    <p style="margin:14px 0 6px;font-size:13.5px;color:var(--mut);">Bookmark this page. <b style="color:var(--ink);">coaching.tricktionary.com/video-coaching/static/campaign/</b> always shows the current session. The dated copy at <code>/campaign-sept1/</code> stays as the archive.</p>
+  </div>
+</div>
+<script>
+  var KEY='qa-campaign-2026-09-01';
+  var state={}; try{ state=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+  document.querySelectorAll('#checklist input').forEach(function(cb){
+    var k=cb.dataset.k;
+    if(state[k]){ cb.checked=true; cb.closest('.task').classList.add('done'); }
+    cb.addEventListener('change',function(){
+      state[k]=cb.checked;
+      try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){}
+      cb.closest('.task').classList.toggle('done',cb.checked);
+    });
+  });
+  document.querySelectorAll('.copybtn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var txt=document.getElementById('copy-'+btn.dataset.copy).innerText;
+      navigator.clipboard.writeText(txt).then(function(){
+        btn.textContent='Copied!'; btn.classList.add('copied');
+        setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('copied'); },1600);
+      });
+    });
+  });
+</script>
+</body>
+</html>
