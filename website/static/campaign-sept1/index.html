@@ -166,6 +166,36 @@ Tue 18:00: "We go live in 1 hour" + link sticker</pre>
     <pre id="copy-link">https://events.tricktionary.com/live-qa/?signup=next&amp;src=ig-story</pre>
   </div>
 
+  <h2>Who the newsletter goes to</h2>
+  <p class="sub" style="margin-top:-6px;">Sendy holds 76 lists, most of them dead campaign artefacts from 2015 to 2019. These four are the Q&amp;A promo audience. Tick these, ignore the rest.</p>
+  <div class="card" style="font-size:14.5px;">
+    <table style="width:100%;border-collapse:collapse;">
+      <tr><td style="padding:6px 10px 6px 0;font-family:monospace;">450</td><td style="padding:6px 0;"><b style="color:var(--ink);">email-b2c-2026-04-26</b><br><span style="color:var(--mut);">Shop customers, refreshed from Magento orders.</span></td></tr>
+      <tr><td style="padding:6px 10px 6px 0;font-family:monospace;">832</td><td style="padding:6px 0;"><b style="color:var(--ink);">Wing Tricktionary Preorder webshop list</b><br><span style="color:var(--mut);">Bought or preordered the wing book. Right sport, biggest clean pool.</span></td></tr>
+      <tr><td style="padding:6px 10px 6px 0;font-family:monospace;">16</td><td style="padding:6px 0;"><b style="color:var(--ink);">WING TR EARLY ORDER LIST</b><br><span style="color:var(--mut);">Early orders. Small but warm.</span></td></tr>
+      <tr><td style="padding:6px 10px 6px 0;font-family:monospace;">~</td><td style="padding:6px 0;"><b style="color:var(--ink);">wingfoil-events-leads</b><br><span style="color:var(--mut);">Instagram comment funnel captures. Sendy will not report its size over the API, the number is in the UI.</span></td></tr>
+    </table>
+    <p style="margin:14px 0 0;"><b style="color:var(--ink);">About 1,300 before Sendy dedupes.</b> Sendy shows the real figure before you hit send.</p>
+  </div>
+
+  <h3>Never include</h3>
+  <div class="card" style="font-size:14.5px;">
+    <ul style="margin:0;padding-left:20px;">
+      <li><b style="color:var(--ink);">B2B, shops, schools, media.</b> Retailers and journalists, not riders.</li>
+      <li><b style="color:var(--ink);">SUP, kite and windsurf-only lists.</b> Wrong sport, earns unsubscribes.</li>
+      <li><b style="color:var(--ink);">TG ALL, xmas resends, Trickgenius.</b> 2015 to 2019 and cross-sport. Bounces land on the same domain as your order confirmations and the Q&amp;A reminders.</li>
+      <li><b style="color:var(--ink);">Anything named subtract, not opened, EXCLUDE, bounced or testlist.</b> Campaign artefacts, not audiences.</li>
+    </ul>
+  </div>
+
+  <h3>Already covered, do not add</h3>
+  <div class="card" style="font-size:14.5px;">
+    <p style="margin:0 0 8px;">The <b style="color:var(--ink);">43 people on the Q&amp;A list itself</b> live in the coaching database, not Sendy, and they already get the invite automatically 7 days before every session. Putting them in Sendy would mail them twice.</p>
+    <p style="margin:0;color:var(--mut);">11 of them happen to also be shop customers, so they will see both this time. That is the only overlap and it is small enough to leave alone.</p>
+  </div>
+
+  <p style="margin:14px 0 0;font-size:13.5px;color:var(--mut);">This definition lives in <code>backend-php/api/cron/qa-promo-audience.mjs</code>. Run <code>node qa-promo-audience.mjs</code> before a send and it re-reads the live sizes and prints the list ids to paste.</p>
+
   <h2>What to reuse next month</h2>
   <div class="card" style="font-size:14.5px;">
     <p style="margin:0 0 6px;"><b style="color:var(--ink);">Never changes.</b> Set once, leave alone.</p>
