@@ -408,10 +408,32 @@ HTML;
 }
 
 // 8. Event inquiry notification — sent to admin when someone submits interest in an event
+/**
+ * What kind of thing landed in event_inquiries.
+ *
+ * Everything the site captures goes through the same endpoint, so a replay
+ * unlock and a quiz result used to arrive titled "Event Inquiry" exactly like a
+ * real camp lead. On 2 September the queue was 15 real enquiries against 16
+ * automated captures, which buries the leads that actually need answering.
+ *
+ * Returns [label, subjectPrefix, accentColour, isLead].
+ */
+function eventInquiryKind(string $slug): array {
+    if (str_starts_with($slug, 'qa-replay'))    return ['Replay unlock', 'Replay unlock',  '#7c5cbf', false];
+    if (str_starts_with($slug, 'wing-genius'))  return ['Quiz result',   'Quiz result',    '#0f766e', false];
+    if (str_starts_with($slug, 'waitlist'))     return ['Waitlist signup','Waitlist',      '#b45309', false];
+    return ['Camp enquiry', 'Camp enquiry', '#1580c4', true];
+}
+
 function sendEventInquiryNotification(int $inquiryId, string $name, string $email, string $slug, string $eventName, string $level, string $message, string $whatsapp = '', bool $qaSignup = false): void {
     $mail = getMailer('Tricktionary Events');
     $mail->addAddress(NOTIFY_EMAIL);
-    $mail->Subject = "Event Inquiry: $name — $eventName";
+    [$kindLabel, $kindPrefix, $kindColour, $isLead] = eventInquiryKind($slug);
+    // A lead needs a reply; a capture is an FYI. Say so in the subject so the
+    // inbox can be scanned without opening anything.
+    $mail->Subject = $isLead
+        ? "Camp enquiry: $name — $eventName"
+        : "$kindPrefix: $name";
     $mail->isHTML(true);
 
     $eName    = htmlspecialchars($name);
@@ -420,13 +442,24 @@ function sendEventInquiryNotification(int $inquiryId, string $name, string $emai
     $eLevel   = htmlspecialchars($level ?: '—');
     $eWhatsapp = htmlspecialchars($whatsapp ?: '—');
     $eMessage = nl2br(htmlspecialchars($message ?: '—'));
-    $qaLabel  = $qaSignup ? '<span style="color:#22c55e;font-weight:600;">Yes — wants to join</span>' : '<span style="color:#94a3b8;">No</span>';
+    $qaLabel  = $qaSignup ? '<span style="color:#22c55e;font-weight:600;">Yes, wants to join</span>' : '<span style="color:#94a3b8;">No</span>';
+    // That tickbox only exists on the camp forms. On a replay unlock or a quiz
+    // result it always said "No", which read as a refusal rather than
+    // not-applicable, so the row is dropped there. A replay unlock adds the
+    // person to qa_audience regardless.
+    $qaRow = $isLead
+        ? '<tr><td style="color:#94a3b8;padding:8px 14px 8px 0;font-size:13px;">Q&amp;A MEETUP</td><td style="padding:8px 0;font-size:13px;">' . $qaLabel . '</td></tr>'
+        : '<tr><td style="color:#94a3b8;padding:8px 14px 8px 0;font-size:13px;">On the Q&amp;A list</td><td style="padding:8px 0;font-size:13px;"><span style="color:#22c55e;font-weight:600;">Added automatically</span></td></tr>';
     $manageUrl = "https://coaching.tricktionary.com/video-coaching/admin#events/{$inquiryId}";
+    $actionNote = $isLead
+        ? 'This one is a lead and is waiting for a reply.'
+        : 'Captured automatically. No reply needed.';
 
     $mail->Body = <<<HTML
 <div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f2035;border-radius:12px;overflow:hidden;border:1px solid #1e3a5f;">
-  <div style="background:linear-gradient(90deg,#0ea5e9 0%,#0284c7 100%);padding:16px 24px;">
-    <h2 style="color:#ffffff;margin:0;font-size:16px;font-weight:600;">Event Inquiry #{$inquiryId} &mdash; {$eEvent}</h2>
+  <div style="background:{$kindColour};padding:16px 24px;">
+    <h2 style="color:#ffffff;margin:0;font-size:16px;font-weight:600;">{$kindLabel} #{$inquiryId}</h2>
+    <p style="color:rgba(255,255,255,0.82);margin:4px 0 0;font-size:12.5px;">{$eEvent}</p>
   </div>
   <div style="padding:24px;">
     <table style="width:100%;border-collapse:collapse;">
@@ -434,7 +467,7 @@ function sendEventInquiryNotification(int $inquiryId, string $name, string $emai
       <tr><td style="color:#94a3b8;padding:8px 14px 8px 0;font-size:13px;">Email</td><td style="padding:8px 0;font-size:13px;"><a href="mailto:$eEmail" style="color:#38bdf8;">$eEmail</a></td></tr>
       <tr><td style="color:#94a3b8;padding:8px 14px 8px 0;font-size:13px;">WhatsApp</td><td style="padding:8px 0;font-size:13px;color:#e2e8f0;">$eWhatsapp</td></tr>
       <tr><td style="color:#94a3b8;padding:8px 14px 8px 0;font-size:13px;">Event</td><td style="padding:8px 0;font-size:13px;color:#e2e8f0;">$eEvent</td></tr>
-      <tr><td style="color:#94a3b8;padding:8px 14px 8px 0;font-size:13px;">Q&amp;A MEETUP</td><td style="padding:8px 0;font-size:13px;">$qaLabel</td></tr>
+      $qaRow
     </table>
     <div style="margin-top:16px;">
       <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#7dd3fc;margin:0 0 6px;">Message</p>
@@ -442,7 +475,7 @@ function sendEventInquiryNotification(int $inquiryId, string $name, string $emai
     </div>
     <div style="margin-top:24px;text-align:center;">
       <a href="$manageUrl" style="display:inline-block;padding:11px 22px;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;border-radius:8px;letter-spacing:0.02em;">Manage in admin &rarr;</a>
-      <p style="margin:10px 0 0;font-size:11px;color:#64748b;">Opens inquiry #{$inquiryId} in the WingCoach admin (basic auth).</p>
+      <p style="margin:10px 0 0;font-size:11px;color:#64748b;">$actionNote</p>
     </div>
   </div>
 </div>
