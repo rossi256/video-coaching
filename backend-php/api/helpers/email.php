@@ -691,7 +691,15 @@ function sendQaReplayEmail(string $email, string $name, array $session, ?array $
     $nextBlock = '';
     if ($next) {
         $nd = date('l, F j \a\t g:i A', strtotime($next['scheduled_at']));
-        $nextBlock = '<p style="color:#334155;">The next live Q&A is already set: <strong>' . $nd . ' (CEST)</strong> - first Tuesday every month. <a href="https://events.tricktionary.com/live-qa/#upcoming" style="color:#0ea5e9;">Save your spot</a>.</p>';
+        // Same signed token the invite uses. We already know who this is going
+        // to, so there is no reason to make them retype an address we just
+        // mailed. Until 2026-09-02 this was a bare #upcoming anchor and the
+        // reader had to fill in the whole signup form again.
+        $nextUrl = 'https://events.tricktionary.com/live-qa/?signup=next&amp;t='
+                 . rawurlencode(qaAudienceToken($email));
+        $nextBlock = '<p style="color:#334155;">The next live Q&A is already set: <strong>' . $nd . ' (CEST)</strong>, first Tuesday every month.</p>'
+          . '<p style="margin:14px 0;text-align:center;"><a href="' . $nextUrl . '" style="display:inline-block;padding:13px 28px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:15px;">Save my spot in 1 click</a></p>'
+          . '<p style="color:#94a3b8;font-size:13px;text-align:center;margin:0 0 6px;">One tap and you are in. No form, we already have your details.</p>';
     }
     $body = '<h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey ' . $eName . ', the replay is up</h2>'
       . '<p style="color:#334155;">Thanks for being part of the live Q&A. Whether you were on the call or missed it - here is the full recording with clickable chapters.</p>'
@@ -717,7 +725,7 @@ function sendQaInviteEmail(string $email, string $name, array $session): void {
     $eName = htmlspecialchars($name ?: 'there');
     $body = '<h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey ' . $eName . ',</h2>'
       . '<p style="color:#334155;">the next live Q&A is coming up: <strong>' . $date . ' (CEST)</strong>, free on Zoom, English &amp; German. Ask me anything - books, camps, gear, technique - or just listen in.</p>'
-      . '<p style="margin:18px 0;text-align:center;"><a href="https://events.tricktionary.com/live-qa/?signup=next&amp;t=' . rawurlencode(qaAudienceToken($email)) . '" style="display:inline-block;padding:14px 30px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px;">Save my spot</a></p>'
+      . '<p style="margin:18px 0;text-align:center;"><a href="https://events.tricktionary.com/live-qa/?signup=next&amp;t=' . rawurlencode(qaAudienceToken($email)) . '" style="display:inline-block;padding:14px 30px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px;">Save my spot in 1 click</a></p>'
       . qaOffersBlock()
       . '<p style="color:#334155;margin-top:20px;">See you there,<br><strong>Michi</strong></p>'
       . qaUnsubscribeLine($email);
