@@ -6,6 +6,7 @@
 
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/helpers/email.php';
+require_once __DIR__ . '/helpers/spots.php';
 
 if (!defined('DEV_BYPASS') || !DEV_BYPASS) {
     http_response_code(403);
@@ -80,13 +81,9 @@ if ($action === 'bypass') {
     $fakeSessionId = 'dev_test_' . time() . '_' . mt_rand(1000, 9999);
 
     // Get spots
-    $spots = $db->query("SELECT * FROM config WHERE `key` IN ('total_spots','spots_taken')")->fetchAll();
-    $total = 10;
-    $taken = 0;
-    foreach ($spots as $s) {
-        if ($s['key'] === 'total_spots') $total = (int)$s['value'];
-        if ($s['key'] === 'spots_taken') $taken = (int)$s['value'];
-    }
+    $spotState = getSpots($db);
+    $total = $spotState['total'];
+    $taken = $spotState['taken'];
 
     // Create checkout attempt
     $db->prepare('INSERT INTO checkout_attempts (email, stripe_session_id) VALUES (?, ?)')->execute([$email, $fakeSessionId]);
@@ -156,13 +153,9 @@ if ($action === 'latest-reply') {
 // ─── Dashboard Page ────────────────────────────────────────────────────────────
 
 // Fetch spots
-$spots = $db->query("SELECT * FROM config WHERE `key` IN ('total_spots','spots_taken')")->fetchAll();
-$total = 10;
-$taken = 0;
-foreach ($spots as $s) {
-    if ($s['key'] === 'total_spots') $total = (int)$s['value'];
-    if ($s['key'] === 'spots_taken') $taken = (int)$s['value'];
-}
+$spotState = getSpots($db);
+$total = $spotState['total'];
+$taken = $spotState['taken'];
 
 // Fetch all submissions
 $subs = $db->query('SELECT id, name, email, status, token FROM submissions ORDER BY id DESC')->fetchAll();

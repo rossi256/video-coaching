@@ -26,7 +26,16 @@ CREATE TABLE IF NOT EXISTS submissions (
     confirmed_at DATETIME,
     feedback_sent_at DATETIME,
     reply_video_path TEXT,
-    spots_at_purchase INT
+    spots_at_purchase INT,
+
+    -- Spot accounting: 0 = this row does not consume one of the founding spots
+    -- (test purchases, or payments mis-filed here from other Tricktionary products).
+    counts_toward_spots TINYINT(1) NOT NULL DEFAULT 1,
+
+    -- Stalled-submission nudge (cron/submission-nudge.php)
+    nudge_opt_out TINYINT(1) NOT NULL DEFAULT 0,
+    nudge_count   INT        NOT NULL DEFAULT 0,
+    nudge_last_at DATETIME   NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS config (

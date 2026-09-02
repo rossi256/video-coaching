@@ -46,8 +46,10 @@ if ($event->type === 'checkout.session.completed') {
         $stmt->execute([$session->id, $token, $spotsAtPurchase]);
         $submissionId = $db->lastInsertId();
 
-        // Decrement spots
-        $db->exec("UPDATE config SET value = CAST(CAST(value AS UNSIGNED) + 1 AS CHAR) WHERE `key` = 'spots_taken'");
+        // Spots are counted from the submissions table itself (helpers/spots.php);
+        // the row above already consumes one via counts_toward_spots DEFAULT 1.
+        // The old config.spots_taken counter is no longer maintained here — it had
+        // drifted by counting test purchases and a mis-filed non-coaching invoice.
 
         $name = $session->customer_details->name ?? '';
         // Check checkout_attempts for email

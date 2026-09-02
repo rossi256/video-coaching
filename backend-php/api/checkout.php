@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/helpers/spots.php';
 setApiHeaders();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -21,9 +22,7 @@ if (defined('DEV_BYPASS') && DEV_BYPASS) {
         jsonResponse(['error' => 'Payment declined (dev simulation)'], 402);
     }
 
-    $total = (int) $db->query("SELECT value FROM config WHERE `key` = 'total_spots'")->fetchColumn();
-    $taken = (int) $db->query("SELECT value FROM config WHERE `key` = 'spots_taken'")->fetchColumn();
-    $remaining = $total - $taken;
+    $remaining = getSpots($db)['remaining'];
     if ($remaining <= 0) {
         jsonResponse(['error' => 'No spots remaining'], 400);
     }
@@ -46,9 +45,7 @@ if (!STRIPE_SECRET_KEY) {
 }
 
 $db = getDb();
-$total = (int) $db->query("SELECT value FROM config WHERE `key` = 'total_spots'")->fetchColumn();
-$taken = (int) $db->query("SELECT value FROM config WHERE `key` = 'spots_taken'")->fetchColumn();
-$remaining = $total - $taken;
+$remaining = getSpots($db)['remaining'];
 
 if ($remaining <= 0) {
     jsonResponse(['error' => 'No spots remaining'], 400);
@@ -67,7 +64,7 @@ try {
                 'currency' => 'eur',
                 'product_data' => [
                     'name' => 'WingCoach — Founding 10 Spot',
-                    'description' => 'Personal video coaching from Michi Rossmeier (Tricktionary). Limited to 10 founding clients at €39.',
+                    'description' => 'Personal video coaching from Michi Rossmeier (Tricktionary). Limited to 10 founding clients at €49.',
                 ],
                 'unit_amount' => 4900,
             ],

@@ -726,3 +726,49 @@ function sendQaInviteEmail(string $email, string $name, array $session): void {
     $mail->send();
     qaSendSampleCopy($mail, $sampled);
 }
+
+/**
+ * Stalled submission nudge — rider paid but never sent their videos.
+ * Sent by cron/submission-nudge.php. Short on purpose: one reason to come back,
+ * one link, one way to reach a human.
+ */
+function sendSubmissionNudge(string $email, string $name, string $uploadUrl, int $nudgeNumber): void {
+    $mail = getMailer();
+    $mail->addAddress($email);
+    // Standing rule: automated client-facing mail is copied to Michi.
+    $mail->addBCC(NOTIFY_EMAIL);
+
+    $eName = htmlspecialchars($name ?: 'there');
+    $eUrl  = htmlspecialchars($uploadUrl);
+
+    if ($nudgeNumber >= 3) {
+        $mail->Subject = 'Still holding your coaching spot';
+        $opening = "Your spot is still open and your answers are still saved. Whenever you get a session on video, send it over and I will work through it.";
+    } elseif ($nudgeNumber === 2) {
+        $mail->Subject = 'Your coaching spot is waiting for clips';
+        $opening = "No rush, but your spot is sitting here waiting for footage. Even one average session filmed from the beach is plenty to work with.";
+    } else {
+        $mail->Subject = 'Ready when your clips are';
+        $opening = "You paid for your coaching spot and filled in your rider profile, so the only thing missing is footage. Phone on the beach is fine, no need for anything fancy.";
+    }
+
+    $mail->isHTML(true);
+    $body = <<<HTML
+    <h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey $eName</h2>
+    <p style="color:#334155;">$opening</p>
+    <p style="color:#334155;">
+      Two or three minutes of riding, filmed from the side, is the most useful thing you can send. Your answers are already saved, so you only need to add the clips.
+    </p>
+    <p style="text-align:center;margin:28px 0;">
+      <a href="$eUrl" style="display:inline-block;background:#0ea5e9;color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">
+        Upload my clips &rarr;
+      </a>
+    </p>
+    <p style="color:#64748b;font-size:13px;">
+      Stuck on filming or anything else? Just hit reply.
+    </p>
+HTML;
+
+    $mail->Body = riderEmailWrap($body);
+    $mail->send();
+}
