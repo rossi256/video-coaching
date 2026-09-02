@@ -1,7 +1,7 @@
 {
-  "lastDev": "Q&A one-click 'Save my spot' via signed invite tokens; event-form Q&A opt-ins now reach qa_audience (5 backfilled); offers refreshed",
-  "lastDevDate": "2026-08-24",
+  "lastDev": "First paying customer (Gino Borland). Verified full pipeline E2E; fixed spot count, EUR39 copy, staging htaccess; added stalled-submission nudge cron",
+  "lastDevDate": "2026-09-02",
   "phase": "active",
-  "milestone": "Sept 1 Q&A: 6 registered, 44 in audience; promo push still to run",
-  "blockedBy": null
+  "milestone": "2026-09-02 fixes staged and committed; production rollout awaiting authorisation (apply-2026-09-02-prod.sh)",
+  "blockedBy": "Production writes blocked by permission guard; run apply-2026-09-02-prod.sh apply to roll out"
 }
