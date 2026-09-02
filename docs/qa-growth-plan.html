@@ -1,0 +1,251 @@
+<title>Q&A Growth Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+
+<style>
+  :root {
+    --ground:#FBFCFD; --surface:#FFFFFF; --raised:#F1F5F8; --line:#DCE5EC;
+    --ink:#12232F; --ink-soft:#4A6172; --muted:#6B8194;
+    --accent:#1183BC; --accent-soft:#E4F2FA;
+    --signal:#B4761B; --signal-soft:#FBF1DF; --good:#1D7A5F;
+    --measure:70ch;
+    --display:"Barlow Condensed","Helvetica Neue",Arial,sans-serif;
+    --body:"Public Sans","Helvetica Neue",Arial,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#0B1622; --surface:#152736; --raised:#1D3245; --line:#27435A;
+      --ink:#E8EEF4; --ink-soft:#B4C6D4; --muted:#8FA3B5;
+      --accent:#4FB8E8; --accent-soft:#12303F;
+      --signal:#E0A340; --signal-soft:#33280F; --good:#4FC49C;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0B1622; --surface:#152736; --raised:#1D3245; --line:#27435A;
+    --ink:#E8EEF4; --ink-soft:#B4C6D4; --muted:#8FA3B5;
+    --accent:#4FB8E8; --accent-soft:#12303F;
+    --signal:#E0A340; --signal-soft:#33280F; --good:#4FC49C;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--ground);color:var(--ink);font-family:var(--body);
+       font-size:16px;line-height:1.65;margin:0;padding:0 20px 96px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--measure);margin:0 auto}
+  .masthead{padding:56px 0 0;display:flex;flex-direction:column;gap:10px}
+  .eyebrow{font-family:var(--display);font-weight:600;font-size:.82rem;letter-spacing:.16em;
+           text-transform:uppercase;color:var(--accent);margin:0}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(2.4rem,8vw,3.6rem);
+     line-height:1.02;text-wrap:balance;margin:0}
+  .standfirst{color:var(--ink-soft);font-size:1.06rem;margin:4px 0 0;max-width:58ch}
+
+  .bignum{margin:36px 0 0;padding:22px 24px;background:var(--surface);
+          border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:3px}
+  .bignum .n{font-family:var(--mono);font-weight:600;font-size:2.6rem;line-height:1;color:var(--accent)}
+  .bignum p{margin:8px 0 0;color:var(--ink-soft)}
+  .bignum p strong{color:var(--ink)}
+
+  section{margin:52px 0 0}
+  h2{font-family:var(--display);font-weight:700;font-size:1.62rem;margin:0 0 6px;
+     padding-bottom:10px;border-bottom:2px solid var(--ink);text-wrap:balance}
+  h3{font-family:var(--display);font-weight:600;font-size:1.1rem;letter-spacing:.03em;
+     text-transform:uppercase;color:var(--ink-soft);margin:28px 0 10px}
+  p{margin:0 0 14px} p:last-child{margin-bottom:0}
+  .lede{color:var(--ink-soft);margin-top:14px}
+  code{font-family:var(--mono);font-size:.88em;background:var(--raised);
+       padding:1px 5px;border-radius:3px;word-break:break-word}
+
+  .scroller{overflow-x:auto;margin:18px 0 0}
+  table{width:100%;border-collapse:collapse;font-size:.94rem;min-width:420px}
+  th{font-family:var(--display);font-weight:600;font-size:.76rem;letter-spacing:.13em;
+     text-transform:uppercase;color:var(--muted);text-align:left;
+     padding:0 14px 8px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:10px 14px 10px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  td.no{color:var(--signal);font-weight:600;white-space:nowrap}
+  td.yes{color:var(--good);font-weight:600;white-space:nowrap}
+
+  .tier{list-style:none;padding:0;margin:20px 0 0;display:flex;flex-direction:column}
+  .step{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:16px 0;border-top:1px solid var(--line)}
+  .step:last-child{border-bottom:1px solid var(--line)}
+  .badge{font-family:var(--display);font-weight:600;font-size:.7rem;letter-spacing:.1em;
+         text-transform:uppercase;text-align:center;padding:3px 0;border-radius:2px;height:fit-content}
+  .b1{color:#fff;background:var(--accent)}
+  .b2{color:var(--signal);background:var(--signal-soft);border:1px solid var(--signal)}
+  .b3{color:var(--muted);background:var(--raised)}
+  .what strong{display:block;margin-bottom:3px}
+  .what span{color:var(--ink-soft);font-size:.95rem}
+  .why{display:block;margin-top:7px;font-size:.9rem;color:var(--ink-soft);
+       padding-left:11px;border-left:2px solid var(--accent)}
+
+  .call{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--signal);
+        border-radius:3px;padding:18px 20px;margin:18px 0}
+  .call .tag{font-family:var(--display);font-weight:600;font-size:.74rem;letter-spacing:.14em;
+             text-transform:uppercase;color:var(--signal);display:block;margin-bottom:5px}
+
+  .quotes{list-style:none;padding:0;margin:16px 0 0;display:flex;flex-direction:column;gap:10px}
+  .quotes li{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:12px 15px;font-size:.95rem}
+  .quotes li b{color:var(--accent);font-family:var(--mono);font-size:.82rem;display:block;margin-bottom:3px}
+
+  footer{margin:60px 0 0;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:.86rem}
+  @media (max-width:540px){ .step{grid-template-columns:1fr;gap:6px} .badge{width:86px} }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Two sessions in / what to do next</p>
+    <h1>Q&amp;A Growth Plan</h1>
+    <p class="standfirst">The format works. The archive it produces is currently worth nothing to search engines, to AI answers, or to anyone who was not on the call.</p>
+  </header>
+
+  <div class="bignum">
+    <div class="n">22,368</div>
+    <p><strong>Words of you answering real wingfoil questions</strong>, across the August and September calls. Fully transcribed, both of them. <strong>None of it exists as readable text on the web.</strong> It is locked inside two MP4 files behind an email gate.</p>
+  </div>
+
+  <section>
+    <h2>What the replay pages do today</h2>
+    <p class="lede">I checked rather than assumed. This is the current state of <code>/live-qa/replay/2026-09/</code>.</p>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Signal</th><th>State</th><th>Consequence</th></tr></thead>
+        <tbody>
+          <tr><td>In the sitemap</td><td class="no">No</td><td>Google is not told the page exists</td></tr>
+          <tr><td>Meta description</td><td class="no">None</td><td>No control over the snippet</td></tr>
+          <tr><td>Open Graph tags</td><td class="no">None</td><td>Shared to WhatsApp or Instagram it looks broken</td></tr>
+          <tr><td>Structured data</td><td class="no">None</td><td>No video result, no FAQ result, nothing for AI to quote</td></tr>
+          <tr><td>Any text on the page</td><td class="no">None</td><td>A crawler sees a headline and an email form</td></tr>
+          <tr><td>Product links</td><td class="no">None</td><td>An hour of gear talk sells nothing</td></tr>
+          <tr><td>Linked from the hub</td><td class="yes">Yes</td><td>The only way anyone finds it</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-top:16px;">So the replay pages are, to a search engine and to an AI model, blank. Everything of value is inside a video file they cannot read.</p>
+  </section>
+
+  <section>
+    <h2>Why this archive is unusually valuable</h2>
+    <p class="lede">Not all content is equal for search and for AI. This kind is close to ideal.</p>
+
+    <p>People type questions. AI systems answer questions and quote sources that are already shaped as answers, attributed to a named expert. You have 54 real questions from real riders, answered at length, by name, on the record. That is the shape both systems reward, and it is genuinely hard to fake.</p>
+
+    <p>These are actual searches sitting in your transcripts right now:</p>
+
+    <ul class="quotes">
+      <li><b>September, 52:50</b>How do you plan a wingfoil trip to Tarifa? Which airport, car, where to stay, which months.</li>
+      <li><b>September, 26:00</b>Two riders, same board and foil, mast position 8cm apart, both comfortable. Why?</li>
+      <li><b>September, 05:30</b>Light wind: bigger wing, or smaller wing and a pumpable foil?</li>
+      <li><b>September, 47:50</b>How far into the footstraps should your feet actually go?</li>
+      <li><b>August, 24:00</b>Getting started in wingfoil: what gear to buy, and what to spend.</li>
+    </ul>
+
+    <p style="margin-top:16px;">Each of those is a page that could rank, and a passage an AI could cite. Today each of them is an unreadable minute inside a 250MB file.</p>
+  </section>
+
+  <section>
+    <h2>The plan</h2>
+    <p class="lede">Ordered by what returns most per hour of work. Nothing here needs a new system, it is all on top of what exists.</p>
+
+    <ul class="tier">
+      <li class="step">
+        <div class="badge b1">First</div>
+        <div class="what">
+          <strong>Put the transcript on the page</strong>
+          <span>A cleaned, chaptered, readable version of the conversation under the video. Speaker names, timestamps that jump the player. This single change turns a blank page into 12,000 words of expert content.</span>
+          <span class="why">It also makes the replay useful to the people who could not attend and will not watch 76 minutes. Frank already asked to forward the transcript to a friend.</span>
+        </div>
+      </li>
+
+      <li class="step">
+        <div class="badge b1">First</div>
+        <div class="what">
+          <strong>The basics that are simply missing</strong>
+          <span>Sitemap entries, a real meta description, Open Graph tags so the link looks right when shared, and a canonical.</span>
+          <span class="why">About an hour of work for the whole archive, and without it nothing else in this list gets found.</span>
+        </div>
+      </li>
+
+      <li class="step">
+        <div class="badge b1">First</div>
+        <div class="what">
+          <strong>VideoObject and FAQPage structured data</strong>
+          <span>VideoObject with chapters gets you a video result with key moments. FAQPage is the format most often lifted into AI answers, because it hands the model a clean question and a clean answer with a source.</span>
+          <span class="why">This is the concrete answer to the AIO question. Models quote structured, attributed Q&amp;A far more readily than prose.</span>
+        </div>
+      </li>
+
+      <li class="step">
+        <div class="badge b2">Then</div>
+        <div class="what">
+          <strong>Products, placed where they are already being discussed</strong>
+          <span>Not a generic block at the bottom. A card next to the relevant chapter: the footstrap chapter gets the footstraps, the mast-position chapter gets the book, the Tarifa chapter gets the Tarifa camp, the gear chapters get video coaching.</span>
+          <span class="why">You already answer these questions for free. The product is the obvious next step for someone who just listened to eight minutes on it, and right now there is no link at all.</span>
+        </div>
+      </li>
+
+      <li class="step">
+        <div class="badge b2">Then</div>
+        <div class="what">
+          <strong>Rethink the email gate</strong>
+          <span>Today the whole replay is behind an email form. That protects the list but hides the content from everyone who could bring you new people.</span>
+          <span class="why">Suggested split: the transcript and chapters are open and indexable, the video stays gated. You keep the capture, and you stop being invisible. See the decision below.</span>
+        </div>
+      </li>
+
+      <li class="step">
+        <div class="badge b3">Later</div>
+        <div class="what">
+          <strong>One page per question</strong>
+          <span>Pull the strongest 20 or 30 answers out into their own pages under something like <code>/wingfoil-answers/</code>, each linking back to the replay it came from and forward to the next live session.</span>
+          <span class="why">This is where the long tail lives. "How far into the footstraps" is a search nobody else is answering with a named World Cup level coach on video.</span>
+        </div>
+      </li>
+
+      <li class="step">
+        <div class="badge b3">Later</div>
+        <div class="what">
+          <strong>Feed the other channels from the same transcript</strong>
+          <span>Each session already contains several Reels, a newsletter, and blog posts. The Palao discussion, the mast-position debate, the footstrap test with your son. One recording, many surfaces.</span>
+          <span class="why">The content machine already publishes weekly. Its input problem is solved by an archive it is not currently reading.</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>The one real decision</h2>
+
+    <div class="call">
+      <span class="tag">Gate or open</span>
+      <p>Right now a replay page gives a stranger nothing until they hand over an email. That is good for the list and bad for growth: nobody links to it, nobody finds it, and no AI can quote it.</p>
+      <p style="margin-top:10px;"><strong>My recommendation: open the text, gate the video.</strong> The transcript, chapters and product links are public and indexable. The recording still asks for an email. The list keeps growing from people who want to watch, and the page starts earning traffic from people who do not yet know you exist.</p>
+      <p style="margin-top:10px;color:var(--ink-soft);font-size:.95rem;">The counter-argument is real: fewer emails per visitor. But the current page reaches almost nobody, so a smaller share of a much larger number is still more.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>The flow, once this is done</h2>
+    <p class="lede">Where someone lands, and where they go next.</p>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>They arrive at</th><th>They get</th><th>Next step offered</th></tr></thead>
+        <tbody>
+          <tr><td>A search or an AI answer</td><td>One specific answer, in your voice, with the video moment</td><td>Watch the full replay, gated</td></tr>
+          <tr><td>The replay page</td><td>Transcript, chapters, the product being discussed</td><td>Register for the next session, dated</td></tr>
+          <tr><td>The Q&amp;A hub</td><td>Next date above the fold, past sessions below</td><td>One-tap signup</td></tr>
+          <tr><td>An invite email</td><td>One-click registration</td><td>Confirmation, calendar, reminders</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-top:16px;">Three of those four already work. The missing one is the first, and it is the only one that brings people who have never heard of you.</p>
+  </section>
+
+  <footer>
+    <p>Word counts measured from the two saved transcripts on 2 September 2026. Page audit run against the live <code>/live-qa/replay/2026-09/</code>. Nothing in this plan has been built yet.</p>
+  </footer>
+
+</div>
