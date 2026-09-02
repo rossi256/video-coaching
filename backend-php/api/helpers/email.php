@@ -701,9 +701,27 @@ function sendQaReplayEmail(string $email, string $name, array $session, ?array $
           . '<p style="margin:14px 0;text-align:center;"><a href="' . $nextUrl . '" style="display:inline-block;padding:13px 28px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:15px;">Save my spot in 1 click</a></p>'
           . '<p style="color:#94a3b8;font-size:13px;text-align:center;margin:0 0 6px;">One tap and you are in. No form, we already have your details.</p>';
     }
+    // A clickable thumbnail with the play button burned into the pixels. Mail
+    // clients cannot play video and strip the CSS you would use to overlay a
+    // button, so the image has to look like a player by itself.
+    // Named by convention from the session date, the same way the recording is,
+    // and checked on disk rather than over HTTP because this runs on the box
+    // that serves it. Missing file simply means no thumbnail, never a broken one.
+    $thumbFile = '/home/coaching/public_html/video-coaching/static/replay/qa-'
+               . date('Y-m-d', strtotime($session['scheduled_at'])) . '-thumb.jpg';
+    $thumbBlock = '';
+    if (is_readable($thumbFile)) {
+        $thumbUrl = 'https://coaching.tricktionary.com/video-coaching/static/replay/qa-'
+                  . date('Y-m-d', strtotime($session['scheduled_at'])) . '-thumb.jpg';
+        $thumbBlock = '<a href="' . $url . '" style="display:block;margin:18px 0 6px;">'
+          . '<img src="' . $thumbUrl . '" width="520" alt="Watch the replay"'
+          . ' style="width:100%;max-width:520px;height:auto;display:block;border-radius:10px;border:0;"></a>';
+    }
+
     $body = '<h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey ' . $eName . ', the replay is up</h2>'
       . '<p style="color:#334155;">Thanks for being part of the live Q&A. Whether you were on the call or missed it - here is the full recording with clickable chapters.</p>'
-      . '<p style="margin:18px 0;text-align:center;"><a href="' . $url . '" style="display:inline-block;padding:14px 30px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px;">Watch the replay</a></p>'
+      . $thumbBlock
+      . '<p style="margin:14px 0 18px;text-align:center;"><a href="' . $url . '" style="display:inline-block;padding:14px 30px;background:#0ea5e9;color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px;">Watch the replay</a></p>'
       . $nextBlock
       . '<p style="color:#334155;">Got a question I did not get to? Just reply to this email.</p>'
       . qaOffersBlock()
