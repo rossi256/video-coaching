@@ -261,7 +261,7 @@ HTML;
     </table>
     $coachingRows
     <div style="margin-top:28px;text-align:center;">
-      <a href="$adminUrl" style="display:inline-block;background:#d4a843;background-image:linear-gradient(135deg,#d4a843,#f0d078);color:#091422;font-weight:700;padding:12px 32px;border-radius:8px;text-decoration:none;font-size:14px;">
+      <a href="$adminUrl" style="display:inline-block;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;font-weight:700;padding:12px 32px;border-radius:8px;text-decoration:none;font-size:14px;">
         View in Admin &rarr;
       </a>
     </div>
@@ -285,7 +285,7 @@ function sendFeedbackReady(string $email, string $name, string $replyUrl): void 
     <h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey $eName &mdash; your feedback is ready.</h2>
     <p style="color:#334155;">Michi has reviewed your videos and recorded a personal coaching response just for you.</p>
     <p style="text-align:center;margin:28px 0;">
-      <a href="$eUrl" style="display:inline-block;background:#d4a843;background-image:linear-gradient(135deg,#d4a843,#f0d078);color:#091422;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">
+      <a href="$eUrl" style="display:inline-block;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">
         Watch Your Coaching Feedback
       </a>
     </p>
@@ -313,7 +313,7 @@ function sendUploadLink(string $email, string $name, string $uploadUrl): void {
       Your coaching spot is secured! Use the link below to upload your riding videos and fill out your rider profile &mdash; you can come back any time, your progress is saved automatically.
     </p>
     <p style="text-align:center;margin:28px 0;">
-      <a href="$eUrl" style="display:inline-block;background:#d4a843;background-image:linear-gradient(135deg,#d4a843,#f0d078);color:#091422;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">
+      <a href="$eUrl" style="display:inline-block;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">
         Go to my upload page &rarr;
       </a>
     </p>
@@ -344,7 +344,7 @@ function sendAbandonedCheckoutReminder(string $email, string $checkoutUrl): void
       Click below to come back and lock it in.
     </p>
     <p style="text-align:center;margin:28px 0;">
-      <a href="$eUrl" style="display:inline-block;background:#d4a843;background-image:linear-gradient(135deg,#d4a843,#f0d078);color:#091422;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">
+      <a href="$eUrl" style="display:inline-block;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">
         Claim my founding spot &rarr;
       </a>
     </p>
@@ -441,7 +441,7 @@ function sendEventInquiryNotification(int $inquiryId, string $name, string $emai
       <p style="font-size:13px;color:#e2e8f0;background:#1e3a5f;padding:12px 14px;border-radius:8px;margin:0;border-left:3px solid #0ea5e9;">$eMessage</p>
     </div>
     <div style="margin-top:24px;text-align:center;">
-      <a href="$manageUrl" style="display:inline-block;padding:11px 22px;background:#d4a843;background-image:linear-gradient(135deg,#d4a843,#f0d078);color:#091422;text-decoration:none;font-size:14px;font-weight:600;border-radius:8px;letter-spacing:0.02em;">Manage in admin &rarr;</a>
+      <a href="$manageUrl" style="display:inline-block;padding:11px 22px;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;border-radius:8px;letter-spacing:0.02em;">Manage in admin &rarr;</a>
       <p style="margin:10px 0 0;font-size:11px;color:#64748b;">Opens inquiry #{$inquiryId} in the WingCoach admin (basic auth).</p>
     </div>
   </div>
@@ -509,7 +509,7 @@ function sendQaSignupConfirmation(string $email, string $name, array $session): 
     $link = trim((string) ($session['meeting_link'] ?? ''));
     $linkBlock = $link !== ''
         ? '<div style="text-align:center;margin:24px 0;">'
-          . '<a href="' . htmlspecialchars($link) . '" style="display:inline-block;padding:13px 26px;background:#d4a843;background-image:linear-gradient(135deg,#d4a843,#f0d078);color:#091422;text-decoration:none;font-size:15px;font-weight:700;border-radius:8px;">Join the session</a>'
+          . '<a href="' . htmlspecialchars($link) . '" style="display:inline-block;padding:13px 26px;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;border-radius:8px;">Join the session</a>'
           . '<p style="margin:10px 0 0;font-size:12px;color:#64748b;">Same link every time. Or paste this into your browser:<br>' . htmlspecialchars($link) . '</p></div>'
         : '';
 
@@ -562,7 +562,7 @@ function sendQaSignupNotification(string $name, string $email, array $session, s
       <p style="font-size:13px;color:#e2e8f0;background:#1e3a5f;padding:12px 14px;border-radius:8px;margin:0;border-left:3px solid #0ea5e9;">$eMessage</p>
     </div>
     <div style="margin-top:24px;text-align:center;">
-      <a href="$manageUrl" style="display:inline-block;padding:11px 22px;background:#d4a843;background-image:linear-gradient(135deg,#d4a843,#f0d078);color:#091422;text-decoration:none;font-size:14px;font-weight:600;border-radius:8px;letter-spacing:0.02em;">View Q&amp;A signups in admin &rarr;</a>
+      <a href="$manageUrl" style="display:inline-block;padding:11px 22px;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;border-radius:8px;letter-spacing:0.02em;">View Q&amp;A signups in admin &rarr;</a>
     </div>
   </div>
 </div>
@@ -598,7 +598,7 @@ function sendQaReminder(string $email, string $name, array $session, string $off
 
     $linkBlock = $link !== ''
         ? '<div style="text-align:center;margin:24px 0;">'
-          . '<a href="' . htmlspecialchars($link) . '" style="display:inline-block;padding:13px 26px;background:#d4a843;background-image:linear-gradient(135deg,#d4a843,#f0d078);color:#091422;text-decoration:none;font-size:15px;font-weight:700;border-radius:8px;">Join the session</a>'
+          . '<a href="' . htmlspecialchars($link) . '" style="display:inline-block;padding:13px 26px;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;border-radius:8px;">Join the session</a>'
           . '<p style="margin:10px 0 0;font-size:12px;color:#64748b;">Or paste this into your browser:<br>' . htmlspecialchars($link) . '</p></div>'
         : '<p style="color:#334155;">I will send the meeting link in a follow-up email before we start. Keep an eye on your inbox.</p>';
 
@@ -698,7 +698,7 @@ function sendQaReplayEmail(string $email, string $name, array $session, ?array $
         $nextUrl = 'https://events.tricktionary.com/live-qa/?signup=next&amp;t='
                  . rawurlencode(qaAudienceToken($email));
         $nextBlock = '<p style="color:#334155;">The next live Q&A is already set: <strong>' . $nd . ' (CEST)</strong>, first Tuesday every month.</p>'
-          . '<p style="margin:14px 0;text-align:center;"><a href="' . $nextUrl . '" style="display:inline-block;padding:13px 28px;background:#d4a843;background-image:linear-gradient(135deg,#d4a843,#f0d078);color:#091422;text-decoration:none;font-weight:700;border-radius:8px;font-size:15px;">Save my spot in 1 click</a></p>'
+          . '<p style="margin:14px 0;text-align:center;"><a href="' . $nextUrl . '" style="display:inline-block;padding:13px 28px;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:15px;">Save my spot in 1 click</a></p>'
           . '<p style="color:#94a3b8;font-size:13px;text-align:center;margin:0 0 6px;">One tap and you are in. No form, we already have your details.</p>';
     }
     // A clickable thumbnail with the play button burned into the pixels. Mail
@@ -721,7 +721,7 @@ function sendQaReplayEmail(string $email, string $name, array $session, ?array $
     $body = '<h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey ' . $eName . ', the replay is up</h2>'
       . '<p style="color:#334155;">Thanks for being part of the live Q&A. Whether you were on the call or missed it - here is the full recording with clickable chapters.</p>'
       . $thumbBlock
-      . '<p style="margin:14px 0 18px;text-align:center;"><a href="' . $url . '" style="display:inline-block;padding:14px 30px;background:#d4a843;background-image:linear-gradient(135deg,#d4a843,#f0d078);color:#091422;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px;">Watch the replay</a></p>'
+      . '<p style="margin:14px 0 18px;text-align:center;"><a href="' . $url . '" style="display:inline-block;padding:14px 30px;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px;">Watch the replay</a></p>'
       . $nextBlock
       . '<p style="color:#334155;">Got a question I did not get to? Just reply to this email.</p>'
       . qaOffersBlock()
@@ -743,7 +743,7 @@ function sendQaInviteEmail(string $email, string $name, array $session): void {
     $eName = htmlspecialchars($name ?: 'there');
     $body = '<h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey ' . $eName . ',</h2>'
       . '<p style="color:#334155;">the next live Q&A is coming up: <strong>' . $date . ' (CEST)</strong>, free on Zoom, English &amp; German. Ask me anything - books, camps, gear, technique - or just listen in.</p>'
-      . '<p style="margin:18px 0;text-align:center;"><a href="https://events.tricktionary.com/live-qa/?signup=next&amp;t=' . rawurlencode(qaAudienceToken($email)) . '" style="display:inline-block;padding:14px 30px;background:#d4a843;background-image:linear-gradient(135deg,#d4a843,#f0d078);color:#091422;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px;">Save my spot in 1 click</a></p>'
+      . '<p style="margin:18px 0;text-align:center;"><a href="https://events.tricktionary.com/live-qa/?signup=next&amp;t=' . rawurlencode(qaAudienceToken($email)) . '" style="display:inline-block;padding:14px 30px;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px;">Save my spot in 1 click</a></p>'
       . qaOffersBlock()
       . '<p style="color:#334155;margin-top:20px;">See you there,<br><strong>Michi</strong></p>'
       . qaUnsubscribeLine($email);
@@ -786,7 +786,7 @@ function sendSubmissionNudge(string $email, string $name, string $uploadUrl, int
       Two or three minutes of riding, filmed from the side, is the most useful thing you can send. Your answers are already saved, so you only need to add the clips.
     </p>
     <p style="text-align:center;margin:28px 0;">
-      <a href="$eUrl" style="display:inline-block;background:#d4a843;background-image:linear-gradient(135deg,#d4a843,#f0d078);color:#091422;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">
+      <a href="$eUrl" style="display:inline-block;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">
         Upload my clips &rarr;
       </a>
     </p>
