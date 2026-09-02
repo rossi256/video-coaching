@@ -10,16 +10,26 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/email.php';
 
+// Upper bound on how far back this will ever reach. Without it, a cron that
+// has been off (this one was never scheduled at all until 2026-09-02) wakes up
+// and mails every unconverted attempt in history at once.
+const MAX_AGE_HOURS = 24;
+
+$dryRun = in_array('--dry-run', $argv ?? [], true);
+$prefix = $dryRun ? '[dry-run] ' : '';
+
 $db = getDb();
 
-// Find unreminded, unconverted attempts older than 30 minutes
+// Find unreminded, unconverted attempts between 30 minutes and MAX_AGE_HOURS old
 $stmt = $db->prepare("
     SELECT id, email
     FROM checkout_attempts
     WHERE converted = 0
       AND reminded_at IS NULL
       AND created_at < DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+      AND created_at > DATE_SUB(NOW(), INTERVAL :max_age HOUR)
 ");
+$stmt->bindValue(':max_age', MAX_AGE_HOURS, PDO::PARAM_INT);
 $stmt->execute();
 $attempts = $stmt->fetchAll();
 
@@ -30,6 +40,10 @@ if (empty($attempts)) {
 $checkoutUrl = BASE_URL . '/';
 
 foreach ($attempts as $attempt) {
+    if ($dryRun) {
+        echo "[dry-run] WOULD REMIND {$attempt['email']}\n";
+        continue;
+    }
     try {
         sendAbandonedCheckoutReminder($attempt['email'], $checkoutUrl);
         $db->prepare('UPDATE checkout_attempts SET reminded_at = NOW() WHERE id = ?')

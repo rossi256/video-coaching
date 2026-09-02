@@ -22,8 +22,15 @@ deploy_website() {
     --exclude='.git/' --exclude='.DS_Store' \
     --exclude='api/' --exclude='vendor/' --exclude='uploads/' --exclude='composer.json' --exclude='composer.lock' \
     "$PROJECT_DIR/website/" "$SERVER:$WEB_ROOT/"
-  # Set staging base path via .htaccess env var
-  ssh "$SERVER" "echo 'SetEnv WINGCOACH_BASE_PATH /projects/video-coaching' > $WEB_ROOT/.htaccess"
+  # Staging needs the base-path env var PREPENDED to the real .htaccess.
+  # This used to be `echo ... > .htaccess`, which threw away every rewrite rule
+  # website/.htaccess had just delivered, so /reply/:token 404'd on staging.
+  # Rebuild the file from the repo copy each deploy so it stays deterministic.
+  {
+    echo "SetEnv WINGCOACH_BASE_PATH /projects/video-coaching"
+    echo ""
+    cat "$PROJECT_DIR/website/.htaccess"
+  } | ssh "$SERVER" "cat > $WEB_ROOT/.htaccess"
   echo "  Website deployed."
 }
 
