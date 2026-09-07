@@ -1,7 +1,7 @@
 {
-  "lastDev": "Campaign pack now generated from the session date; Oct 6 pack live, 59 on the invite list",
+  "lastDev": "Q&A prep for Oct 6: campaign pack now generated from the session date (was still showing September 1), 4 registered, 59 ",
   "lastDevDate": "2026-09-07",
   "phase": "active",
-  "milestone": "2026-09-02 fixes staged and committed; production rollout awaiting authorisation (apply-2026-09-02-prod.sh)",
-  "blockedBy": "Production writes blocked by permission guard; run apply-2026-09-02-prod.sh apply to roll out"
+  "milestone": null,
+  "blockedBy": null
 }
