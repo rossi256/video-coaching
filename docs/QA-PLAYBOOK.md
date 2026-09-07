@@ -31,6 +31,9 @@ cross-sell block appended to every invite and every replay email. On 24 August
 it was still promoting a Lake Garda camp that had finished ten days earlier, and
 it went to 33 people. **Check it before every session.**
 
+Also rebuild the campaign pack (see Phase 2) so the promo images carry the
+right date. Nothing else in the system reads it, so a stale pack fails quietly.
+
 Seat cap is 100 (`qa_sessions.max_participants`), matching what the Zoom room
 holds. It was 50 until 30 August, which was a silent throttle: `spots_remaining`
 is never displayed, so it gave no scarcity effect and only blocked signups.
@@ -59,8 +62,28 @@ The campaign pack has the images, the caption and the copy buttons:
 
 **https://coaching.tricktionary.com/video-coaching/static/campaign/**
 
-That URL always shows the current session and is linked from the Q&A admin as
-**Campaign pack**. The dated copy at `/campaign-sept1/` is the archive.
+Build it for the next session before you promote anything:
+
+```bash
+python3 backend-php/api/cron/qa-campaign-build.py            # preview locally
+python3 backend-php/api/cron/qa-campaign-build.py --deploy   # publish it
+```
+
+It reads the date off the sessions API and renders all nine Instagram images
+with that date burned in, plus the caption, the German and English WhatsApp
+copy and the run sheet. Timezone comes from the date, so the November session
+correctly says CET while October says CEST.
+
+**This used to be a lie.** The page claimed it "always shows the current
+session" while being a hand-copied duplicate of the previous month. On 7
+September, six days after the September call, it still served
+`qa-sept1-*.jpg` and read "Tuesday, September 1". Templates now live in
+`website/static/campaign/_templates/`; the pack itself is generated output, so
+do not hand-edit `campaign/index.html` or the jpgs. The builder also deletes
+the previous session's images, which is what made the staleness invisible
+before: old jpgs sat beside the page long after nothing referenced them.
+
+The dated copies at `/campaign-aug4/` and `/campaign-sept1/` are the archive.
 
 1. **Instagram feed post.** The single biggest lever. In August roughly 30 of 34
    signups landed in the 48 hours after the feed post. Post it on
