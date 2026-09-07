@@ -212,6 +212,45 @@ function sendSubmissionNotification(string $name, string $email, $submissionId, 
     $eName = htmlspecialchars($name);
     $eEmail = htmlspecialchars($email);
 
+    // What the rider actually uploaded. This block was missing entirely, so the
+    // notification never told Michi there was a video waiting, let alone where.
+    $filesBlock = '';
+    $dir = UPLOADS_DIR . '/' . $submissionId;
+    $files = [];
+    if (is_dir($dir)) {
+        foreach (scandir($dir) as $f) {
+            $fp = $dir . '/' . $f;
+            if ($f[0] !== '.' && is_file($fp)) {
+                $files[] = ['name' => $f, 'size' => filesize($fp)];
+            }
+        }
+    }
+    if ($files) {
+        $rows = '';
+        foreach ($files as $f) {
+            $mb   = number_format($f['size'] / 1048576, 1);
+            $url  = BASE_URL . '/api/admin/file/' . $submissionId . '/' . rawurlencode($f['name']);
+            $safe = htmlspecialchars($f['name']);
+            $rows .= '<tr>'
+                . '<td style="padding:10px 12px;font-size:13px;color:#e2e8f0;border-bottom:1px solid #1e3a5f;">' . $safe . '</td>'
+                . '<td style="padding:10px 12px;font-size:13px;color:#94a3b8;white-space:nowrap;border-bottom:1px solid #1e3a5f;">' . $mb . ' MB</td>'
+                . '<td style="padding:10px 12px;text-align:right;border-bottom:1px solid #1e3a5f;">'
+                . '<a href="' . htmlspecialchars($url) . '" style="color:#38bdf8;font-size:13px;font-weight:600;text-decoration:none;">Download &darr;</a>'
+                . '</td></tr>';
+        }
+        $count = count($files);
+        $label = $count === 1 ? '1 file uploaded' : "$count files uploaded";
+        $filesBlock = <<<HTML
+<div style="margin-top:22px;">
+  <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#7dd3fc;margin:0 0 8px;">$label</p>
+  <table style="width:100%;border-collapse:collapse;background:#132a45;border-radius:8px;overflow:hidden;">$rows</table>
+  <p style="font-size:12px;color:#94a3b8;margin:8px 0 0;">Sign in with the admin password when the download prompts you.</p>
+</div>
+HTML;
+    } else {
+        $filesBlock = '<div style="margin-top:22px;"><p style="font-size:13px;color:#fca5a5;background:#3f1d1d;padding:12px 14px;border-radius:8px;margin:0;border-left:3px solid #ef4444;">No files uploaded yet.</p></div>';
+    }
+
     $riderRows = '';
     $coachingRows = '';
     if ($sub) {
@@ -260,6 +299,7 @@ HTML;
       $riderRows
     </table>
     $coachingRows
+    $filesBlock
     <div style="margin-top:28px;text-align:center;">
       <a href="$adminUrl" style="display:inline-block;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;font-weight:700;padding:12px 32px;border-radius:8px;text-decoration:none;font-size:14px;">
         View in Admin &rarr;

@@ -1,7 +1,7 @@
 {
-  "lastDev": "Q&A prep for Oct 6: campaign pack now generated from the session date (was still showing September 1), 4 registered, 59 ",
+  "lastDev": "Fixed prod checkout outage (spots.php shipped without its migration); spot count corrected to 9 free; nudge cron live; submission emails now list uploaded files with download links",
   "lastDevDate": "2026-09-07",
   "phase": "active",
-  "milestone": null,
+  "milestone": "Gino Borland (first paying customer) submitted 2026-09-02, brief resent, coaching video owed",
   "blockedBy": null
 }
