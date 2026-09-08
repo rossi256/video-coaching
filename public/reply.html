@@ -13,6 +13,37 @@
   <link rel="stylesheet" href="{{BASE_PATH}}/static/player/skin.css">
   <style>
     body { font-family: 'Inter', sans-serif; }
+
+    /* Chapter markers delivered by Coach Studio:
+       <a href="#t=83" data-t="83">01:23</a> Gybe entry
+       Rendered as a small aqua pill with tabular digits so they read as buttons. */
+    a[data-t] {
+      display: inline-block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-variant-numeric: tabular-nums;
+      font-size: 0.8125rem;
+      line-height: 1.35;
+      padding: 2px 9px;
+      margin-right: 6px;
+      border-radius: 9999px;
+      color: #67e8f0;
+      background: rgba(14, 165, 183, 0.16);
+      border: 1px solid rgba(14, 165, 183, 0.35);
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color .15s ease, color .15s ease;
+    }
+    a[data-t]:hover,
+    a[data-t]:focus-visible {
+      background: rgba(14, 165, 183, 0.32);
+      color: #ffffff;
+    }
+
+    /* Text items whose content is HTML (chapters, move links) */
+    .reply-html p { margin: 0 0 0.45rem; }
+    .reply-html p:last-child { margin-bottom: 0; }
+    .reply-html a:not([data-t]) { color: #0ea5e9; text-decoration: underline; }
+    .reply-html a:not([data-t]):hover { color: #38bdf8; }
   </style>
 </head>
 <body class="bg-[#0d1b2e] text-white min-h-screen">
@@ -266,17 +297,103 @@ function buildItems(items, token) {
       initPlayer(vIdx, videoUrl);
 
     } else if (item.type === 'text') {
+      // Coach Studio can deliver HTML here (the "Chapters" item is <p><a data-t>...).
+      // Plain-text replies keep whitespace-pre-wrap; HTML replies go into a <div>
+      // so nested <p> stays valid - a <p> inside a <p> gets split by the parser
+      // and loses the wrapper's styling.
+      const content = item.content || '';
+      const isHtml = /<(p|div|ul|ol|br|h[1-6])\b/i.test(content);
+      const body = isHtml
+        ? `<div class="reply-html text-slate-300 leading-relaxed">${content}</div>`
+        : `<p class="text-slate-300 leading-relaxed whitespace-pre-wrap">${content}</p>`;
+
       wrap.innerHTML = `
         <div class="bg-[#080f1c] border border-white/10 rounded-2xl overflow-hidden">
           ${item.description ? `<div class="px-5 pt-4 pb-2 border-b border-white/10"><p class="text-sm font-semibold text-slate-200">${item.description}</p></div>` : ''}
           <div class="p-5 sm:p-6">
-            <p class="text-slate-300 leading-relaxed whitespace-pre-wrap">${item.content || ''}</p>
+            ${body}
           </div>
         </div>
       `;
       container.appendChild(wrap);
     }
   });
+
+  bindChapterLinks();
+}
+
+// ── Chapter links: a[data-t] seeks the player ────────────────────────────────
+// Coach Studio delivers a text item titled "Chapters" whose content is
+// <p><a href="#t=83" data-t="83">01:23</a> Gybe entry</p> per marker. One
+// delegated listener on the items container turns those into player seeks.
+// Anchors without data-t (tricktionary:// deep links, https:// web links) are
+// left alone.
+let chapterLinksBound = false;
+
+function bindChapterLinks() {
+  if (chapterLinksBound) return;
+  const container = document.getElementById('players-container');
+  if (!container) return;
+  chapterLinksBound = true;
+
+  container.addEventListener('click', (e) => {
+    const a = e.target.closest ? e.target.closest('a[data-t]') : null;
+    if (!a || !container.contains(a)) return;
+    const seconds = Number(a.getAttribute('data-t'));
+    if (!isFinite(seconds)) return;
+    e.preventDefault();
+    seekToChapter(a, seconds);
+  });
+}
+
+function isVideoWrap(el) {
+  return el.classList.contains('video-item-wrap') || el.classList.contains('player-wrap');
+}
+
+// Target player = the nearest video item that precedes this anchor's item in
+// DOM order; falls back to the first player on the page.
+function findPlayerWrapFor(anchor) {
+  const container = document.getElementById('players-container');
+  if (!container) return null;
+  const wraps = Array.from(container.children);
+
+  let wrap = anchor;
+  while (wrap && wrap.parentElement !== container) wrap = wrap.parentElement;
+
+  const idx = wrap ? wraps.indexOf(wrap) : -1;
+  if (idx >= 0) {
+    for (let i = idx; i >= 0; i--) {
+      if (isVideoWrap(wraps[i])) return wraps[i];
+    }
+  }
+  return wraps.find(isVideoWrap) || null;
+}
+
+function seekToChapter(anchor, seconds) {
+  const wrap = findPlayerWrapFor(anchor);
+  if (!wrap) return;
+
+  // Players may sit behind tabs - activate the tab that owns this one.
+  if (wrap.classList.contains('hidden')) {
+    const videoWraps = Array.from(document.querySelectorAll('.video-item-wrap, .player-wrap'));
+    const tabs = document.querySelectorAll('#video-tabs .tab-btn');
+    const tab = tabs[videoWraps.indexOf(wrap)];
+    if (tab) tab.click();
+  }
+
+  const m = wrap.id.match(/(\d+)$/);
+  const player = m ? players[Number(m[1])] : null;
+  if (player) {
+    player.ready(() => {
+      try {
+        player.currentTime(seconds);
+        const p = player.play();
+        if (p && typeof p.catch === 'function') p.catch(() => {});
+      } catch (err) {}
+    });
+  }
+
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // ── Build video players (legacy, pre-replyItems) ─────────────────────────────
