@@ -35,7 +35,7 @@ $blurb = [
         ['Three sessions, calls or video reviews, any mix',
          'Use them across a whole season',
          'Valid 12 months',
-         'Works out at &euro;166 a session'],
+         'Works out at &euro;' . coachingPerSessionEur(COACHING_PRODUCTS['pack-3']) . ' a session'],
         'Best if you are actually trying to change something',
     ],
 ];

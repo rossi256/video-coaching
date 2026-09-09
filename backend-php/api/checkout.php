@@ -56,9 +56,10 @@ $email = trim($body['email'] ?? '') ?: null;
 
 try {
     $stripe = new \Stripe\StripeClient(STRIPE_SECRET_KEY);
-    $session = $stripe->checkout->sessions->create([
+    // customer_email omitted rather than null: Stripe rejects a null with
+    // "Invalid email address:" and fails the whole call.
+    $params = [
         'mode' => 'payment',
-        'customer_email' => $email ?: null,
         'line_items' => [[
             'price_data' => [
                 'currency' => 'eur',
@@ -76,7 +77,11 @@ try {
             'spots_at_purchase' => (string) $remaining,
             'product' => 'wingcoach',
         ],
-    ]);
+    ];
+    if ($email) {
+        $params['customer_email'] = $email;
+    }
+    $session = $stripe->checkout->sessions->create($params);
 
     if ($email) {
         $stmt = $db->prepare('INSERT IGNORE INTO checkout_attempts (email, stripe_session_id) VALUES (?, ?)');

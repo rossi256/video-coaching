@@ -50,9 +50,12 @@ if (!STRIPE_SECRET_KEY) {
 
 try {
     $stripe = new \Stripe\StripeClient(STRIPE_SECRET_KEY);
-    $session = $stripe->checkout->sessions->create([
+    // customer_email must be OMITTED when unknown. Passing null makes Stripe
+    // reject the whole call with "Invalid email address:", and the buy buttons
+    // on the sales page deliberately do not ask for an email first, so every
+    // real purchase would have failed.
+    $params = [
         'mode' => 'payment',
-        'customer_email' => $email ?: null,
         'line_items' => [[
             'price_data' => [
                 'currency' => 'eur',
@@ -74,7 +77,11 @@ try {
             'coaching_sku'    => $key,
             'coaching_credits'=> (string) $product['credits'],
         ],
-    ]);
+    ];
+    if ($email) {
+        $params['customer_email'] = $email;
+    }
+    $session = $stripe->checkout->sessions->create($params);
 
     if ($email) {
         $db->prepare('INSERT IGNORE INTO checkout_attempts (email, stripe_session_id) VALUES (?, ?)')

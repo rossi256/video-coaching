@@ -46,7 +46,10 @@ const COACHING_PRODUCTS = [
         'label'        => 'Coaching pack, 3 sessions',
         'stripe_name'  => 'Coaching pack - 3 sessions with Michi Rossmeier',
         'description'  => 'Three sessions, used as calls or video reviews in any mix, valid for 12 months.',
-        'amount_cents' => 49900,
+        // Must stay below 3x the CHEAPEST credit, not 3x the call. At 49900 the
+        // pack cost a review-only buyer 52 EUR more than buying three reviews
+        // singly, so for part of the audience the "discount" was a penalty.
+        'amount_cents' => 39900,
         'credits'      => 3,
         'kind'         => null,       // chosen per redemption
         'valid_months' => 12,
@@ -64,6 +67,12 @@ function coachingProduct(string $key): ?array {
 }
 
 /** "199" / "499" - no decimals, because every price here is whole euros. */
+/** Per-session price of a multi-credit product, for the sales copy. */
+function coachingPerSessionEur(array $p): string {
+    $each = (int) round($p['amount_cents'] / max(1, (int) $p['credits']));
+    return number_format($each / 100, ($each % 100 === 0) ? 0 : 2, ',', '.');
+}
+
 function coachingPriceEur(array $p): string {
     return number_format($p['amount_cents'] / 100, ($p['amount_cents'] % 100 === 0) ? 0 : 2, ',', '.');
 }
