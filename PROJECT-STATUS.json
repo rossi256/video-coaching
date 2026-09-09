@@ -1,7 +1,7 @@
 {
-  "lastDev": "Fixed prod checkout outage (spots.php shipped without its migration); spot count corrected to 9 free; nudge cron live; submission emails now list uploaded files with download links",
-  "lastDevDate": "2026-09-07",
+  "lastDev": "Coaching credits live: 1:1 call EUR199/45min, video review EUR149, 3-pack EUR499. Sales page /video-coaching/coaching, a",
+  "lastDevDate": "2026-09-09",
   "phase": "active",
-  "milestone": "Gino Borland (first paying customer) submitted 2026-09-02, brief resent, coaching video owed",
+  "milestone": null,
   "blockedBy": null
 }
