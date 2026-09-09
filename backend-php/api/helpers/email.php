@@ -462,6 +462,9 @@ function eventInquiryKind(string $slug): array {
     if (str_starts_with($slug, 'qa-replay'))    return ['Replay unlock', 'Replay unlock',  '#7c5cbf', false];
     if (str_starts_with($slug, 'wing-genius'))  return ['Quiz result',   'Quiz result',    '#0f766e', false];
     if (str_starts_with($slug, 'waitlist'))     return ['Waitlist signup','Waitlist',      '#b45309', false];
+    // Asked for a personal look right after typing a question at Q&A signup.
+    // The warmest lead the funnel produces, so it gets its own colour.
+    if (str_starts_with($slug, 'coaching-call')) return ['1:1 call request', '1:1 call request', '#b91c1c', true];
     return ['Camp enquiry', 'Camp enquiry', '#1580c4', true];
 }
 
@@ -472,7 +475,7 @@ function sendEventInquiryNotification(int $inquiryId, string $name, string $emai
     // A lead needs a reply; a capture is an FYI. Say so in the subject so the
     // inbox can be scanned without opening anything.
     $mail->Subject = $isLead
-        ? "Camp enquiry: $name — $eventName"
+        ? "$kindPrefix: $name — $eventName"
         : "$kindPrefix: $name";
     $mail->isHTML(true);
 
