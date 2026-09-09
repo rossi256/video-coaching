@@ -120,6 +120,20 @@ RewriteRule ^admin/qa-signups-all$ admin.php?_action=qa-signups-all [L,QSA]
 # /api/admin/waitlist → admin.php
 RewriteRule ^admin/waitlist$ admin.php?_action=waitlist [L,QSA]
 
+# --- Coaching credits: 1:1 call, video review, 3-pack ---
+
+# /api/admin/coaching-credits → admin.php (every purchase and its redemptions)
+RewriteRule ^admin/coaching-credits$ admin.php?_action=coaching-credits [L,QSA]
+
+# /api/admin/redemption/ID → admin.php (schedule, add links, mark delivered)
+RewriteRule ^admin/redemption/(\d+)$ admin.php?_action=redemption-update&id=$1 [L,QSA]
+
+# /api/coaching-checkout → coaching-checkout.php
+RewriteRule ^coaching-checkout$ coaching-checkout.php [L,QSA]
+
+# /api/credit-redeem → credit-redeem.php
+RewriteRule ^credit-redeem$ credit-redeem.php [L,QSA]
+
 # /api/admin/private-inquiries → admin.php
 RewriteRule ^admin/private-inquiries$ admin.php?_action=private-inquiries [L,QSA]
 

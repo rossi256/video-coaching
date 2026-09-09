@@ -874,3 +874,110 @@ HTML;
     $mail->Body = riderEmailWrap($body);
     $mail->send();
 }
+
+// ---------------------------------------------------------------------------
+// Coaching credits: 1:1 call, video review, 3-session pack
+// ---------------------------------------------------------------------------
+
+/**
+ * After a coaching purchase: the buyer gets their private link, Michi gets a
+ * heads-up. Two separate messages, never a BCC, because a BCC puts Michi's
+ * subject line in the customer's copy.
+ */
+function sendCoachingCreditEmails(
+    string $token, string $sku, array $product, string $name, string $email
+): void {
+    $link  = BASE_URL . '/credit?t=' . $token;
+    $n     = (int) $product['credits'];
+    $eName = htmlspecialchars(trim(explode(' ', $name)[0] ?? '') ?: 'there');
+    $eLink = htmlspecialchars($link);
+    $eWhat = htmlspecialchars($product['label']);
+
+    if ($email) {
+        $mail = getMailer('Michi Rossmeier');
+        $mail->addAddress($email);
+        // Michi keeps a copy of every client-facing send.
+        $mail->addBCC('rossi@tricktionary.com');
+        $mail->Subject = $n > 1
+            ? "Your $n coaching sessions are ready"
+            : 'Your coaching session is ready';
+        $mail->isHTML(true);
+
+        $sessions = $n > 1
+            ? "You have <b>$n sessions</b> to use whenever you like, as calls or video reviews, in any mix."
+            : "You have <b>one session</b> ready to use.";
+        $expiry = $product['valid_months']
+            ? '<p style="color:#64748b;font-size:13px;">Valid until '
+              . htmlspecialchars(date('j F Y', strtotime('+' . (int) $product['valid_months'] . ' months')))
+              . '. Keep this email, the link is your access.</p>'
+            : '';
+
+        $body = <<<HTML
+        <h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Thanks $eName</h2>
+        <p style="color:#334155;">$sessions Tell me what you are working on and send a clip, and I will take it from there.</p>
+        <p style="text-align:center;margin:28px 0;">
+          <a href="$eLink" style="display:inline-block;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">
+            Book my session &rarr;
+          </a>
+        </p>
+        $expiry
+HTML;
+        $mail->Body = riderEmailWrap($body);
+        $mail->send();
+    }
+
+    $admin = getMailer('Tricktionary Coaching');
+    $admin->addAddress(NOTIFY_EMAIL);
+    $admin->Subject = 'Coaching sale: ' . $product['label'] . ' - ' . ($name ?: $email ?: 'unknown');
+    $admin->isHTML(true);
+    $eEmail = htmlspecialchars($email ?: '-');
+    $ePrice = htmlspecialchars(coachingPriceEur($product));
+    $admin->Body = riderEmailWrap(
+        '<h2 style="color:#0c1929;margin:0 0 12px;font-size:20px;">' . $eWhat . ' sold</h2>'
+        . '<p style="color:#334155;">' . htmlspecialchars($name ?: 'No name') . ' &middot; ' . $eEmail
+        . '<br>&euro;' . $ePrice . ' &middot; ' . $n . ' credit' . ($n > 1 ? 's' : '') . '</p>'
+        . '<p style="color:#64748b;font-size:13px;">Nothing to do yet. You will get a second email when they '
+        . 'book the session and tell you what they want to work on.</p>'
+    );
+    $admin->send();
+}
+
+/** A credit was spent. This is the one that needs Michi to act. */
+function sendCreditRedemptionNotification(
+    int $redemptionId, array $credit, string $kind,
+    string $message, string $clipUrl, string $prefer, int $left
+): void {
+    $isCall = $kind === 'call';
+    $mail = getMailer('Tricktionary Coaching');
+    $mail->addAddress(NOTIFY_EMAIL);
+    $mail->Subject = ($isCall ? '1:1 call booked: ' : 'Video review in: ')
+        . ($credit['name'] ?: $credit['email'] ?: 'unknown');
+    $mail->isHTML(true);
+
+    $colour  = $isCall ? '#b91c1c' : '#0f766e';
+    $eName   = htmlspecialchars($credit['name'] ?: 'No name');
+    $eEmail  = htmlspecialchars($credit['email'] ?: '-');
+    $eMsg    = nl2br(htmlspecialchars($message));
+    $ePrefer = $prefer !== '' ? '<tr><td style="color:#94a3b8;padding:8px 14px 8px 0;font-size:13px;">When they can</td><td style="padding:8px 0;font-size:13px;">' . htmlspecialchars($prefer) . '</td></tr>' : '';
+    $eClip   = $clipUrl !== ''
+        ? '<tr><td style="color:#94a3b8;padding:8px 14px 8px 0;font-size:13px;">Clips</td><td style="padding:8px 0;font-size:13px;"><a href="' . htmlspecialchars($clipUrl) . '">' . htmlspecialchars($clipUrl) . '</a></td></tr>'
+        : '';
+    $action = $isCall
+        ? 'Reply with two or three times that suit you. The Zoom room is the usual one.'
+        : 'Record the reply and send it. The promise on the page is 72 hours.';
+
+    $mail->Body = riderEmailWrap(
+        '<h2 style="color:' . $colour . ';margin:0 0 4px;font-size:20px;">'
+        . ($isCall ? '1:1 call, 45 minutes' : 'Video review') . '</h2>'
+        . '<p style="color:#64748b;font-size:13px;margin:0 0 16px;">Redemption #' . $redemptionId
+        . ' &middot; ' . $left . ' session' . ($left === 1 ? '' : 's') . ' left on their account</p>'
+        . '<table style="width:100%;border-collapse:collapse;">'
+        . '<tr><td style="color:#94a3b8;padding:8px 14px 8px 0;font-size:13px;width:120px;">Who</td><td style="padding:8px 0;font-size:13px;">' . $eName . ' &middot; ' . $eEmail . '</td></tr>'
+        . $ePrefer . $eClip
+        . '</table>'
+        . '<p style="color:#0c1929;font-weight:600;margin:18px 0 6px;font-size:14px;">What they are working on</p>'
+        . '<p style="color:#334155;font-size:14px;line-height:1.6;">' . $eMsg . '</p>'
+        . '<p style="color:#b45309;font-size:13px;margin-top:18px;"><b>' . htmlspecialchars($action) . '</b></p>'
+    );
+    $mail->send();
+}

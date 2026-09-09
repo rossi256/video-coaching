@@ -18,6 +18,18 @@ RewriteRule ^success$ success.php [L]
 # /admin → admin.php
 RewriteRule ^admin$ admin.php [L]
 
+# /coaching → coaching.php   (the call / review / pack sales page)
+RewriteRule ^coaching$ coaching.php [L,QSA]
+
+# /credit → credit.php       (the buyer's private page: balance + book a session)
+RewriteRule ^credit$ credit.php [L,QSA]
+
+# /coaching-checkout → api/coaching-checkout.php
+RewriteRule ^coaching-checkout$ api/coaching-checkout.php [L,QSA]
+
+# /credit-redeem → api/credit-redeem.php
+RewriteRule ^credit-redeem$ api/credit-redeem.php [L,QSA]
+
 # /dev → api/dev.php (dev test dashboard)
 RewriteRule ^dev$ api/dev.php [L]
 

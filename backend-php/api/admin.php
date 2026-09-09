@@ -10,6 +10,7 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/helpers/email.php';
 require_once __DIR__ . '/helpers/file-serve.php';
 require_once __DIR__ . '/helpers/qa_schedules.php';
+require_once __DIR__ . '/helpers/coaching-products.php';
 
 requireAdmin();
 setApiHeaders();
@@ -454,6 +455,71 @@ if ($action === 'qa-signups-all') {
 }
 
 // --- GET /api/admin/waitlist ---
+// ---------------------------------------------------------------------------
+// Coaching credits
+// ---------------------------------------------------------------------------
+
+// Every purchase with its redemptions nested, newest first. The balance is
+// derived from the redemption rows rather than stored, so this view and the
+// customer's own page can never disagree.
+if ($action === 'coaching-credits') {
+    $credits = $db->query(
+        'SELECT * FROM coaching_credits ORDER BY id DESC'
+    )->fetchAll(PDO::FETCH_ASSOC);
+
+    $byCredit = [];
+    foreach ($db->query(
+        'SELECT * FROM credit_redemptions ORDER BY id DESC'
+    )->fetchAll(PDO::FETCH_ASSOC) as $r) {
+        $byCredit[(int) $r['credit_id']][] = $r;
+    }
+
+    foreach ($credits as &$c) {
+        $rs = $byCredit[(int) $c['id']] ?? [];
+        $c['redemptions']  = $rs;
+        $c['used']         = count($rs);
+        $c['left']         = max(0, (int) $c['credits_total'] - count($rs));
+        $c['product_label'] = coachingProduct($c['product'])['label'] ?? $c['product'];
+        $c['link']         = BASE_URL . '/credit?t=' . $c['token'];
+    }
+    unset($c);
+
+    jsonResponse($credits);
+}
+
+// Move one redemption along: add times, the Zoom link, the reply, mark it done.
+if ($action === 'redemption-update' && $method === 'POST' && $id) {
+    $body = getJsonBody();
+    $fields = [];
+    $vals   = [];
+
+    if (isset($body['status'])) {
+        $allowed = ['requested', 'scheduled', 'delivered'];
+        if (!in_array($body['status'], $allowed, true)) {
+            jsonResponse(['error' => 'Unknown status'], 400);
+        }
+        $fields[] = '`status` = ?';
+        $vals[]   = $body['status'];
+        // Stamp the delivery the first time it is marked done, and clear it if
+        // it is moved back, so the timestamp always matches the status.
+        $fields[] = '`delivered_at` = ?';
+        $vals[]   = $body['status'] === 'delivered' ? date('Y-m-d H:i:s') : null;
+    }
+    foreach (['scheduled_at', 'zoom_join_url', 'reply_url'] as $f) {
+        if (array_key_exists($f, $body)) {
+            $fields[] = "`$f` = ?";
+            $vals[]   = $body[$f] !== '' ? $body[$f] : null;
+        }
+    }
+    if (!$fields) jsonResponse(['error' => 'Nothing to update'], 400);
+
+    $vals[] = $id;
+    $db->prepare('UPDATE credit_redemptions SET ' . implode(', ', $fields) . ' WHERE id = ?')
+       ->execute($vals);
+
+    jsonResponse(['ok' => true]);
+}
+
 if ($action === 'waitlist') {
     $rows = $db->query('SELECT * FROM waitlist ORDER BY id DESC')->fetchAll();
     echo json_encode($rows);

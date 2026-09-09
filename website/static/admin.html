@@ -70,6 +70,7 @@
     <button data-tab="qa"      class="tab-btn text-sm px-3 py-1.5 rounded-lg transition-colors">Q&A Sessions</button>
     <button data-tab="waitlist"class="tab-btn text-sm px-3 py-1.5 rounded-lg transition-colors">Waitlist</button>
     <button data-tab="private" class="tab-btn text-sm px-3 py-1.5 rounded-lg transition-colors">Private Coaching</button>
+    <button data-tab="coaching" class="tab-btn text-sm px-3 py-1.5 rounded-lg transition-colors">Coaching Credits</button>
   </div>
 
   <!-- Tab: Video Submissions -->
@@ -140,6 +141,17 @@
   </div>
 
   <!-- Tab: Waitlist -->
+  <div id="tab-coaching" class="tab-panel hidden">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Coaching Credits <span id="coaching-count" class="text-slate-500 font-normal text-base"></span></h1>
+      <div class="flex items-center gap-3">
+        <a href="/video-coaching/coaching" target="_blank" class="text-sm text-sky-400 hover:text-sky-300">Sales page &rarr;</a>
+        <button onclick="loadCoaching()" class="text-sm text-slate-400 hover:text-white border border-white/10 px-3 py-1.5 rounded-lg transition-colors">Refresh</button>
+      </div>
+    </div>
+    <div id="coaching-wrap" class="space-y-4"></div>
+  </div>
+
   <div id="tab-waitlist" class="tab-panel hidden">
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-2xl font-bold">Waitlist <span id="waitlist-count" class="text-slate-500 font-normal text-base"></span></h1>
@@ -710,7 +722,7 @@ function esc(str) {
 }
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
-const TAB_LOADERS = { video: loadList, events: loadEvents, qa: loadQa, waitlist: loadWaitlist, private: loadPrivate };
+const TAB_LOADERS = { video: loadList, events: loadEvents, qa: loadQa, waitlist: loadWaitlist, private: loadPrivate, coaching: loadCoaching };
 let activeTab = 'video';
 const tabsLoaded = new Set();
 
@@ -1131,6 +1143,117 @@ async function deleteQaSession(id) {
 }
 
 // ── Waitlist ────────────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Coaching credits: purchases of the 1:1 call, the video review and the 3-pack,
+// each with the sessions the buyer has actually booked.
+// ---------------------------------------------------------------------------
+const REDEEM_STATES = ['requested', 'scheduled', 'delivered'];
+
+async function loadCoaching() {
+  const wrap = document.getElementById('coaching-wrap');
+  wrap.innerHTML = '<div class="p-8 text-slate-500 text-center">Loading...</div>';
+  try {
+    const r = await fetch(`${BP}/api/admin/coaching-credits`);
+    const rows = await r.json();
+    if (!Array.isArray(rows)) throw new Error('bad response');
+
+    const open = rows.reduce((n, c) =>
+      n + (c.redemptions || []).filter(x => x.status !== 'delivered').length, 0);
+    document.getElementById('coaching-count').textContent =
+      `(${rows.length} purchase${rows.length === 1 ? '' : 's'}` +
+      (open ? `, ${open} waiting on you` : '') + ')';
+
+    if (!rows.length) {
+      wrap.innerHTML = '<div class="p-8 text-slate-500 text-center">Nothing sold yet. '
+        + 'The sales page is at /video-coaching/coaching.</div>';
+      return;
+    }
+    wrap.innerHTML = rows.map(creditCard).join('');
+  } catch (e) {
+    wrap.innerHTML = '<div class="p-8 text-red-400 text-center">Could not load. '
+      + esc(String(e.message || e)) + '</div>';
+  }
+}
+
+function creditCard(c) {
+  const rs = c.redemptions || [];
+  const spent = (c.amount_cents != null) ? '&euro;' + (c.amount_cents / 100).toFixed(0) : '';
+  const leftPill = c.left > 0
+    ? `<span class="text-xs px-2 py-0.5 rounded bg-sky-500/15 text-sky-300 font-semibold">${c.left} left</span>`
+    : `<span class="text-xs px-2 py-0.5 rounded bg-white/5 text-slate-500 font-semibold">all used</span>`;
+
+  return `<div class="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+    <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
+      <span class="font-semibold">${esc(c.name || 'No name')}</span>
+      <a href="mailto:${esc(c.email || '')}" class="text-sm text-sky-400 hover:text-sky-300">${esc(c.email || '-')}</a>
+      ${leftPill}
+      <span class="ml-auto text-sm text-slate-400">${spent}</span>
+    </div>
+    <div class="text-xs text-slate-500 mb-3">
+      ${esc(c.product_label)} &middot; bought ${fmtDate(c.created_at)}
+      ${c.expires_at ? ' &middot; valid to ' + fmtDate(c.expires_at) : ''}
+      &middot; <a href="${esc(c.link)}" target="_blank" class="text-slate-400 hover:text-white underline">their page</a>
+    </div>
+    ${rs.length
+      ? rs.map(redemptionRow).join('')
+      : '<div class="text-sm text-slate-500 italic">Paid, not booked a session yet.</div>'}
+  </div>`;
+}
+
+function redemptionRow(r) {
+  const isCall = r.kind === 'call';
+  const badge = {
+    requested: 'bg-amber-500/15 text-amber-300',
+    scheduled: 'bg-sky-500/15 text-sky-300',
+    delivered: 'bg-emerald-500/15 text-emerald-300',
+  }[r.status] || 'bg-white/5 text-slate-400';
+
+  const opts = REDEEM_STATES.map(s =>
+    `<option value="${s}"${s === r.status ? ' selected' : ''}>${s}</option>`).join('');
+
+  return `<div class="rounded-lg border border-white/10 bg-black/20 p-3 mt-2">
+    <div class="flex flex-wrap items-center gap-2 mb-2">
+      <span class="text-sm font-semibold">${isCall ? '1:1 call, 45 min' : 'Video review'}</span>
+      <span class="text-xs px-2 py-0.5 rounded font-semibold ${badge}">${esc(r.status)}</span>
+      <span class="text-xs text-slate-500">#${r.id} &middot; ${fmtDate(r.created_at)}</span>
+      <select onchange="updateRedemption(${r.id}, { status: this.value })"
+        class="ml-auto bg-white/5 border border-white/10 rounded px-2 py-1 text-xs">${opts}</select>
+    </div>
+    <p class="text-sm text-slate-300 whitespace-pre-wrap mb-2">${esc(r.message || '')}</p>
+    ${r.clip_url ? `<p class="text-xs mb-2"><a href="${esc(r.clip_url)}" target="_blank" class="text-sky-400 hover:text-sky-300 break-all">${esc(r.clip_url)}</a></p>` : ''}
+    <div class="grid gap-2 sm:grid-cols-2">
+      ${isCall ? `
+      <input type="datetime-local" value="${esc((r.scheduled_at || '').replace(' ', 'T').slice(0, 16))}"
+        onchange="updateRedemption(${r.id}, { scheduled_at: this.value ? this.value.replace('T', ' ') + ':00' : '' })"
+        class="bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs" title="When the call is">
+      <input type="text" placeholder="Zoom join link" value="${esc(r.zoom_join_url || '')}"
+        onchange="updateRedemption(${r.id}, { zoom_join_url: this.value.trim() })"
+        class="bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs">
+      ` : `
+      <input type="text" placeholder="Link to your video reply" value="${esc(r.reply_url || '')}"
+        onchange="updateRedemption(${r.id}, { reply_url: this.value.trim() })"
+        class="bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs sm:col-span-2">
+      `}
+    </div>
+    <p class="text-xs text-slate-600 mt-2">Saves as you change it. The rider sees this on their page.</p>
+  </div>`;
+}
+
+async function updateRedemption(id, patch) {
+  try {
+    const r = await fetch(`${BP}/api/admin/redemption/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+    const d = await r.json();
+    if (!d.ok) { alert(d.error || 'Could not save that.'); return; }
+    loadCoaching();
+  } catch (e) {
+    alert('Could not reach the server.');
+  }
+}
+
 async function loadWaitlist() {
   const wrap = document.getElementById('waitlist-wrap');
   wrap.innerHTML = '<div class="p-8 text-slate-400 text-center">Loading…</div>';

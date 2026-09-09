@@ -2,6 +2,7 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/helpers/email.php';
+require_once __DIR__ . '/helpers/coaching-products.php';
 
 // Webhook needs raw body for signature verification
 $payload = getRawBody();
@@ -18,6 +19,46 @@ try {
 
 if ($event->type === 'checkout.session.completed') {
     $session = $event->data->object;
+
+    // The coaching catalogue (call, video review, 3-pack) grants credits and
+    // returns here. Handled before the wingcoach guard below, which would
+    // otherwise discard it as a foreign charge.
+    if (($session->metadata->product ?? '') === 'coaching') {
+        $db  = getDb();
+        $sku = $session->metadata->coaching_sku ?? '';
+        $product = coachingProduct($sku);
+        if (!$product) {
+            error_log('Coaching webhook: unknown sku ' . $sku);
+            header('Content-Type: application/json');
+            echo json_encode(['received' => true]);
+            exit;
+        }
+
+        $db->prepare('UPDATE checkout_attempts SET converted = 1 WHERE stripe_session_id = ?')
+           ->execute([$session->id]);
+
+        $name  = $session->customer_details->name ?? '';
+        $email = $session->customer_details->email ?? '';
+        if (!$email) {
+            $a = $db->prepare('SELECT email FROM checkout_attempts WHERE stripe_session_id = ?');
+            $a->execute([$session->id]);
+            $email = $a->fetchColumn() ?: '';
+        }
+
+        // Idempotent on the session id, so a Stripe retry cannot double-grant.
+        $token = grantCoachingCredits($db, $session->id, $sku, $product, $name ?: null, $email ?: null);
+
+        try {
+            sendCoachingCreditEmails($token, $sku, $product, $name, $email);
+        } catch (\Exception $e) {
+            error_log('Coaching credit email error: ' . $e->getMessage());
+        }
+
+        error_log("Coaching credits granted: $sku ({$product['credits']}) for " . ($email ?: 'unknown'));
+        header('Content-Type: application/json');
+        echo json_encode(['received' => true]);
+        exit;
+    }
 
     // Only process WingCoach checkout sessions (shared Stripe account)
     if (($session->metadata->product ?? '') !== 'wingcoach') {
