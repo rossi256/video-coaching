@@ -12,27 +12,19 @@ require_once __DIR__ . '/api/helpers/coaching-products.php';
 
 function h(string $s): string { return htmlspecialchars($s, ENT_QUOTES); }
 
-$order = ['call-45', 'video-review', 'pack-3'];
+$order = ['session', 'pack-3'];
 $blurb = [
-    'call-45' => [
-        'Live, and the fastest way through something specific.',
-        ['45 minutes with Michi on Zoom',
-         'Watch your footage together, screen shared',
-         'He tells you what he sees and what to change',
-         'Recording afterwards, yours to keep'],
-        'Best if you have a question you can name',
-    ],
-    'video-review' => [
-        'Send it whenever, no calendars involved.',
-        ['Upload your clips and what you are stuck on',
-         'Personal video reply from Michi',
-         'One round, one or two moves, properly',
-         'Within 72 hours'],
-        'Best if your riding time and his do not line up',
+    'session' => [
+        'Call or video review, whichever suits. You pick when you book.',
+        ['<b>Either</b> 45 minutes live with Michi on Zoom, footage shared',
+         '<b>or</b> send your clips and get a personal video reply in 72 hours',
+         'One thing you are stuck on, looked at properly',
+         'Recording either way, yours to keep'],
+        'Decide the format after you buy, not before',
     ],
     'pack-3' => [
-        'Three sessions, because one rarely finishes the job.',
-        ['Three sessions, calls or video reviews, any mix',
+        'Because one session rarely finishes the job.',
+        ['Three sessions, calls or reviews, any mix',
          'Use them across a whole season',
          'Valid 12 months',
          'Works out at &euro;' . coachingPerSessionEur(COACHING_PRODUCTS['pack-3']) . ' a session'],
@@ -75,7 +67,8 @@ $blurb = [
   .sub{color:var(--dim);font-size:1.06rem;max-width:34rem;margin:0 auto}
 
   .grid{display:grid;gap:16px;margin:44px 0 0}
-  @media(min-width:860px){.grid{grid-template-columns:repeat(3,1fr);align-items:start}}
+  @media(min-width:760px){.grid{grid-template-columns:repeat(2,1fr);align-items:start}}
+  .grid{max-width:720px;margin-left:auto;margin-right:auto}
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 24px 24px;display:flex;flex-direction:column;height:100%}
   .card.feature{border-color:rgba(14,165,233,.45);box-shadow:0 0 0 1px rgba(14,165,233,.18),0 18px 40px -24px rgba(0,0,0,.9)}
   .tag{display:inline-block;font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;font-weight:800;color:var(--base);background:var(--teal);padding:4px 9px;border-radius:5px;margin-bottom:14px;align-self:flex-start}
@@ -133,12 +126,11 @@ $blurb = [
     <?php foreach ($order as $i => $key):
         $p = coachingProduct($key);
         [$lede, $points, $fit] = $blurb[$key];
-        $feature = $key === 'call-45';
+        $feature = $key === 'session';
     ?>
     <div class="card<?= $feature ? ' feature' : '' ?>">
-      <?php if ($feature): ?><span class="tag">Most direct</span>
-      <?php elseif ($key === 'pack-3'): ?><span class="tag">Best value</span>
-      <?php else: ?><span class="tag quiet">No calendars</span><?php endif; ?>
+      <?php if ($feature): ?><span class="tag">Start here</span>
+      <?php else: ?><span class="tag quiet">Best value</span><?php endif; ?>
 
       <h2><?= h($p['label']) ?></h2>
       <p class="lede"><?= h($lede) ?></p>
@@ -147,7 +139,7 @@ $blurb = [
       <ul><?php foreach ($points as $pt): ?><li><?= $pt ?></li><?php endforeach; ?></ul>
       <p class="fit"><?= h($fit) ?></p>
       <button class="buy<?= $feature ? '' : ' ghost' ?>" data-sku="<?= h($key) ?>">
-        <?= $p['credits'] > 1 ? 'Get the pack' : 'Book it' ?>
+        <?= $p['credits'] > 1 ? 'Get three sessions' : 'Book a session' ?>
       </button>
       <p class="err" id="err-<?= h($key) ?>"></p>
     </div>
@@ -158,8 +150,8 @@ $blurb = [
     <h3>Before you buy</h3>
     <details>
       <summary>What happens straight after I pay?</summary>
-      <p>You get a private link. On it you say whether you want a call or a video
-      review, what you are working on, and where your clips are. Michi gets that
+      <p>You get a private link. On it you pick a call or a video review, say
+      what you are working on, and where your clips are. Michi gets that
       the moment you send it. For a call he replies with times; for a review the
       reply lands within 72 hours.</p>
     </details>
@@ -171,9 +163,12 @@ $blurb = [
       and spread it across the season.</p>
     </details>
     <details>
-      <summary>Can I use pack sessions for both calls and reviews?</summary>
-      <p>Yes, in any mix. Three calls, three reviews, or two and one. You decide
-      each time you book, and there is no rush: they are valid for twelve months.</p>
+      <summary>Call or video review, which should I pick?</summary>
+      <p>Take the call if you want to go back and forth, or if the problem is
+      hard to put into words. Take the video review if your riding time and
+      Michi's do not line up, or if you would rather have something you can
+      rewatch on the beach. Same price, and you choose after you buy, so you do
+      not have to decide now.</p>
     </details>
     <details>
       <summary>What if I would rather do this in person?</summary>

@@ -10,9 +10,13 @@
  * Everything is sold as CREDITS. A credit is one piece of Michi's attention,
  * redeemed as either a video review or a live call:
  *
- *   video-review   1 review credit    async, reply within 72h
- *   call-45        1 call credit      45 minutes live on Zoom
- *   pack-3         3 credits          any mix, valid 12 months
+ *   session   1 credit    179 EUR
+ *   pack-3    3 credits   449 EUR, valid 12 months
+ *
+ * A credit is not typed. The buyer picks call or video review when they book,
+ * on their own credit page. The sales page used to split those into separate
+ * products, which made the buyer choose a format before they had chosen to buy
+ * at all, and put three cards in front of someone who wanted one thing.
  *
  * WingCoach was already a credit in everything but name: one purchase created
  * exactly one submission row, used once, finished. Naming it makes the pack a
@@ -24,34 +28,21 @@
  */
 
 const COACHING_PRODUCTS = [
-    'video-review' => [
-        'label'        => 'Video review',
-        'stripe_name'  => 'WingCoach video review',
-        'description'  => 'Send your clips, get a personal video reply from Michi within 72 hours. One round, one or two moves.',
-        'amount_cents' => 14900,
+    'session' => [
+        'label'        => 'A session with Michi',
+        'stripe_name'  => 'Coaching session with Michi Rossmeier',
+        'description'  => 'One session, taken as a 45 minute call on Zoom or as a personal video review of your clips. You choose when you book.',
+        'amount_cents' => 17900,
         'credits'      => 1,
-        'kind'         => 'review',   // what the credit defaults to
-        'valid_months' => 12,
-    ],
-    'call-45' => [
-        'label'        => '1:1 call, 45 minutes',
-        'stripe_name'  => '1:1 coaching call with Michi Rossmeier',
-        'description'  => '45 minutes live on Zoom. Michi watches your footage with you and works through what is holding you back. Recording included.',
-        'amount_cents' => 19900,
-        'credits'      => 1,
-        'kind'         => 'call',
         'valid_months' => 12,
     ],
     'pack-3' => [
-        'label'        => 'Coaching pack, 3 sessions',
-        'stripe_name'  => 'Coaching pack - 3 sessions with Michi Rossmeier',
-        'description'  => 'Three sessions, used as calls or video reviews in any mix, valid for 12 months.',
-        // Must stay below 3x the CHEAPEST credit, not 3x the call. At 49900 the
-        // pack cost a review-only buyer 52 EUR more than buying three reviews
-        // singly, so for part of the audience the "discount" was a penalty.
-        'amount_cents' => 39900,
+        'label'        => 'Three sessions',
+        'stripe_name'  => 'Three coaching sessions with Michi Rossmeier',
+        'description'  => 'Three sessions, each taken as a call or a video review, valid for 12 months.',
+        // Below 3x the single, so it is a discount however the credits are spent.
+        'amount_cents' => 44900,
         'credits'      => 3,
-        'kind'         => null,       // chosen per redemption
         'valid_months' => 12,
     ],
 ];
