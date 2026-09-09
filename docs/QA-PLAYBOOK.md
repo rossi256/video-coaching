@@ -94,6 +94,21 @@ The dated copies at `/campaign-aug4/` and `/campaign-sept1/` are the archive.
    `node backend-php/api/cron/qa-promo-audience.mjs`
 4. **Stories** on the dated frames from the pack.
 
+### The question is the sales signal
+
+Someone who types a specific question at signup has said exactly what they are
+stuck on. The success screen offers those people a personal look: video coaching
+(live product, deep-linked with `?src=qa-question`, remaining founding spots read
+from `/api/spots`) and a 1:1 call request.
+
+Nothing paid sits in front of the free signup, and the offer only renders when
+the question is 40+ characters, so a "thanks!" does not trigger it.
+
+**The 1:1 call is not a product yet.** The hub lists it as Coming Soon, so the
+button raises a request with slug `coaching-call-request`, which the notifier
+labels "1:1 call request" and marks as a lead. Michi replies with a time and a
+price. If it ever becomes bookable, that is the one thing to change.
+
 ### Attribution
 
 Every promo link carries `?src=`, written to `qa_signups.source`. Check what
