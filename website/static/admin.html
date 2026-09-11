@@ -491,13 +491,15 @@ function replyItemsHtml(submissionId, items) {
 }
 
 function replyItemHtml(submissionId, item) {
-  const icon = item.type === 'video' ? '🎥' : '📝';
-  const label = esc(item.description || (item.type === 'video' ? item.filename : 'Text reply'));
+  const icon = item.type === 'video' ? '🎥' : item.type === 'vimeo' ? '🎬' : '📝';
+  const label = esc(item.description || (item.type === 'video' ? item.filename : item.type === 'vimeo' ? 'Vimeo ' + (item.content || '') : 'Text reply'));
   const meta = item.type === 'video'
     ? `<p class="text-xs text-slate-500 truncate">${esc(item.filename || '')}</p>`
     : `<p class="text-xs text-slate-400 line-clamp-2 mt-0.5">${esc((item.content || '').slice(0, 80))}${(item.content || '').length > 80 ? '…' : ''}</p>`;
   const playLink = item.type === 'video' && item.filename
     ? `<a href="${BP}/api/admin/file/${submissionId}/reply/${encodeURIComponent(item.filename)}" target="_blank" class="text-xs text-[#0ea5e9] hover:underline flex-shrink-0">Play</a>`
+    : item.type === 'vimeo' && item.content
+    ? `<a href="https://vimeo.com/${encodeURIComponent(item.content)}" target="_blank" class="text-xs text-[#0ea5e9] hover:underline flex-shrink-0">Vimeo</a>`
     : '';
   return `
     <div class="flex items-start gap-2 p-2.5 bg-white/5 rounded-lg" id="reply-item-${item.id}">

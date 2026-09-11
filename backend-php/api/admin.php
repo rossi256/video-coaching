@@ -99,6 +99,19 @@ if ($action === 'reply-item' && $method === 'POST' && $id) {
         jsonResponse(['id' => (int) $itemId, 'type' => 'video', 'filename' => $filename, 'description' => $description, 'size' => $_FILES['video']['size']]);
     }
 
+    if ($type === 'vimeo') {
+        // A coaching video that lives on Vimeo: only the id is stored, the reply page embeds the
+        // player. The MP4 never touches this server, which cannot take an hour of video anyway.
+        $vimeoId = preg_replace('/\D/', '', $_POST['vimeo_id'] ?? '');
+        if (!$vimeoId) jsonResponse(['error' => 'vimeo_id required'], 400);
+
+        $ins = $db->prepare('INSERT INTO reply_items (submission_id, type, filename, description, content, order_index) VALUES (?, ?, ?, ?, ?, ?)');
+        $ins->execute([$id, 'vimeo', '', $description, $vimeoId, 0]);
+        $itemId = $db->lastInsertId();
+
+        jsonResponse(['id' => (int) $itemId, 'type' => 'vimeo', 'description' => $description, 'content' => $vimeoId]);
+    }
+
     if ($type === 'text') {
         $content = trim($_POST['content'] ?? '');
         if (!$content) jsonResponse(['error' => 'Content required for text reply'], 400);
