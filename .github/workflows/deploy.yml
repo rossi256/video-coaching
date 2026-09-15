@@ -43,7 +43,7 @@ jobs:
             sed -i '1i SetEnv WINGCOACH_BASE_PATH /projects/video-coaching' .htaccess
 
             # Copy backend API
-            cp -r backend-php/api/ api/
+            cp -r backend-php/api/. api/
 
             # Use staging config (file is gitignored; skip if not present)
             if [ -f backend-php/api/config.staging.php ]; then
