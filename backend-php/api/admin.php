@@ -12,6 +12,7 @@ require_once __DIR__ . '/helpers/email.php';
 require_once __DIR__ . '/helpers/file-serve.php';
 require_once __DIR__ . '/helpers/qa_schedules.php';
 require_once __DIR__ . '/helpers/coaching-products.php';
+require_once __DIR__ . '/helpers/rider-loop.php';
 
 requireAdmin();
 setApiHeaders();
@@ -64,7 +65,16 @@ function vimeoRequest(string $method, string $path, ?array $body = null): array 
 
 // --- GET /api/admin/submissions ---
 if ($action === 'list') {
-    $rows = $db->query('SELECT * FROM submissions ORDER BY id DESC')->fetchAll();
+    // The rider's star rating and the count of questions still waiting for an answer ride
+    // along on each row, so the list shows both without a second request.
+    ensureRiderLoopTables($db);
+    $rows = $db->query(
+        'SELECT s.*, r.rating AS rating,
+                (SELECT COUNT(*) FROM reply_questions q WHERE q.submission_id = s.id AND q.answer IS NULL) AS open_questions
+         FROM submissions s
+         LEFT JOIN reply_ratings r ON r.submission_id = s.id
+         ORDER BY s.id DESC'
+    )->fetchAll();
     echo json_encode($rows);
     exit;
 }
@@ -108,6 +118,9 @@ if ($action === 'get' && $id) {
     $sub['uploaded_files'] = $files;
     $sub['reply_files'] = $replyFiles;
     $sub['reply_items'] = $replyItems;
+    $sub['rating'] = riderLoopRating($db, $id);
+    $sub['questions'] = riderLoopQuestions($db, $id);
+    $sub['question_cap'] = QUESTION_CAP;
     echo json_encode($sub);
     exit;
 }
@@ -334,6 +347,50 @@ if ($action === 'feedback-sent' && $method === 'POST' && $id) {
     }
 
     jsonResponse(['success' => true, 'replyUrl' => $replyUrl]);
+}
+
+// --- POST /api/admin/submission/:id/question/:question_id/answer ---
+// The coach answers one rider question. The rider gets one email per answer with the
+// link back to the video. Answering again replaces the text and sends again.
+if ($action === 'answer-question' && $method === 'POST' && $id) {
+    $questionId = (int) ($_GET['question_id'] ?? 0);
+    $body = getJsonBody();
+    $answer = trim((string) ($body['answer'] ?? ''));
+    if (!$questionId) jsonResponse(['error' => 'question_id required'], 400);
+    if ($answer === '') jsonResponse(['error' => 'Write the answer first'], 400);
+    if (mb_strlen($answer) > 4000) jsonResponse(['error' => 'Keep it under 4000 characters'], 400);
+
+    $stmt = $db->prepare('SELECT * FROM submissions WHERE id = ?');
+    $stmt->execute([$id]);
+    $sub = $stmt->fetch();
+    if (!$sub) jsonResponse(['error' => 'Not found'], 404);
+
+    ensureRiderLoopTables($db);
+    $qStmt = $db->prepare('SELECT * FROM reply_questions WHERE id = ? AND submission_id = ?');
+    $qStmt->execute([$questionId, $id]);
+    $q = $qStmt->fetch();
+    if (!$q) jsonResponse(['error' => 'Question not found'], 404);
+
+    $db->prepare('UPDATE reply_questions SET answer = ?, answered_at = NOW() WHERE id = ?')
+       ->execute([$answer, $questionId]);
+
+    $replyUrl = BASE_URL . '/reply/' . $sub['token'];
+    $emailError = null;
+    if ($sub['email']) {
+        try {
+            sendQuestionAnswered($sub['email'], $sub['name'] ?: 'Rider', $q['question'], $answer, $replyUrl);
+        } catch (\Exception $e) {
+            error_log('Question-answered email error: ' . $e->getMessage());
+            $emailError = $e->getMessage();
+        }
+    }
+
+    jsonResponse([
+        'success' => true,
+        'questions' => riderLoopQuestions($db, $id),
+        'emailed' => (bool) $sub['email'] && $emailError === null,
+        'emailError' => $emailError,
+    ]);
 }
 
 // --- GET /api/admin/file/:id/:path --- serve uploaded file

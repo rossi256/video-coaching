@@ -48,6 +48,12 @@ RewriteRule ^upload/(\d+)$ upload.php?id=$1&_action=video [L,QSA]
 # /api/reply/TOKEN/video/FILENAME → reply.php?token=TOKEN&_video=FILENAME
 RewriteRule ^reply/([^/]+)/video/(.+)$ reply.php?token=$1&_video=$2 [L,QSA]
 
+# /api/reply/TOKEN/rating → reply.php?token=TOKEN&_action=rating   (POST, the rider's 1-5)
+RewriteRule ^reply/([^/]+)/rating$ reply.php?token=$1&_action=rating [L,QSA]
+
+# /api/reply/TOKEN/question → reply.php?token=TOKEN&_action=question (POST, capped follow-up)
+RewriteRule ^reply/([^/]+)/question$ reply.php?token=$1&_action=question [L,QSA]
+
 # /api/reply/TOKEN → reply.php?token=TOKEN
 RewriteRule ^reply/([^/]+)$ reply.php?token=$1 [L,QSA]
 
@@ -71,6 +77,9 @@ RewriteRule ^admin/submission/(\d+)/confirm-receipt$ admin.php?_action=confirm-r
 
 # /api/admin/submission/ID/feedback-sent → admin.php
 RewriteRule ^admin/submission/(\d+)/feedback-sent$ admin.php?_action=feedback-sent&id=$1 [L,QSA]
+
+# /api/admin/submission/ID/question/QID/answer → admin.php (coach answers a rider question)
+RewriteRule ^admin/submission/(\d+)/question/(\d+)/answer$ admin.php?_action=answer-question&id=$1&question_id=$2 [L,QSA]
 
 # /api/admin/submission/ID → admin.php
 RewriteRule ^admin/submission/(\d+)$ admin.php?_action=get&id=$1 [L,QSA]

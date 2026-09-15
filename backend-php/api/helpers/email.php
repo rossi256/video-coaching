@@ -981,3 +981,65 @@ function sendCreditRedemptionNotification(
     );
     $mail->send();
 }
+
+// ---------------------------------------------------------------------------
+// Rider loop: follow-up questions on the reply page
+// ---------------------------------------------------------------------------
+
+/** A rider asked a question under their coaching video. Michi answers it in the admin. */
+function sendQuestionToCoach(array $sub, int $questionId, string $question, int $left): void {
+    $mail = getMailer('WingCoach');
+    $mail->addAddress(NOTIFY_EMAIL);
+    $who = $sub['name'] ?: $sub['email'] ?: ('submission #' . $sub['id']);
+    $mail->Subject = 'Question from ' . $who . ' on their coaching video';
+    $mail->isHTML(true);
+
+    $eWho   = htmlspecialchars($who);
+    $eEmail = htmlspecialchars($sub['email'] ?: '-');
+    $eQ     = nl2br(htmlspecialchars($question));
+    $eAdmin = htmlspecialchars(BASE_URL . '/admin');
+    $eReply = htmlspecialchars(BASE_URL . '/reply/' . $sub['token']);
+    $leftTxt = $left === 1 ? '1 question' : $left . ' questions';
+
+    $body = <<<HTML
+    <h2 style="color:#0c1929;margin:0 0 4px;font-size:20px;">$eWho asked</h2>
+    <p style="color:#64748b;font-size:13px;margin:0 0 16px;">Submission #{$sub['id']} &middot; $eEmail &middot; question #$questionId &middot; $leftTxt left on this video</p>
+    <blockquote style="margin:0 0 20px;padding:12px 16px;border-left:3px solid #0ea5e9;background:#f1f5f9;color:#1e293b;font-size:15px;line-height:1.6;">$eQ</blockquote>
+    <p style="color:#334155;">Answer it in the admin, submission #{$sub['id']} - they get one email with your answer and the link back to the video.</p>
+    <p style="text-align:center;margin:24px 0;">
+      <a href="$eAdmin" style="display:inline-block;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">Open the admin</a>
+    </p>
+    <p style="color:#64748b;font-size:13px;">Their page: <a href="$eReply" style="color:#0b6e93;">$eReply</a></p>
+HTML;
+
+    $mail->Body = riderEmailWrap($body);
+    $mail->send();
+}
+
+/** Michi answered - one email per answer, with the link back to the video. */
+function sendQuestionAnswered(string $email, string $name, string $question, string $answer, string $replyUrl): void {
+    $mail = getMailer('Michi @ WingCoach');
+    $mail->addAddress($email);
+    $mail->Subject = 'Michi answered your question';
+    $mail->isHTML(true);
+
+    $eName = htmlspecialchars(trim(explode(' ', $name)[0] ?? '') ?: 'there');
+    $eQ    = nl2br(htmlspecialchars($question));
+    $eA    = nl2br(htmlspecialchars($answer));
+    $eUrl  = htmlspecialchars($replyUrl);
+
+    $body = <<<HTML
+    <h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hey $eName - here is your answer.</h2>
+    <p style="color:#64748b;font-size:13px;margin:0 0 6px;">You asked</p>
+    <blockquote style="margin:0 0 18px;padding:12px 16px;border-left:3px solid #cbd5e1;background:#f8fafc;color:#475569;font-size:14px;line-height:1.6;">$eQ</blockquote>
+    <p style="color:#64748b;font-size:13px;margin:0 0 6px;">Michi</p>
+    <div style="margin:0 0 20px;padding:12px 16px;border-left:3px solid #0ea5e9;background:#f1f5f9;color:#1e293b;font-size:15px;line-height:1.65;">$eA</div>
+    <p style="text-align:center;margin:26px 0;">
+      <a href="$eUrl" style="display:inline-block;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;">Open your coaching video</a>
+    </p>
+    <p style="color:#334155;">The answer sits under the video on your page, so you can watch the part it is about again.</p>
+HTML;
+
+    $mail->Body = riderEmailWrap($body);
+    $mail->send();
+}
