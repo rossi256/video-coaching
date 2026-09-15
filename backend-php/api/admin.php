@@ -4,7 +4,8 @@
  * All admin CRUD operations, routed via .htaccess _action parameter
  *
  * Actions: list, get, reply-item, reply-item-delete, reply-item-order,
- *          reply-file, confirm-receipt, feedback-sent, file
+ *          reply-file, confirm-receipt, feedback-sent, file,
+ *          vimeo-upload-link, vimeo-status
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/helpers/email.php';
@@ -19,6 +20,47 @@ $db = getDb();
 $action = $_GET['_action'] ?? '';
 $id = (int) ($_GET['id'] ?? 0);
 $method = $_SERVER['REQUEST_METHOD'];
+
+/**
+ * One call to the Vimeo API with the account token from config.php. Returns the decoded JSON.
+ * Anything that is not a 2xx ends the request here, with Vimeo's own error body in the JSON so
+ * the coach can read what Vimeo said instead of a bare status code. 30 s is plenty for the two
+ * calls this file makes - creating a video and reading its transcode status.
+ */
+function vimeoRequest(string $method, string $path, ?array $body = null): array {
+    if (!defined('VIMEO_TOKEN') || !VIMEO_TOKEN) {
+        jsonResponse(['error' => 'VIMEO_TOKEN is not set in config.php'], 500);
+    }
+    $headers = [
+        'Authorization: Bearer ' . VIMEO_TOKEN,
+        'Accept: application/vnd.vimeo.*+json;version=3.4',
+    ];
+    $opts = [
+        CURLOPT_CUSTOMREQUEST => $method,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT => 30,
+    ];
+    if ($body !== null) {
+        $headers[] = 'Content-Type: application/json';
+        $opts[CURLOPT_POSTFIELDS] = json_encode($body);
+    }
+    $opts[CURLOPT_HTTPHEADER] = $headers;
+
+    $ch = curl_init('https://api.vimeo.com' . $path);
+    curl_setopt_array($ch, $opts);
+    $raw = curl_exec($ch);
+    $curlError = curl_errno($ch) ? curl_error($ch) : '';
+    $code = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+    curl_close($ch);
+
+    if ($curlError !== '') jsonResponse(['error' => 'Vimeo unreachable: ' . $curlError], 502);
+    $decoded = json_decode((string) $raw, true);
+    if ($code < 200 || $code >= 300) {
+        jsonResponse(['error' => 'Vimeo answered ' . $code, 'vimeo' => $decoded ?? (string) $raw], 502);
+    }
+    return is_array($decoded) ? $decoded : [];
+}
 
 // --- GET /api/admin/submissions ---
 if ($action === 'list') {
@@ -124,6 +166,44 @@ if ($action === 'reply-item' && $method === 'POST' && $id) {
     }
 
     jsonResponse(['error' => 'Invalid type'], 400);
+}
+
+// --- POST /api/admin/vimeo-upload-link?id=:id ---
+// Coach Studio asks for a tus upload link, pushes the MP4 straight from the Mac to Vimeo, and
+// comes back with reply-item type=vimeo once it is there. The Vimeo token never leaves this
+// server: it is read from VIMEO_TOKEN in config.php, which is not in git.
+if ($action === 'vimeo-upload-link' && $method === 'POST' && $id) {
+    $stmt = $db->prepare('SELECT id FROM submissions WHERE id = ?');
+    $stmt->execute([$id]);
+    if (!$stmt->fetch()) jsonResponse(['error' => 'Not found'], 404);
+
+    $size = (int) ($_POST['size'] ?? 0);
+    $name = trim($_POST['name'] ?? '');
+    if ($size <= 0) jsonResponse(['error' => 'size required'], 400);
+    if ($name === '') $name = 'Coaching reply #' . $id;
+
+    $video = vimeoRequest('POST', '/me/videos', [
+        'upload' => ['approach' => 'tus', 'size' => $size],
+        'name' => $name,
+        'privacy' => ['view' => 'disable', 'embed' => 'public', 'download' => false],
+    ]);
+    // The id is the tail of "/videos/123456789"; the tus link is what the app PATCHes against.
+    $videoId = preg_replace('/\D/', '', $video['uri'] ?? '');
+    $uploadLink = $video['upload']['upload_link'] ?? '';
+    if (!$videoId || !$uploadLink) {
+        jsonResponse(['error' => 'Vimeo returned no upload link', 'vimeo' => $video], 502);
+    }
+    jsonResponse(['video_id' => $videoId, 'upload_link' => $uploadLink]);
+}
+
+// --- GET /api/admin/vimeo-status?video_id=:id ---
+// in_progress / complete / error - the app polls this after the upload so the rider gets the
+// full-quality rendition rather than the low one Vimeo plays while it is still transcoding.
+if ($action === 'vimeo-status') {
+    $videoId = preg_replace('/\D/', '', $_GET['video_id'] ?? '');
+    if (!$videoId) jsonResponse(['error' => 'video_id required'], 400);
+    $video = vimeoRequest('GET', '/videos/' . $videoId . '?fields=transcode.status');
+    jsonResponse(['video_id' => $videoId, 'status' => $video['transcode']['status'] ?? 'in_progress']);
 }
 
 // --- DELETE /api/admin/submission/:id/reply-item/:itemId ---
