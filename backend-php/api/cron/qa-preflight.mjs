@@ -245,16 +245,53 @@ const main = async () => {
       // convention. A URL guessed from the date can pass while the real one is
       // broken, or fail while the page is fine, which is how a cache-busted
       // video URL made this check lie about a page that worked.
-      const src = (html.match(/<video[^>]+src="([^"]+)"/) || [])[1]
-      if (!src) {
-        fail('last replay video', 'the page has no <video src>')
-      } else {
-        const vid = await head(src.startsWith('http') ? src : EVENTS + src)
-        if (vid !== 200 && vid !== 206) {
-          fail('last replay video', `${src} returns ${vid} - the player is dead for everyone who was emailed the link`)
-        } else {
-          ok('last replay', `${d} page and video both live`)
+      // The page carries a Vimeo iframe or, for older sessions, a self-hosted
+      // <video>. Check whichever is actually there. Vimeo's oEmbed endpoint is
+      // the honest test for an embed: it answers only if the video exists and
+      // is embeddable, so a deleted or privacy-locked video fails here.
+      const iframe = (html.match(/<iframe[^>]+src="(https:\/\/player\.vimeo\.com\/[^"]+)"/) || [])[1]
+      const video  = (html.match(/<video[^>]+src="([^"]+)"/) || [])[1]
+      if (iframe) {
+        // Ask Vimeo directly rather than via oEmbed. oEmbed answers 200 even for
+        // a wrong privacy hash, so it cannot tell a working embed from a broken
+        // one; the API reports the transcode state and the privacy settings the
+        // embed actually depends on.
+        const vid = (iframe.match(/\/video\/(\d+)/) || [])[1]
+        try {
+          const tokenOut = execFileSync('ssh', ['coaching-server',
+            `/usr/bin/php8.4 -r 'require "/home/coaching/public_html/video-coaching/api/config.php"; echo VIMEO_TOKEN;'`],
+            { encoding: 'utf8' }).trim()
+          const r = await fetch(
+            `https://api.vimeo.com/videos/${vid}?fields=name,duration,privacy,transcode.status,player_embed_url`,
+            { headers: { Authorization: `Bearer ${tokenOut}`, Accept: 'application/vnd.vimeo.*+json;version=3.4' } })
+          if (!r.ok) {
+            fail('last replay video', `Vimeo ${r.status} for video ${vid} - the player is dead for everyone who was emailed the link`)
+          } else {
+            const v = await r.json()
+            const wantHash = (v.player_embed_url || '').match(/[?&]h=([a-z0-9]+)/i)?.[1] || ''
+            const haveHash = (iframe.match(/[?&]h=([a-z0-9]+)/i) || [])[1] || ''
+            if (v.transcode?.status !== 'complete') {
+              fail('last replay video', `Vimeo transcode is "${v.transcode?.status}"`)
+            } else if (v.privacy?.embed !== 'public') {
+              fail('last replay video', `privacy.embed is "${v.privacy?.embed}" - it will not play on our page`)
+            } else if (wantHash && haveHash !== wantHash) {
+              fail('last replay video', `the page uses privacy hash ${haveHash || '(none)'}, Vimeo expects ${wantHash}`)
+            } else {
+              ok('last replay', `${d} page live, Vimeo ${vid} ok (${Math.round((v.duration || 0) / 60)} min)`)
+            }
+          }
+        } catch (e) {
+          warn('last replay video', 'could not reach the Vimeo API: ' + e.message)
         }
+      } else if (video) {
+        const vid = await head(video.startsWith('http') ? video : EVENTS + video)
+        if (vid !== 200 && vid !== 206) {
+          fail('last replay video', `${video} returns ${vid} - the player is dead for everyone who was emailed the link`)
+        } else {
+          ok('last replay', `${d} page and self-hosted video both live`)
+        }
+      } else {
+        fail('last replay video', 'the page has neither a Vimeo embed nor a <video src>')
       }
     }
   }

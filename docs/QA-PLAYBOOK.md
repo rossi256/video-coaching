@@ -174,9 +174,21 @@ the room a few minutes early or people wait outside. Recording is automatic
 **Nothing happens on its own here.** The replay email fires only when
 `replay_url` is set, and setting it is the trigger, so do it last.
 
+**Recordings live on Vimeo, never on the web server.** Both the August and
+September replays were destroyed by `deploy_website`'s `rsync --delete` because
+they sat under `website/static/replay/`. The account is Vimeo Pro with about
+3.8 TB free, so a 500 MB session a month is nothing, and riders get adaptive
+streaming instead of a half-gigabyte progressive download.
+
 ```bash
 # 1. everything off Zoom (needs the cloud_recording + report scopes, added 2 Sep)
+#    Zoom's recordings list caps the range near 30 days and silently clamps a
+#    wider one, so never ask for more than a month at a time.
 node projects/video-coaching/backend-php/api/cron/qa-postprocess.mjs <session_id>
+
+# 1b. put it on Vimeo and note the id AND the privacy hash it prints
+node projects/video-coaching/backend-php/api/cron/qa-vimeo-upload.mjs \
+  docs/qa-YYYY-MM-DD/qa-YYYY-MM-DD.mp4 --session <session_id>
 
 # 2. write the session data file, this is the judgement step, CC does it
 #    projects/events-site/live-qa/replay/data/YYYY-MM.json
@@ -189,6 +201,14 @@ cd projects/events-site && bash deploy-events.sh site
 # 4. review the page, THEN set replay_url. This sends the replay email
 #    to every registrant within the hour.
 ```
+
+The data file takes `vimeo_id` and `vimeo_hash`. With `privacy.view = disable`
+the embed only plays when the URL carries that hash, so an id on its own renders
+a "private video" box. The pre-flight compares the hash on the page against the
+one Vimeo expects and fails if they differ.
+
+A session with only a `video` URL and no `vimeo_id` still renders a self-hosted
+player, so nothing old breaks.
 
 The replay pages are generated, never hand-edited. Editing
 `2026-09/index.html` directly is pointless: the next build overwrites it.

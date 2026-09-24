@@ -172,12 +172,15 @@ const main = async () => {
   console.log(summary.split('\n').slice(0, 7).map(l => '  ' + l).join('\n'))
 
   console.log(`\nNext:
-  1. upload the MP4:
-     scp ${outDir}/qa-${date}.mp4 coaching-server:/home/coaching/public_html/video-coaching/static/replay/
-  2. write projects/events-site/live-qa/replay/data/${date.slice(0, 7)}.json
+  1. put the recording on Vimeo (NOT on the web server - a deploy's rsync
+     --delete destroyed both earlier replays that were kept there):
+     node qa-vimeo-upload.mjs ${outDir}/qa-${date}.mp4 --session ${s.id}
+  2. write projects/events-site/live-qa/replay/data/${date.slice(0, 7)}.json,
+     including the vimeo_id and vimeo_hash the uploader prints
   3. cd projects/events-site/live-qa/replay && python3 build-replays.py
   4. cd projects/events-site && bash deploy-events.sh site
-  5. review the page, THEN set replay_url. That sends the replay email.`)
+  5. node qa-preflight.mjs   (confirms the embed really plays)
+  6. review the page, THEN set replay_url. That sends the replay email.`)
 }
 
 main().catch(e => { console.error('failed:', e.message); process.exit(1) })
