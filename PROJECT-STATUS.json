@@ -1,6 +1,6 @@
 {
-  "lastDev": "Rider loop on the reply page: 1-5 rating, two follow-up questions per video (coach answers in admin), next-step card",
-  "lastDevDate": "2026-09-15",
+  "lastDev": "Q&A replays now on Vimeo (Pro, 3.8TB free). Both recordings restored after a deploy rsync --delete had destroyed them. N",
+  "lastDevDate": "2026-09-24",
   "phase": "active",
   "milestone": null,
   "blockedBy": null
