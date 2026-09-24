@@ -51,9 +51,15 @@ deploy_assets() {
 deploy_website() {
   echo "[website] Deploying WingCoach app (PHP wrappers + static)..."
   ssh "$SERVER" "mkdir -p $WEB_ROOT/video-coaching"
+  # static/replay/ holds the Q&A recordings and their posters. They are uploaded
+  # straight to the server by the post-processing step and are far too large to
+  # keep in the repo, so --delete was silently wiping them on every deploy. Both
+  # the August and September replays were destroyed this way, leaving a dead
+  # player for everyone who had been emailed the link. Never remove this exclude.
   rsync -avz --delete \
     --exclude='.git/' --exclude='.DS_Store' \
     --exclude='api/' --exclude='vendor/' --exclude='uploads/' --exclude='composer.json' --exclude='composer.lock' \
+    --exclude='static/replay/' \
     "$PROJECT_DIR/website/" "$SERVER:$WEB_ROOT/video-coaching/"
   echo "  Website deployed."
 }

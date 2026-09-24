@@ -107,6 +107,10 @@ const main = async () => {
   const H = { Authorization: `Bearer ${tok}` }
 
   // --- attendance -------------------------------------------------------
+  // Zoom's recordings list caps the range at about 30 days and silently clamps
+  // a wider one instead of erroring, so a 60 day query returns only the recent
+  // half. That is how "the August recording is gone" was concluded from a query
+  // that could not have returned it. Always ask in windows of 30 days or less.
   const rep = await (await fetch(
     `https://api.zoom.us/v2/report/meetings/${ZOOM_MEETING_ID}/participants?page_size=300`, { headers: H })).json()
   if (rep.code) throw new Error('attendance: ' + rep.message)

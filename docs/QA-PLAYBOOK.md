@@ -21,6 +21,28 @@ fix this file in the same change.
 
 ---
 
+## Before anything: the pre-flight
+
+```bash
+node backend-php/api/cron/qa-preflight.mjs        # the next session
+node backend-php/api/cron/qa-preflight.mjs --json # for a cron or dashboard
+```
+
+Exits non-zero if anything is wrong. Every check in it exists because that exact
+thing has already gone wrong once, which is the only reason to write a check:
+the offers file promoting a finished camp, the campaign pack stuck on last
+month, the replay video 404ing, the invite window not selecting the session.
+
+On its very first run it found that **both replay videos had been deleted from
+the server**. `deploy_website` rsyncs `website/` with `--delete` and the
+recordings live under `website/static/replay/` on the server only, far too large
+for the repo, so every website deploy wiped them. Now excluded. If you ever see
+that exclude removed, put it back.
+
+Run it before you promote, and again on the morning of the call.
+
+---
+
 ## Phase 1: Prepare
 
 Sessions are created through December 2026. Create next year's in the admin:
