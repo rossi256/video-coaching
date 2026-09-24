@@ -32,8 +32,15 @@ const flag = n => { const i = args.indexOf('--' + n); return i > -1 ? args[i + 1
 const sessionId = flag('session')
 const replaceId = flag('replace')
 
-if (!file || !sessionId) {
+const title = flag('title')
+const note  = flag('description')
+
+// --session names it from a Q&A row; --title takes the name directly, so the
+// same uploader serves Jimmy's Human Optimization library, where the long
+// pieces already have vimeo_id slots waiting in library-data.js.
+if (!file || (!sessionId && !title)) {
   console.error('usage: node qa-vimeo-upload.mjs <file.mp4> --session <id> [--replace <vimeo_id>]')
+  console.error('       node qa-vimeo-upload.mjs <file.mp4> --title "Name" [--description "..."]')
   process.exit(1)
 }
 if (!fs.existsSync(file)) { console.error(`no such file: ${file}`); process.exit(1) }
@@ -78,22 +85,28 @@ async function api(method, pathname, body) {
 }
 
 const main = async () => {
-  const s = sessionInfo(sessionId)
-  if (!s) throw new Error(`session ${sessionId} not found`)
-  const date = String(s.scheduled_at).slice(0, 10)
-  const pretty = new Date(date + 'T12:00:00').toLocaleDateString('en-GB',
-    { day: 'numeric', month: 'long', year: 'numeric' })
   const size = fs.statSync(file).size
+  let name, description, date = null
 
-  console.log(`session ${s.id}  ${date}`)
+  if (sessionId) {
+    const s = sessionInfo(sessionId)
+    if (!s) throw new Error(`session ${sessionId} not found`)
+    date = String(s.scheduled_at).slice(0, 10)
+    const pretty = new Date(date + 'T12:00:00').toLocaleDateString('en-GB',
+      { day: 'numeric', month: 'long', year: 'numeric' })
+    console.log(`session ${s.id}  ${date}`)
+    name = `Live Q&A with Michi Rossmeier - ${pretty}`
+    description =
+      `The full recording of the monthly Tricktionary live Q&A with Michi Rossmeier, ${pretty}. ` +
+      `Wing technique, gear, and questions from riders. ` +
+      `Chapters and the written answers are on the replay page: ` +
+      `https://events.tricktionary.com/live-qa/replay/${date.slice(0, 7)}/`
+  } else {
+    name = title
+    description = note || ''
+    console.log(`title   ${name}`)
+  }
   console.log(`file    ${path.basename(file)}  ${(size / 1048576).toFixed(0)} MB\n`)
-
-  const name = `Live Q&A with Michi Rossmeier - ${pretty}`
-  const description =
-    `The full recording of the monthly Tricktionary live Q&A with Michi Rossmeier, ${pretty}. ` +
-    `Wing technique, gear, and questions from riders. ` +
-    `Chapters and the written answers are on the replay page: ` +
-    `https://events.tricktionary.com/live-qa/replay/${date.slice(0, 7)}/`
 
   let videoId = replaceId
   let uploadLink
@@ -190,7 +203,8 @@ const main = async () => {
   console.log(`  privacy hash   ${hash || '(none - the video is public)'}`)
   console.log(`  duration       ${Math.round((meta.duration || 0) / 60)} min`)
   console.log(`  privacy        view=${meta.privacy?.view}, embed=${meta.privacy?.embed}`)
-  console.log(`
+  if (date) {
+    console.log(`
 Next:
   1. add to projects/events-site/live-qa/replay/data/${date.slice(0, 7)}.json:
        "vimeo_id": "${videoId}",
@@ -198,6 +212,11 @@ Next:
      Leave "video" in place as a fallback until the page is confirmed working.
   2. cd projects/events-site/live-qa/replay && python3 build-replays.py
   3. cd projects/events-site && bash deploy-events.sh site`)
+  } else {
+    console.log(`
+Next: set these on the piece, e.g. in Jimmy's library-data.js:
+       vimeo_id: "${videoId}", vimeo_hash: "${hash}"`)
+  }
 }
 
 main().catch(e => { console.error('\nfailed:', e.message); process.exit(1) })
