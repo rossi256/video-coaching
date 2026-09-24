@@ -35,6 +35,7 @@ if (!sessionId || !/^\d+$/.test(sessionId)) {
   process.exit(1)
 }
 const outFlag = process.argv.indexOf('--out')
+const doVimeo = process.argv.includes('--vimeo')
 
 function env(file) {
   const out = {}
@@ -171,13 +172,30 @@ const main = async () => {
   console.log(`  summary.txt\n`)
   console.log(summary.split('\n').slice(0, 7).map(l => '  ' + l).join('\n'))
 
+  // ---- optionally push straight to Vimeo --------------------------------
+  let vimeoLine = ''
+  if (doVimeo) {
+    const mp4 = `${outDir}/qa-${date}.mp4`
+    if (!fs.existsSync(mp4)) {
+      console.log('\n  ! no MP4 was downloaded, skipping the Vimeo upload')
+    } else {
+      console.log('\n--- Vimeo ---')
+      const out = execFileSync('node', [`${import.meta.dirname}/qa-vimeo-upload.mjs`, mp4,
+        '--session', String(s.id)], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] })
+      process.stdout.write(out)
+      const id = (out.match(/vimeo id\s+(\d+)/) || [])[1]
+      const hash = (out.match(/privacy hash\s+([a-z0-9]+)/i) || [])[1]
+      if (id) vimeoLine = `  "vimeo_id": "${id}",\n  "vimeo_hash": "${hash || ''}",`
+    }
+  }
+
   console.log(`\nNext:
-  1. put the recording on Vimeo (NOT on the web server - a deploy's rsync
-     --delete destroyed both earlier replays that were kept there):
-     node qa-vimeo-upload.mjs ${outDir}/qa-${date}.mp4 --session ${s.id}
-  2. write projects/events-site/live-qa/replay/data/${date.slice(0, 7)}.json,
-     including the vimeo_id and vimeo_hash the uploader prints
-  3. cd projects/events-site/live-qa/replay && python3 build-replays.py
+  1. ${doVimeo && vimeoLine ? 'Vimeo: done, ids above' : `put it on Vimeo (NOT on the web server, a deploy's rsync --delete
+     destroyed both earlier replays kept there):
+     node qa-vimeo-upload.mjs ${outDir}/qa-${date}.mp4 --session ${s.id}`}
+  2. write projects/events-site/live-qa/replay/data/${date.slice(0, 7)}.json.
+     This is the judgement step: summary, chapters, FAQ, product keys.
+${vimeoLine ? vimeoLine + '\n' : ''}  3. cd projects/events-site/live-qa/replay && python3 build-replays.py
   4. cd projects/events-site && bash deploy-events.sh site
   5. node qa-preflight.mjs   (confirms the embed really plays)
   6. review the page, THEN set replay_url. That sends the replay email.`)

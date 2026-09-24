@@ -166,7 +166,22 @@ const main = async () => {
     await new Promise(r => setTimeout(r, 10000))
   }
 
-  const meta = await api('GET', `/videos/${videoId}?fields=link,player_embed_url,duration,privacy`)
+  // White-label the player. Without this the viewer sees the Vimeo logo plus
+  // like / share / embed buttons, which makes a replay on our own page read as
+  // somebody else's video, and hands anyone the code to re-embed it past the
+  // email gate.
+  await api('PATCH', `/videos/${videoId}`, {
+    embed: {
+      logos: { vimeo: false },
+      buttons: { watchlater: false, share: false, embed: false, like: false,
+                 fullscreen: true, scaling: false },
+      title: { name: 'hide', owner: 'hide', portrait: 'hide' },
+      color: '0ea5e9',
+    },
+  })
+  console.log('  player white-labelled (no Vimeo logo, no share or embed buttons)')
+
+  const meta = await api('GET', `/videos/${videoId}?fields=link,player_embed_url,duration,privacy,embed.logos`)
   // With view=disable the embed only plays when the URL carries the privacy
   // hash, so it has to travel with the id into the data file. An iframe built
   // from the id alone renders a "private video" box.
