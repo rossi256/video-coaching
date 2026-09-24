@@ -194,13 +194,18 @@ const main = async () => {
   })
   console.log('  player white-labelled (no Vimeo logo, no share or embed buttons)')
 
-  const meta = await api('GET', `/videos/${videoId}?fields=link,player_embed_url,duration,privacy,embed.logos`)
+  const meta = await api('GET', `/videos/${videoId}?fields=link,player_embed_url,duration,privacy,embed.logos,width,height`)
   // With view=disable the embed only plays when the URL carries the privacy
   // hash, so it has to travel with the id into the data file. An iframe built
   // from the id alone renders a "private video" box.
   const hash = (meta.player_embed_url || '').match(/[?&]h=([a-z0-9]+)/i)?.[1] || ''
   console.log(`  vimeo id       ${videoId}`)
   console.log(`  privacy hash   ${hash || '(none - the video is public)'}`)
+  // Zoom does not always record 16:9. The August session came out 1920x1028,
+  // and in a hardcoded 16:9 box Vimeo letterboxed it with WHITE bars top and
+  // bottom. The page sizes its own box from these numbers instead.
+  console.log(`  dimensions     ${meta.width}x${meta.height}  (ratio ${(meta.width / meta.height).toFixed(3)}${
+    Math.abs(meta.width / meta.height - 16 / 9) > 0.01 ? ', NOT 16:9' : ''})`)
   console.log(`  duration       ${Math.round((meta.duration || 0) / 60)} min`)
   console.log(`  privacy        view=${meta.privacy?.view}, embed=${meta.privacy?.embed}`)
   if (date) {
@@ -208,7 +213,8 @@ const main = async () => {
 Next:
   1. add to projects/events-site/live-qa/replay/data/${date.slice(0, 7)}.json:
        "vimeo_id": "${videoId}",
-       "vimeo_hash": "${hash}"
+       "vimeo_hash": "${hash}",
+       "vimeo_w": ${meta.width}, "vimeo_h": ${meta.height}
      Leave "video" in place as a fallback until the page is confirmed working.
   2. cd projects/events-site/live-qa/replay && python3 build-replays.py
   3. cd projects/events-site && bash deploy-events.sh site`)
