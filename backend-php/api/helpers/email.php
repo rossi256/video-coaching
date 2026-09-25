@@ -65,6 +65,16 @@ HTML;
  * Tokens are scoped to one email and do not expire: the worst case for a leaked
  * link is that someone books a free seat for an address they already control.
  */
+/**
+ * Europe/Vienna decides CEST or CET for a given session, so a winter Q&A is
+ * not labelled with a summer timezone. Two emails had ' CEST' concatenated,
+ * which would have been wrong for every session after DST ends on 25 October.
+ */
+function qaTz(string $scheduledAt): string {
+    $d = new DateTime($scheduledAt, new DateTimeZone('Europe/Vienna'));
+    return $d->format('T');
+}
+
 function qaLinkSecret(): string {
     return hash('sha256', ADMIN_PASSWORD . '|' . DB_PASS . '|qa-oneclick-v1');
 }
@@ -169,12 +179,17 @@ function buildQaIcs(array $session): string {
     if ($link !== '') $descParts[] = 'Join: ' . $link;
     $desc = $esc(trim(implode("\n\n", array_filter($descParts))));
     $loc  = $esc($link !== '' ? $link : 'Online');
-    $uid  = 'qa-' . ((int) ($session['id'] ?? 0)) . '-' . $start->format('Ymd') . '@coaching.tricktionary.com';
+    // The UID must NOT contain the date. It used to, which meant a rescheduled
+    // session produced a second calendar entry beside the old one instead of
+    // replacing it. SEQUENCE is what tells a calendar this is a newer version
+    // of the same event, so it has to climb every time the date moves.
+    $uid  = 'qa-' . ((int) ($session['id'] ?? 0)) . '@coaching.tricktionary.com';
+    $seq  = (int) ($session['ics_sequence'] ?? 0);
 
     $lines = [
         'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Tricktionary//WingCoach Q&A//EN',
         'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
-        'UID:' . $uid, 'DTSTAMP:' . $stamp,
+        'UID:' . $uid, 'SEQUENCE:' . $seq, 'DTSTAMP:' . $stamp,
         'DTSTART:' . $start->format('Ymd\THis\Z'), 'DTEND:' . $end->format('Ymd\THis\Z'),
         'SUMMARY:' . $title, 'DESCRIPTION:' . $desc, 'LOCATION:' . $loc,
     ];
@@ -576,7 +591,7 @@ function sendQaSignupConfirmation(string $email, string $name, array $session): 
 
     $eName = htmlspecialchars($name);
     $eTitle = htmlspecialchars($session['title']);
-    $date = date('l, F j, Y \a\t g:i A', strtotime($session['scheduled_at'])) . ' CEST';
+    $date = date('l, F j, Y \a\t g:i A', strtotime($session['scheduled_at'])) . ' ' . qaTz($session['scheduled_at']);
     $duration = (int) $session['duration_minutes'];
 
     // The join link belongs in the confirmation, not only in the .ics: people
@@ -658,7 +673,7 @@ function sendQaReminder(string $email, string $name, array $session, string $off
 
     $eName     = htmlspecialchars($name);
     $eTitle    = htmlspecialchars($session['title']);
-    $date      = date('l, F j, Y \a\t g:i A', strtotime($session['scheduled_at'])) . ' CEST';
+    $date      = date('l, F j, Y \a\t g:i A', strtotime($session['scheduled_at'])) . ' ' . qaTz($session['scheduled_at']);
     $duration  = (int) $session['duration_minutes'];
     $link      = trim((string) ($session['meeting_link'] ?? ''));
     $when      = qaOffsetPhrase($offsetKey); // "in 24 hours" / "in about an hour" / "in 7 days"
@@ -773,7 +788,7 @@ function sendQaReplayEmail(string $email, string $name, array $session, ?array $
         // reader had to fill in the whole signup form again.
         $nextUrl = 'https://events.tricktionary.com/live-qa/?signup=next&amp;t='
                  . rawurlencode(qaAudienceToken($email));
-        $nextBlock = '<p style="color:#334155;">The next live Q&A is already set: <strong>' . $nd . ' (CEST)</strong>, first Tuesday every month.</p>'
+        $nextBlock = '<p style="color:#334155;">The next live Q&A is already set: <strong>' . $nd . ' (' . qaTz($next['scheduled_at']) . ')</strong>, once a month.</p>'
           . '<p style="margin:14px 0;text-align:center;"><a href="' . $nextUrl . '" style="display:inline-block;padding:13px 28px;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:15px;">Save my spot in 1 click</a></p>'
           . '<p style="color:#94a3b8;font-size:13px;text-align:center;margin:0 0 6px;">One tap and you are in. No form, we already have your details.</p>';
     }

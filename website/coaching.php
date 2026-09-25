@@ -179,7 +179,7 @@ $blurb = [
     <details>
       <summary>I just want to ask a quick question.</summary>
       <p>Then do not buy anything. Michi runs a free live Q&amp;A on Zoom on the
-      first Tuesday of every month, and you can bring whatever you like to it.
+      once a month, and you can bring whatever you like to it.
       <a href="https://events.tricktionary.com/live-qa/">Save a spot</a>.</p>
     </details>
   </section>

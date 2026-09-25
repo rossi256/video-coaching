@@ -74,8 +74,12 @@ deploy_private() {
 
 deploy_backend() {
   echo "[backend] Deploying PHP backend (api/)..."
+  # config.local.php holds server-only secrets (VIMEO_TOKEN and anything added
+  # by hand). It must survive --delete, or the next deploy silently disables
+  # whatever depended on it.
   rsync -avz --delete \
     --exclude='.DS_Store' --exclude='config.staging.php' --exclude='config.production-coaching.php' \
+    --exclude='config.local.php' \
     "$PROJECT_DIR/backend-php/api/" "$SERVER:$WEB_ROOT/video-coaching/api/"
   # Use production coaching config
   echo "  Swapping config for production..."

@@ -44,7 +44,7 @@ IMAGES = {
     "feed-c.html":         ("feed-C-airborne", 1080, 1350),
     "feed-d.html":         ("feed-D-cruising", 1080, 1350),
     "story.html":          ("story",           1080, 1920),
-    "story-this-tue.html": ("story-this-tue",  1080, 1920),
+    "story-this-tue.html": ("story-upcoming",  1080, 1920),
     "story-tomorrow.html": ("story-tomorrow",  1080, 1920),
     "story-tonight.html":  ("story-tonight",   1080, 1920),
     "story-1hour.html":    ("story-1hour",     1080, 1920),

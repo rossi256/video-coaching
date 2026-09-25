@@ -10,3 +10,4 @@ uploads/*
 !uploads/.gitkeep
 *.log
 .DS_Store
+backend-php/api/config.local.php
