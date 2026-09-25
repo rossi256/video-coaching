@@ -145,7 +145,15 @@ Values: `email`, `whatsapp`, `ig-post`, `ig-story`, `ig-dm`, `ig-bio`,
 only. **A link without `?src=` records as `web` and teaches you nothing.**
 
 The Instagram comment funnel answers both `qa` and `q a`, so "Q&A" as people
-actually type it works. Rules live in `instagram.db.keyword_rules`.
+actually type it works. Rules live in `instagram.db.keyword_rules`. That funnel
+is the targeted one: somebody types QA on purpose, so the intent is real.
+
+**Do not re-enable `flow_qa_story_reply`.** It fired on *any* story reply, not
+just Q&A stories, because `startFlowsForStory` matches on trigger type alone and
+the inbound event carries no story id, so scoping it is not possible without new
+plumbing. Two ig-story signups in two months against a steady trickle of
+off-topic DMs. Paused 25 September. The story frames in the campaign pack carry a
+link sticker, which is a tap rather than a reply and needs no DM at all.
 
 ---
 
