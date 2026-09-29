@@ -58,6 +58,32 @@ DE_MONTHS = {1: "Januar", 2: "Februar", 3: "März", 4: "April", 5: "Mai", 6: "Ju
              12: "Dezember"}
 
 
+def reminder_state(session_id):
+    """What has ACTUALLY been sent, read from qa_reminder_log.
+
+    The pack used to assert "the 7-day reminder went out to everyone registered"
+    as a flat statement. For the 1 October session that was false: moving the
+    date wiped the reminder log and re-armed the 7-day reminder against a moment
+    five days in the past, so it was skipped as stale and nothing had gone out at
+    all. Telling Michi a job is done when it never ran is worse than saying
+    nothing.
+    """
+    import subprocess, json as _json
+    sql = ("SELECT offset_key, COUNT(*) n FROM qa_reminder_log "
+           f"WHERE session_id = {int(session_id)} GROUP BY offset_key")
+    try:
+        out = subprocess.run(
+            ["ssh", "coaching-server", f"/usr/bin/php8.4 /home/coaching/tmp/q.php {sql!r}"],
+            capture_output=True, text=True, timeout=30).stdout.strip()
+        rows = _json.loads(out or "[]")
+    except Exception:
+        return "Reminder status could not be read just now."
+    if not rows:
+        return "No reminder has gone out yet. The chain fires on its own from here."
+    parts = ", ".join(f"{r['offset_key']} to {r['n']}" for r in rows)
+    return f"Already sent: {parts}."
+
+
 def next_session(session_id=None):
     # Cloudflare 403s the default urllib agent, so identify ourselves.
     req = urllib.request.Request(API, headers={"User-Agent": "qa-campaign-build/1.0"})
@@ -148,6 +174,8 @@ def main():
 
     s = next_session(args.session)
     tok, dt = tokens(s)
+    tok["SESSION_ID"] = str(s["id"])
+    tok["REMINDER_STATE"] = reminder_state(s["id"])
     print(f"session {s['id']}  {tok['DAY_DATE']}  {tok['TIME24']} {tok['TZ']}\n")
 
     if not (TEMPLATES / "index.html").exists():
