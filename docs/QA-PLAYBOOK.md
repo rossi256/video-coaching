@@ -144,6 +144,15 @@ Values: `email`, `whatsapp`, `ig-post`, `ig-story`, `ig-dm`, `ig-bio`,
 `newsletter`, `web`, and `invite` which is set server-side by the one-click token
 only. **A link without `?src=` records as `web` and teaches you nothing.**
 
+Add `?signup=next` to any promo link and the signup form opens by itself on the
+next session with spots, so nobody has to find the button. `main.js` resolves it
+against the live sessions API, so it never points at a past session. With a
+signed `&t=` token it registers outright instead; without one it falls back to
+the device memory and becomes a one-tap confirm for anyone who has signed up in
+that browser before. Verified 30 September: plain link leaves the modal shut,
+`?signup=next` opens it on session 15 with the email field ready, and the modal
+fits a 390px phone at 358px wide.
+
 The Instagram comment funnel answers both `qa` and `q a`, so "Q&A" as people
 actually type it works. Rules live in `instagram.db.keyword_rules`. That funnel
 is the targeted one: somebody types QA on purpose, so the intent is real.
