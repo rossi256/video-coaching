@@ -70,6 +70,7 @@ is never displayed, so it gave no scarcity effect and only blocked signups.
 |---|---|
 | T-7d | invite email to the whole `qa_audience`, minus already-registered, minus unsubscribed |
 | T-7d / 24h / 1h | reminder chain to registrants, join link and .ics |
+| T-24h | **last call** to everyone on `qa_audience` who has not registered, with a one-click link |
 | signup | confirmation with the Zoom link and calendar invite; joins `qa_audience` |
 | 19:00 | "we're LIVE" email; the site flips to the live state |
 | ~20:20 | session flips to `past`, the next one becomes the signup target |

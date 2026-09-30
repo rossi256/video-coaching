@@ -1058,3 +1058,66 @@ HTML;
     $mail->Body = riderEmailWrap($body);
     $mail->send();
 }
+
+/**
+ * Last call: the day before a session, to everyone on the Q&A list who has not
+ * registered for it.
+ *
+ * Deliberately NOT the registrant reminder. Someone who never signed up should
+ * not be told "your spot is saved, here is your link"; they get a nudge and a
+ * one-click signup, which registers them AND puts them into the normal reminder
+ * chain for the hour before.
+ *
+ * The one-click token is the same signed value the invite uses, so this is a
+ * single tap for them and the signup is attributed to source 'invite'.
+ */
+function sendQaLastCallEmail(string $email, ?string $name, array $session): void {
+    $mail = getMailer('Michi Rossmeier');
+    $mail->addAddress($email);
+
+    $when  = date('l, F j', strtotime($session['scheduled_at']));
+    $time  = date('H:i', strtotime($session['scheduled_at']));
+    $tz    = qaTz($session['scheduled_at']);
+    // A replay unlock with no name stores the address as the name, and greeting
+    // somebody by their own email address reads like a broken mail merge.
+    $first = trim(explode(' ', (string) $name)[0] ?? '');
+    if ($first === '' || str_contains($first, '@')) $first = 'there';
+
+    $token  = qaAudienceToken($email);
+    // Same shape the invite uses. signup=<id> rather than 'next' so the link
+    // cannot drift onto a later session if somebody opens it days afterwards.
+    $oneClick = 'https://events.tricktionary.com/live-qa/?signup=' . (int) $session['id']
+              . '&t=' . rawurlencode($token) . '&src=lastcall';
+
+    $mail->Subject = "Tomorrow: live Q&A with Michi, $time $tz";
+    $mail->isHTML(true);
+
+    $eFirst = htmlspecialchars($first);
+    $eWhen  = htmlspecialchars($when);
+    $eLink  = htmlspecialchars($oneClick);
+
+    $body = <<<HTML
+    <h2 style="color:#0c1929;margin:0 0 12px;font-size:22px;">Hi $eFirst</h2>
+    <p style="color:#334155;">
+      Quick reminder that the live Q&amp;A is tomorrow, <strong>$eWhen at $time $tz</strong>.
+      One hour on Zoom, free, English and German.
+    </p>
+    <p style="color:#334155;">
+      You ask, we work through it. Technique, material, the move that stopped
+      progressing, camps, the books. Whatever you bring.
+    </p>
+    <p style="text-align:center;margin:28px 0;">
+      <a href="$eLink" style="display:inline-block;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">
+        Save my spot in 1 click &rarr;
+      </a>
+    </p>
+    <p style="color:#64748b;font-size:13px;">
+      One click and you are in, no form. The Zoom link and a calendar invite
+      follow straight away.
+    </p>
+    <p style="color:#334155;">See you there!<br>Michi</p>
+HTML;
+
+    $mail->Body = riderEmailWrap($body . qaUnsubscribeLine($email));
+    $mail->send();
+}

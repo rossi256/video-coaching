@@ -6,6 +6,10 @@
  * configured reminder (e.g. 7d / 24h / 1h before) to its registrants. Every
  * send is recorded in qa_reminder_log, so re-runs never double-send.
  *
+ * At the 24h offset it ALSO sends one last call to everyone on qa_audience who
+ * has not registered for that session, with a one-click signup link. Logged
+ * separately in qa_lastcall_log.
+ *
  * Sessions with reminder_schedule = 'off' are ignored — nothing sends until
  * Michi picks a schedule on a session in the admin.
  *
@@ -73,6 +77,38 @@ foreach ($sessions as $session) {
         if ($now < $dueAt)                      continue; // not due yet
         if (!$isLive && $now >= $start)         continue; // session already started
         if ($now - $dueAt > $catchUp)           continue; // missed window, don't send stale
+
+        // ---- last call to the wider list, 24h out only -------------------
+        // Registrants get the normal reminder below. Everyone else on the Q&A
+        // list gets one nudge the day before with a one-click link, which
+        // registers them under the name already stored against their address,
+        // so nobody who has ever joined a Q&A has to type anything again.
+        // Its own ledger, because qa_reminder_log keys on a signup_id these
+        // people do not have.
+        if ($off['key'] === '24h') {
+            $lastCall = $db->prepare("
+                SELECT a.name, a.email FROM qa_audience a
+                WHERE a.unsubscribed = 0
+                  AND LOWER(a.email) COLLATE utf8mb4_unicode_ci
+                      NOT IN (SELECT LOWER(email) FROM qa_signups WHERE session_id = ?)
+                  AND NOT EXISTS (
+                      SELECT 1 FROM qa_lastcall_log l
+                      WHERE l.session_id = ? AND LOWER(l.email) = LOWER(a.email)
+                  )
+            ");
+            $lastCall->execute([$session['id'], $session['id']]);
+            $lcLog = $db->prepare('INSERT IGNORE INTO qa_lastcall_log (session_id, email) VALUES (?, ?)');
+            foreach ($lastCall->fetchAll() as $a) {
+                try {
+                    sendQaLastCallEmail($a['email'], $a['name'], $session);
+                    $lcLog->execute([$session['id'], $a['email']]);
+                    echo "Sent last call to {$a['email']} (session {$session['id']})\n";
+                } catch (\Exception $e) {
+                    error_log('QA last call error ' . $a['email'] . ': ' . $e->getMessage());
+                    echo "ERROR last call {$a['email']}: {$e->getMessage()}\n";
+                }
+            }
+        }
 
         $signupStmt->execute([$session['id'], $off['key']]);
         $recipients = $signupStmt->fetchAll();
