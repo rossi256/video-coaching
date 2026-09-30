@@ -84,6 +84,29 @@ def reminder_state(session_id):
     return f"Already sent: {parts}."
 
 
+def submitted_questions(session_id):
+    """The questions people actually attached at signup.
+
+    The Instagram caption in the pack used to carry a hand-written topic list.
+    Tokenising the pack swapped the date but left September's topics in place,
+    so on 30 September it was still advertising the Lake Garda camps and a
+    Tarifa trip. Reading the real questions means the list cannot go stale
+    without the session itself being empty.
+    """
+    import subprocess, json as _json
+    sql = ("SELECT name, message FROM qa_signups "
+           f"WHERE session_id = {int(session_id)} AND message <> '' ORDER BY created_at")
+    try:
+        out = subprocess.run(
+            ["ssh", "coaching-server", f"/usr/bin/php8.4 /home/coaching/tmp/q.php {sql!r}"],
+            capture_output=True, text=True, timeout=30).stdout.strip()
+        rows = _json.loads(out or "[]")
+    except Exception:
+        return []
+    # A note like "I'll try to make it" is not a question.
+    return [r for r in rows if "?" in (r.get("message") or "")]
+
+
 def next_session(session_id=None):
     # Cloudflare 403s the default urllib agent, so identify ourselves.
     req = urllib.request.Request(API, headers={"User-Agent": "qa-campaign-build/1.0"})
@@ -176,6 +199,19 @@ def main():
     tok, dt = tokens(s)
     tok["SESSION_ID"] = str(s["id"])
     tok["REMINDER_STATE"] = reminder_state(s["id"])
+
+    qs = submitted_questions(s["id"])
+    if qs:
+        lines = []
+        for q in qs[:4]:
+            first = (q["name"] or "").split(" ")[0]
+            text = " ".join((q["message"] or "").split())
+            lines.append(f"{first} asked: {text[:150]}")
+        tok["QUESTIONS"] = "\n".join(lines)
+        tok["QUESTION_COUNT"] = str(len(qs))
+    else:
+        tok["QUESTIONS"] = "Nobody has attached a question yet. The caption below asks for them."
+        tok["QUESTION_COUNT"] = "0"
     print(f"session {s['id']}  {tok['DAY_DATE']}  {tok['TIME24']} {tok['TZ']}\n")
 
     if not (TEMPLATES / "index.html").exists():
