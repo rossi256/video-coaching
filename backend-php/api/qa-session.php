@@ -56,7 +56,7 @@ if ($method === 'POST' && $action === 'signup') {
     // passes through here, so a campaign can finally be told apart from organic
     // traffic. Before 2026-08-25 everything landed as 'web' and 44 of 45 signups
     // were indistinguishable. 'invite' is set server-side by the token path only.
-    $allowedSources = ['web', 'email', 'whatsapp', 'instagram', 'ig-post', 'ig-story',
+    $allowedSources = ['web', 'email', 'whatsapp', 'instagram', 'ig-post', 'ig-story', 'lastcall',
                        'ig-dm', 'ig-bio', 'facebook', 'telegram', 'newsletter'];
     if (!in_array($source, $allowedSources, true)) {
         $source = 'web';
@@ -87,7 +87,11 @@ if ($method === 'POST' && $action === 'signup') {
         $name = trim((string) ($known->fetchColumn() ?: ''));
         if ($name === '') $name = 'there';
         $oneClick = true;
-        $source = 'invite';
+        // Both the invite and the last call carry a one-click token. Keeping a
+        // flat 'invite' here made the two indistinguishable afterwards, so the
+        // link's own src wins when it names a known one-click campaign.
+        $src = trim($data['source'] ?? '');
+        $source = in_array($src, ['lastcall', 'invite'], true) ? $src : 'invite';
     }
 
     if (!$name || !$email) {

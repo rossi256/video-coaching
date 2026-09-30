@@ -1119,5 +1119,11 @@ function sendQaLastCallEmail(string $email, ?string $name, array $session): void
 HTML;
 
     $mail->Body = riderEmailWrap($body . qaUnsubscribeLine($email));
+
+    // One labelled copy per session, like every other list mailer. Michi is on
+    // the list so he would get an unlabelled one anyway, which is luck rather
+    // than design. Claim before send, copy after, per the docblock above.
+    $sampled = qaClaimSample((int) ($session['id'] ?? 0), 'lastcall');
     $mail->send();
+    qaSendSampleCopy($mail, $sampled);
 }

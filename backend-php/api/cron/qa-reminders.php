@@ -48,9 +48,15 @@ if (empty($sessions)) {
 // hasn't already been sent this offset. The catch-up window below bounds how late
 // an offset may fire, so late registrants only ever get near-term, correctly-worded
 // reminders (e.g. a last-minute signup gets the "1h" nudge, never a stale "24h" one).
+// created_at <= the offset's due moment matters because of the last call: a
+// person who clicks it at 19:05 has just had a nudge and a confirmation with
+// the Zoom link, and the 24h offset stays eligible for six more hours, so they
+// would then get "your Q&A is in 24 hours" on top. Three mails inside a quarter
+// of an hour, to exactly the people the campaign exists to convert.
 $signupStmt = $db->prepare("
     SELECT su.* FROM qa_signups su
     WHERE su.session_id = ?
+      AND su.created_at <= FROM_UNIXTIME(?)
       AND NOT EXISTS (
           SELECT 1 FROM qa_reminder_log l
           WHERE l.signup_id = su.id AND l.offset_key = ?
@@ -99,9 +105,18 @@ foreach ($sessions as $session) {
             $lastCall->execute([$session['id'], $session['id']]);
             $lcLog = $db->prepare('INSERT IGNORE INTO qa_lastcall_log (session_id, email) VALUES (?, ?)');
             foreach ($lastCall->fetchAll() as $a) {
+                // Claim first, send second. Logging after the send means a
+                // failed INSERT, or a run still looping when the next one
+                // starts, mails somebody twice. qaClaimSample() in email.php
+                // documents the same order for the sample copies.
+                //
+                // The claim is deliberately NOT released if the send throws.
+                // For a marketing mail, missing one person beats mailing
+                // somebody twice, and the error below says who to chase.
+                $lcLog->execute([$session['id'], $a['email']]);
+                if ($lcLog->rowCount() === 0) continue;   // another run has it
                 try {
                     sendQaLastCallEmail($a['email'], $a['name'], $session);
-                    $lcLog->execute([$session['id'], $a['email']]);
                     echo "Sent last call to {$a['email']} (session {$session['id']})\n";
                 } catch (\Exception $e) {
                     error_log('QA last call error ' . $a['email'] . ': ' . $e->getMessage());
@@ -110,7 +125,7 @@ foreach ($sessions as $session) {
             }
         }
 
-        $signupStmt->execute([$session['id'], $off['key']]);
+        $signupStmt->execute([$session['id'], $dueAt, $off['key']]);
         $recipients = $signupStmt->fetchAll();
 
         foreach ($recipients as $r) {
