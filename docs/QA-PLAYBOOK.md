@@ -155,7 +155,23 @@ that browser before. Verified 30 September: plain link leaves the modal shut,
 fits a 390px phone at 358px wide.
 
 The Instagram comment funnel answers both `qa` and `q a`, so "Q&A" as people
-actually type it works. Rules live in `instagram.db.keyword_rules`. That funnel
+actually type it works. The DM does one thing: it hands over the signup link,
+which opens the form on tap.
+
+**It used to promise two follow-ups it could not both keep.** "Reply with your
+email and I'll send the Zoom link" was genuinely built, arming `awaiting_email`
+on the subscriber so a reply containing an address subscribed them to Sendy and
+registered them. "Send it here starting with Question: and I'll put it on the
+list" was not built at all: nothing in the inbound handler looks for it, and
+`qa-questions.py` is on no cron, so it only ran when somebody ran it by hand.
+
+Both lines were removed on 30 September and `collect_email` / `register_qa` were
+turned off on all six rules, so the DM no longer arms a capture it does not ask
+for. The seven subscribers already armed were deliberately left alone: they had
+been told to reply, and the code still honours it.
+
+If the email-reply route is ever wanted back, the machinery is intact in
+`inbound.ts`; only the DM copy and those two flags need changing. Rules live in `instagram.db.keyword_rules`. That funnel
 is the targeted one: somebody types QA on purpose, so the intent is real.
 
 **Do not re-enable `flow_qa_story_reply`.** It fired on *any* story reply, not
