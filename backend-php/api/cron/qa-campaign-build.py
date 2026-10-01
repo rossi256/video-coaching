@@ -122,6 +122,20 @@ def next_session(session_id=None):
     return rows[0]
 
 
+def _when_phrase(dt, de):
+    """Heute / Morgen / the dated form, decided against today."""
+    from datetime import date
+    days = (dt.date() - date.today()).days
+    hhmm = dt.strftime("%H:%M")
+    if de:
+        if days == 0:  return f"Heute Abend um {hhmm}"
+        if days == 1:  return f"Morgen um {hhmm}"
+        return f"Am {DE_DAYS[dt.strftime('%A')]}, {dt.day}. {DE_MONTHS[dt.month]} um {hhmm}"
+    if days == 0:      return f"Tonight at {hhmm}"
+    if days == 1:      return f"Tomorrow at {hhmm}"
+    return f"On {dt.strftime('%A')}, {dt.day} {dt.strftime('%B')} at {hhmm}"
+
+
 def tokens(session):
     dt = datetime.strptime(session["scheduled_at"], "%Y-%m-%d %H:%M:%S")
     # Europe/Vienna decides CEST vs CET for us, so a winter session is labelled
@@ -142,6 +156,11 @@ def tokens(session):
         "SLUG": dt.strftime("%b%-d").lower(),           # oct6
         "ISO": dt.strftime("%Y-%m-%d"),
         "PRETTY": f"{dt.strftime('%b')} {dt.day}",       # Oct 6
+        # How far away the session is ON THE DAY THE PACK IS BUILT. "Am
+        # Donnerstag, 1. Oktober" is correct a week out and wrong when posted on
+        # the Thursday itself, which is exactly when the WhatsApp copy gets used.
+        "WHEN_DE": _when_phrase(dt, de=True),
+        "WHEN_EN": _when_phrase(dt, de=False),
         # run-sheet anchors, derived so they never drift from the session date
         "D_MINUS_7": (dt - timedelta(days=7)).strftime("%a %-d").upper(),
         "D_MINUS_2": (dt - timedelta(days=2)).strftime("%a %-d").upper(),

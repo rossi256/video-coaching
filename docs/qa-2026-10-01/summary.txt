@@ -1,0 +1,32 @@
+session_id     15
+date           2026-10-01
+duration_min   72
+registered     30
+attended       21
+show_rate      70%
+video          https://coaching.tricktionary.com/video-coaching/static/replay/qa-2026-10-01.mp4
+
+attended, longest first:
+   73 min  Michi Rossmeier
+   70 min  cecilalf
+   68 min  Wingfamily
+   68 min  MF
+   67 min  Anne-Sofie
+   66 min  Richard
+   65 min  Peter
+   64 min  CQ Productions
+   64 min  Yevgeny Mezentsev
+   57 min  Robin Vincent Bölsterli
+   55 min  iPhone / Sandra
+   53 min  franz stuffer
+   51 min  Fiora
+   46 min  iPhone di Alexander
+   38 min  Marcus
+   38 min  Tom
+   32 min  Severin
+   25 min  Carl S
+   20 min  iPhone de ALBOR
+    6 min  Paolo Consolmagno
+    5 min  marc
+
+bots: Fireflies.ai Notetaker Anne-Sofie Furuhaug

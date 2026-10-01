@@ -1,0 +1,95 @@
+{
+  "people": [
+    {
+      "name": "Michi Rossmeier",
+      "minutes": 73
+    },
+    {
+      "name": "cecilalf",
+      "minutes": 70
+    },
+    {
+      "name": "Wingfamily",
+      "minutes": 68
+    },
+    {
+      "name": "MF",
+      "minutes": 68
+    },
+    {
+      "name": "Anne-Sofie",
+      "minutes": 67
+    },
+    {
+      "name": "Richard",
+      "minutes": 66
+    },
+    {
+      "name": "Peter",
+      "minutes": 65
+    },
+    {
+      "name": "CQ Productions",
+      "minutes": 64
+    },
+    {
+      "name": "Yevgeny Mezentsev",
+      "minutes": 64
+    },
+    {
+      "name": "Robin Vincent Bölsterli",
+      "minutes": 57
+    },
+    {
+      "name": "iPhone / Sandra",
+      "minutes": 55
+    },
+    {
+      "name": "franz stuffer",
+      "minutes": 53
+    },
+    {
+      "name": "Fiora",
+      "minutes": 51
+    },
+    {
+      "name": "iPhone di Alexander",
+      "minutes": 46
+    },
+    {
+      "name": "Marcus",
+      "minutes": 38
+    },
+    {
+      "name": "Tom",
+      "minutes": 38
+    },
+    {
+      "name": "Severin",
+      "minutes": 32
+    },
+    {
+      "name": "Carl S",
+      "minutes": 25
+    },
+    {
+      "name": "iPhone de ALBOR",
+      "minutes": 20
+    },
+    {
+      "name": "Paolo Consolmagno",
+      "minutes": 6
+    },
+    {
+      "name": "marc",
+      "minutes": 5
+    },
+    {
+      "name": "Fireflies.ai Notetaker Anne-Sofie Furuhaug",
+      "minutes": 4
+    }
+  ],
+  "bots": [
+    "Fireflies.ai Notetaker Anne-Sofie Furuhaug"
+  ]
+}
