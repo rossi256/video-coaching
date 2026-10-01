@@ -264,16 +264,37 @@ const main = async () => {
   execSync('python3 build-replays.py', { cwd: REPLAY, stdio: 'inherit' })
   execSync('bash deploy-events.sh site', { cwd: SITE, stdio: 'pipe' })
 
-  // 6. the gate. A page whose video does not play must never publish.
-  log('verifying the page...')
+  // 6. THE GATE. Nothing arms a publish timer until this passes.
+  //
+  // It used to be a single check, "does the video return 200". That passed on
+  // the first automatic build which was nonetheless numbered Replay #9 against
+  // a library of three and had 8 of 22 chapter timestamps wrong. A gate that
+  // can only say yes is not a gate, so this is now a suite that is itself
+  // exercised against deliberately broken builds (--self-test).
+  log('verifying...')
   const pageUrl = `https://events.tricktionary.com/live-qa/replay/${ym}/`
-  const html = await (await fetch(pageUrl + '?cb=' + Date.now())).text()
-  const src = (html.match(/<video[^>]+src="([^"]+)"/) || [])[1]
-          || (html.match(/<iframe[^>]+src="(https:\/\/player\.vimeo[^"]+)"/) || [])[1]
-  if (!src) throw new Error('the built page has no player')
-  const vid = await fetch(src.replace(/&amp;/g, '&'), { headers: { Range: 'bytes=0-200' } })
-  if (![200, 206].includes(vid.status)) throw new Error(`the video returns ${vid.status}, not publishing`)
-  log(`page ok, video ${vid.status}`)
+  let verdict
+  try {
+    const out = execSync(`node ${HERE}/qa-verify-replay.mjs ${ym} --json`, { encoding: 'utf8' })
+    verdict = JSON.parse(out)
+  } catch (e) {
+    // Non-zero exit still prints the JSON, which is the useful part.
+    try { verdict = JSON.parse(e.stdout || '{}') } catch { verdict = { ok: false, results: [] } }
+  }
+  const failed = (verdict.results || []).filter(r => r.state === 'fail')
+  if (!verdict.ok) {
+    log(`verification FAILED, not publishing:`)
+    failed.forEach(r => log(`   ${r.name}: ${r.detail}`))
+    // Leave autobuilt_at set so it does not loop, and let the daily nudge chase
+    // it. A half-built replay that nobody is told about is the worse outcome.
+    remotePhp(`
+$db = getDb();
+$db->prepare("UPDATE qa_sessions SET autobuilt_at = NOW(), publish_after = NULL WHERE id = ?")
+   ->execute([${s.id}]);
+echo "marked";`)
+    throw new Error(`${failed.length} check(s) failed: ` + failed.map(r => r.name).join(', '))
+  }
+  log(`verification passed, ${(verdict.results || []).length} checks`)
 
   // 7. arm the window. qa-lifecycle.php does the actual publish.
   const publishAt = new Date(Date.now() + VETO_HOURS * 3600_000)
