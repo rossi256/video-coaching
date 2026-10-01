@@ -771,6 +771,50 @@ function qaOffersBlock(): string {
 }
 
 // Lifecycle: replay email, sent automatically once replay_url is set on a past session.
+/**
+ * What this particular session covered, with timestamps that jump into the
+ * video.
+ *
+ * Michi's point: the replay email should name the camps and the gear that were
+ * actually discussed, not just offer a generic "watch it" button. Somebody who
+ * missed the call needs to see that Tenerife and the 50+ camp came up before
+ * they will click.
+ *
+ * Derived from the session's own chapters, stored on the row by the autobuild,
+ * so it can never describe the wrong month. No highlights means no block,
+ * rather than an empty heading.
+ */
+function qaHighlightsBlock(array $session): string {
+    $raw = trim((string) ($session['highlights'] ?? ''));
+    if ($raw === '') return '';
+    $items = json_decode($raw, true);
+    if (!is_array($items) || !$items) return '';
+
+    $base = rtrim((string) $session['replay_url'], '/');
+    $base = preg_replace('/\?.*$/', '', $base);
+
+    $rows = '';
+    foreach (array_slice($items, 0, 7) as $it) {
+        $t = (int) ($it['t'] ?? 0);
+        $label = htmlspecialchars((string) ($it['title'] ?? ''));
+        if ($label === '') continue;
+        $mm = str_pad((string) intdiv($t, 60), 2, '0', STR_PAD_LEFT);
+        $ss = str_pad((string) ($t % 60), 2, '0', STR_PAD_LEFT);
+        $jump = $base . '/#t=' . $t;
+        $rows .= '<tr>'
+          . '<td style="padding:5px 12px 5px 0;vertical-align:top;white-space:nowrap;">'
+          . '<a href="' . $jump . '" style="color:#d4a843;font-weight:700;font-size:13px;text-decoration:none;font-family:monospace;">' . $mm . ':' . $ss . '</a></td>'
+          . '<td style="padding:5px 0;vertical-align:top;color:#334155;font-size:14px;line-height:1.5;">'
+          . '<a href="' . $jump . '" style="color:#334155;text-decoration:none;">' . $label . '</a></td>'
+          . '</tr>';
+    }
+    if ($rows === '') return '';
+
+    return '<p style="color:#0c1929;font-weight:700;margin:22px 0 8px;font-size:15px;">What came up</p>'
+         . '<table style="border-collapse:collapse;width:100%;">' . $rows . '</table>'
+         . '<p style="color:#94a3b8;font-size:12.5px;margin:8px 0 0;">Tap a time to jump straight there.</p>';
+}
+
 function sendQaReplayEmail(string $email, string $name, array $session, ?array $next): void {
     $mail = getMailer('Michi @ Tricktionary');
     $mail->addAddress($email, $name);
@@ -813,6 +857,7 @@ function sendQaReplayEmail(string $email, string $name, array $session, ?array $
       . '<p style="color:#334155;">Thanks for being part of the live Q&A. Whether you were on the call or missed it - here is the full recording with clickable chapters.</p>'
       . $thumbBlock
       . '<p style="margin:14px 0 18px;text-align:center;"><a href="' . $url . '" style="display:inline-block;padding:14px 30px;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px;">Watch the replay</a></p>'
+      . qaHighlightsBlock($session)
       . $nextBlock
       . '<p style="color:#334155;">Got a question I did not get to? Just reply to this email.</p>'
       . qaOffersBlock()

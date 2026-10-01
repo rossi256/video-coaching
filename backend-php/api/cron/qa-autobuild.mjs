@@ -144,10 +144,11 @@ function anchorToTranscript(entries, transcript, label) {
   // "HH:MM:SS  Speaker: text" -> [seconds, normalised text]
   const index = []
   for (const line of transcript.split('\n')) {
-    const m = line.match(/^(\d\d):(\d\d):(\d\d)\s+[^:]{1,40}:\s*(.*)$/)
+    const m = line.match(/^(\d\d):(\d\d):(\d\d)\s+([^:]{1,40}):\s*(.*)$/)
     if (!m) continue
     index.push([Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]),
-                m[4].toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim()])
+                m[5].toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim(),
+                m[4]])
   }
   const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim()
 
@@ -169,8 +170,12 @@ function anchorToTranscript(entries, transcript, label) {
     }
     if (!hit) { dropped++; continue }
     if (Math.abs(hit[0] - Number(e.t)) > 20) moved++
-    const { quote, ...rest } = e
-    kept.push({ ...rest, t: hit[0] })
+    // Keep the quote and who said it. The gate re-finds the quote near the
+    // timestamp, which is a near-deterministic check; without it the gate can
+    // only ask whether anybody was speaking within 60s, which 89% of random
+    // timestamps satisfy. It also lets the gate refuse a line attributed to
+    // Michi that is actually a participant asking a question.
+    kept.push({ ...e, t: hit[0], src_quote: String(e.quote).slice(0, 120), src_speaker: hit[2] })
   }
   log(`${label}: ${kept.length} kept, ${moved} retimed, ${dropped} dropped as unverifiable`)
   kept.sort((a, b) => a.t - b.t)

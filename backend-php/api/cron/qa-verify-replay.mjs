@@ -19,6 +19,7 @@
  */
 import fs from 'node:fs'
 import path from 'node:path'
+import { execFileSync } from 'node:child_process'
 
 const HERE = import.meta.dirname
 const SITE = path.resolve(HERE, '../../../../events-site')
@@ -28,6 +29,9 @@ const BASE = 'https://events.tricktionary.com'
 const args = process.argv.slice(2)
 const JSON_OUT = args.includes('--json')
 const SELFTEST = args.includes('--self-test')
+// The content judge costs a model call. Off during self-test, which exercises
+// shape only, and available as an escape hatch if the gateway is down.
+const SKIP_JUDGE = args.includes('--skip-judge') || args.includes('--self-test')
 const SLUG = args.find(a => /^\d{4}-\d{2}$/.test(a))
 
 const results = []
@@ -54,6 +58,66 @@ function transcriptIndex(date) {
     idx.push({ t: Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]), who: m[4], text: m[5] })
   }
   return idx
+}
+
+/**
+ * Grade every factual claim in the drafted prose against the transcript.
+ *
+ * Deliberately a different call from the one that wrote the draft, with the
+ * transcript in front of it and one job: say whether each claim is supported,
+ * unsupported or contradicted, and quote the line it relied on. A model marking
+ * its own homework is worth nothing, which is why this is a separate pass.
+ */
+async function judgeContent(d, idx) {
+  let key = process.env.QA_GATEWAY_KEY || ''
+  if (!key) {
+    key = execFileSync('ssh', ['ari-server',
+      `python3 -c "import json;print(json.load(open('/home/ari/podcast-copilot.json')).get('gatewayKey',''))"`],
+      { encoding: 'utf8' }).trim()
+  }
+  if (!key) throw new Error('no gateway key')
+
+  const claims = [
+    { id: 'title', claim: d.title },
+    { id: 'summary', claim: d.summary },
+    ...d.chapters.map((c, i) => ({ id: `ch${i}`, claim: c.title })),
+    ...(d.faq || []).map((f, i) => ({ id: `faq${i}`, claim: `Q: ${f.q} A: ${f.a}` })),
+  ]
+  const transcript = idx.map(l => `${String(Math.floor(l.t / 60)).padStart(2, '0')}:${String(l.t % 60).padStart(2, '0')} ${l.who}: ${l.text}`).join('\n')
+
+  const prompt = `You are fact checking a replay page against the transcript of the session it describes. The page is about to be emailed to 30 people under the host's name, so a wrong price, date, place or piece of advice is expensive.
+
+For EACH claim below decide:
+  "supported"    - the transcript clearly says this
+  "unsupported"  - the transcript does not mention it either way
+  "contradicted" - the transcript says something different
+
+Be strict about specifics: numbers, prices, dates, months, place names, product and gear names, group sizes, and any instruction about technique or safety. If a claim says a camp costs X or runs in month Y, that exact figure must be in the transcript. If a claim reverses advice that was given, that is contradicted, not unsupported.
+
+A vague but fair topic label like "Arrivals and small talk" is supported if that is roughly what happens there.
+
+Return ONLY a JSON array, no prose:
+[ { "id": "<id>", "verdict": "supported|unsupported|contradicted", "line": "<the transcript line you relied on, or empty>" } ]
+
+CLAIMS:
+${JSON.stringify(claims, null, 1)}
+
+TRANSCRIPT:
+${transcript.slice(0, 170000)}`
+
+  const res = await fetch('https://forge.tricktionary.com/claude/v1/messages', {
+    method: 'POST',
+    headers: { 'x-api-key': key, 'content-type': 'application/json' },
+    body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 8000, messages: [{ role: 'user', content: prompt }] }),
+  })
+  if (!res.ok) throw new Error(`gateway ${res.status}`)
+  const j = await res.json()
+  const text = (j.content || []).map(c => c.text || '').join('')
+  const m = text.match(/\[[\s\S]*\]/)
+  if (!m) throw new Error('no JSON array in the reply')
+  const out = JSON.parse(m[0])
+  const byId = Object.fromEntries(claims.map(c => [c.id, c.claim]))
+  return out.map(v => ({ ...v, claim: byId[v.id] ?? v.id }))
 }
 
 async function verify(slug, data) {
@@ -99,17 +163,55 @@ async function verify(slug, data) {
   // ---- 4. timestamps against the transcript -------------------------------
   const idx = transcriptIndex(d.date)
   if (!idx) {
-    warn('transcript check', 'no transcript on disk, timestamps unverified')
+    // Fails CLOSED. This used to be a warning, which meant a docs cleanup or a
+    // slug/date mismatch silently disabled the only reality check in the suite
+    // and still exited 0.
+    fail('transcript check', `no transcript at docs/qa-${d.date}/, cannot verify anything against the recording`)
+  } else if (idx.length < 50) {
+    fail('transcript check', `only ${idx.length} transcript lines, too thin to verify against`)
   } else {
-    // Every chapter should land within a minute of somebody actually speaking.
-    let orphans = 0
-    for (const t of times) {
-      const near = idx.find(l => Math.abs(l.t - t) <= 60)
-      if (!near) orphans++
+    const last = idx[idx.length - 1].t
+    if (last < dur * 0.8) {
+      fail('transcript check', `transcript ends at ${Math.round(last / 60)} min for a ${d.duration_min} min video, it is truncated`)
     }
-    if (orphans) fail('transcript check', `${orphans} chapter(s) land where nobody is speaking`)
-    else pass('transcript check', `all ${times.length} anchored to the transcript`)
+    // The real check: each entry carries a verbatim quote, and that quote must
+    // be findable close to where the entry claims to be. Asking only whether
+    // somebody was speaking within 60s is near useless, 89% of random
+    // timestamps in this transcript satisfy it.
+    const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim()
+    const quoted = ch.filter(c => c.src_quote)
+    if (quoted.length === 0) {
+      let orphans = 0
+      for (const tt of times) if (!idx.find(l => Math.abs(l.t - tt) <= 60)) orphans++
+      if (orphans) fail('transcript check', `${orphans} chapter(s) land where nobody is speaking`)
+      else warn('transcript check', `anchored loosely, no quotes to verify (hand written build)`)
+    } else {
+      let bad = 0, far = 0
+      for (const c of ch) {
+        if (!c.src_quote) { bad++; continue }
+        const q = norm(c.src_quote)
+        const line = idx.find(l => norm(l.text).includes(q) || q.includes(norm(l.text).slice(0, 40)))
+        if (!line) { bad++; continue }
+        if (Math.abs(line.t - Number(c.t)) > 20) far++
+      }
+      if (bad) fail('quote check', `${bad} chapter(s) carry a quote that is not in the transcript`)
+      else if (far) fail('quote check', `${far} chapter(s) sit more than 20s from their own quote`)
+      else pass('quote check', `all ${quoted.length} verified against their transcript line`)
+
+      // A chapter or answer presented as Michi's must be anchored to Michi.
+      const misattributed = ch.filter(c => c.src_speaker && !/michi/i.test(c.src_speaker)
+        && /^michi\b|michi (explains|says|covers|answers)/i.test(String(c.title)))
+      if (misattributed.length) {
+        fail('attribution', `${misattributed.length} chapter(s) credited to Michi but anchored to someone else`)
+      }
+    }
   }
+
+  // FAQ timestamps are deep links on the page too, and were never checked.
+  const faqTimes = (d.faq || []).map(f => Number(f.t)).filter(Number.isFinite)
+  const faqBad = faqTimes.filter(tt => tt < 0 || tt > dur)
+  if (faqBad.length) fail('faq times', `${faqBad.length} outside a ${d.duration_min} min video (${faqBad.join(', ')}s)`)
+  else if (faqTimes.length) pass('faq times', `${faqTimes.length} inside the video`)
 
   // ---- 5. language --------------------------------------------------------
   const prose = [d.title, d.summary, ...ch.map(c => c.title),
@@ -145,6 +247,40 @@ async function verify(slug, data) {
     fail('attendance', `${d.attended} attended of ${d.registered} registered`)
   } else if (d.attended) {
     pass('attendance', `${d.attended} of ${d.registered}`)
+  }
+
+  // ---- 7b. is the prose actually true? ------------------------------------
+  // Everything above checks SHAPE. A red team built a page where every price,
+  // camp date, gear name and piece of technique advice was fabricated, with
+  // perfect structure, and it passed all 15 checks: a Cape Town camp at 2,450
+  // euro that does not exist, "the Freestyle Edition ships before Christmas"
+  // when Michi said spring twice, and "take your straps off" when he said the
+  // opposite. Shape checks cannot see any of that.
+  //
+  // So a second model reads the transcript and grades each claim, and must cite
+  // the line it relies on. Anything contradicted is a hard fail. Skipped only
+  // when the gateway is unreachable, and that is reported as a warning so the
+  // human knows the content went unchecked.
+  if (!SKIP_JUDGE) {
+    const idxForJudge = transcriptIndex(d.date)
+    if (idxForJudge) {
+      try {
+        const verdictC = await judgeContent(d, idxForJudge)
+        const contradicted = verdictC.filter(v => v.verdict === 'contradicted')
+        const unsupported = verdictC.filter(v => v.verdict === 'unsupported')
+        if (contradicted.length) {
+          contradicted.slice(0, 4).forEach(v =>
+            fail('content', `contradicts the session: "${String(v.claim).slice(0, 80)}"`))
+        }
+        if (unsupported.length > Math.max(2, verdictC.length * 0.15)) {
+          fail('content', `${unsupported.length} of ${verdictC.length} claims not found in the transcript`)
+        } else if (!contradicted.length) {
+          pass('content', `${verdictC.length} claims checked, ${unsupported.length} unsupported`)
+        }
+      } catch (e) {
+        warn('content', `could not grade the prose: ${e.message}`)
+      }
+    }
   }
 
   // ---- 8. the page as published ------------------------------------------
@@ -207,6 +343,18 @@ async function selfTest(slug) {
     ['em dash',             d => { d.title = 'Palau — and footstraps' }],
     ['thin FAQ answer',     d => { if (d.faq && d.faq[0]) d.faq[0].a = 'Yes.' }],
     ['more attended than registered', d => { d.attended = 999 }],
+    ['FAQ timestamp past the end', d => { if (d.faq && d.faq[0]) d.faq[0].t = 999999 }],
+    ['FAQ timestamp negative',     d => { if (d.faq && d.faq[1]) d.faq[1].t = -500 }],
+    ['quote not in the transcript', d => { d.chapters.forEach(c => { c.src_quote = 'this sentence was never said by anyone' }) }],
+    ['quote far from its timestamp', d => {
+      // anchor every chapter to a real line, then move the times far away
+      d.chapters.forEach((c, i) => { c.src_quote = 'so I was riding the Scarf 2 for a while'; c.t = 60 + i * 60 })
+    }],
+    ['credited to Michi but someone else spoke', d => {
+      d.chapters[4].src_quote = 'so I was riding the Scarf 2 for a while'
+      d.chapters[4].src_speaker = 'Richard'
+      d.chapters[4].title = 'Michi explains the strap setup'
+    }],
   ]
   console.log(`\n  self-test against ${slug}, each case must be caught:\n`)
   let missed = 0
