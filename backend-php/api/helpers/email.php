@@ -1127,3 +1127,54 @@ HTML;
     $mail->send();
     qaSendSampleCopy($mail, $sampled);
 }
+
+/**
+ * Nudge Michi that a finished session still has no replay.
+ *
+ * Everything before a session runs itself. Everything after it waited on
+ * somebody remembering: nothing in either repo noticed a Q&A had ended. If it
+ * is forgotten, the registrants silently never get a replay and the "every
+ * session is recorded, watch the previous ones" promise on the live page quietly
+ * goes stale.
+ *
+ * One mail a day, escalating in tone, until replay_url is set. Deliberately
+ * carries the exact commands so there is nothing to look up.
+ */
+function sendQaAftercareNudge(array $session, int $daysSince, int $registered): void {
+    $mail = getMailer('Tricktionary Q&A');
+    $mail->addAddress(NOTIFY_EMAIL);
+    $date = date('j F', strtotime($session['scheduled_at']));
+    $id   = (int) $session['id'];
+    $iso  = date('Y-m-d', strtotime($session['scheduled_at']));
+    $ym   = date('Y-m', strtotime($session['scheduled_at']));
+
+    $urgency = $daysSince >= 3
+        ? 'This is day ' . $daysSince . '. The longer it sits the less the replay is worth.'
+        : 'No rush tonight, but it is the one step nothing can do for you.';
+
+    $mail->Subject = $daysSince <= 1
+        ? "Q&A $date is done. Replay still to publish."
+        : "Q&A $date: replay still not published (day $daysSince)";
+    $mail->isHTML(true);
+
+    $body = <<<HTML
+    <h2 style="color:#0c1929;margin:0 0 12px;font-size:20px;">Session $id, $date</h2>
+    <p style="color:#334155;">
+      $registered people registered and are waiting on the replay.
+      <strong>replay_url is still empty</strong>, so nothing has gone out. $urgency
+    </p>
+    <p style="color:#0c1929;font-weight:600;margin:18px 0 6px;font-size:14px;">The whole thing, in order</p>
+    <pre style="background:#f1f5f9;border-radius:8px;padding:14px;font-size:12.5px;line-height:1.7;color:#33414f;overflow-x:auto;">node backend-php/api/cron/qa-postprocess.mjs $id --vimeo
+python3 backend-php/api/cron/qa-make-thumb.py $iso --at 2400 --upload
+# write events-site/live-qa/replay/data/$ym.json
+cd ../events-site/live-qa/replay &amp;&amp; python3 build-replays.py
+cd ../.. &amp;&amp; bash deploy-events.sh site
+node backend-php/api/cron/qa-preflight.mjs
+# then set replay_url in the admin. That sends the email.</pre>
+    <p style="color:#64748b;font-size:13px;">
+      This stops the moment replay_url is set. Nothing else chases it.
+    </p>
+HTML;
+    $mail->Body = riderEmailWrap($body);
+    $mail->send();
+}

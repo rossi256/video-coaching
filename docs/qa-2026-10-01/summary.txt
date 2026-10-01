@@ -2,12 +2,11 @@ session_id     15
 date           2026-10-01
 duration_min   72
 registered     30
-attended       21
-show_rate      70%
+attended       20
+show_rate      67%
 video          https://coaching.tricktionary.com/video-coaching/static/replay/qa-2026-10-01.mp4
 
 attended, longest first:
-   73 min  Michi Rossmeier
    70 min  cecilalf
    68 min  Wingfamily
    68 min  MF

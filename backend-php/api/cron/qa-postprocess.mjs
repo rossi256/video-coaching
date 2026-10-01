@@ -118,15 +118,24 @@ const main = async () => {
   const byName = {}
   for (const p of rep.participants || []) {
     const k = (p.name || p.user_email || '?').trim()
-    byName[k] = (byName[k] || 0) + (Number(p.duration) || 0)
+    if (!byName[k]) byName[k] = { secs: 0, email: p.user_email || '' }
+    byName[k].secs += Number(p.duration) || 0
+    if (!byName[k].email && p.user_email) byName[k].email = p.user_email
   }
   const people = Object.entries(byName)
-    .map(([name, secs]) => ({ name, minutes: Math.round(secs / 60) }))
+    .map(([name, v]) => ({ name, email: v.email, minutes: Math.round(v.secs / 60) }))
     .sort((a, b) => b.minutes - a.minutes)
   const bots = people.filter(p => /notetaker|otter|fireflies|read\.ai/i.test(p.name))
-  const humans = people.filter(p => !bots.includes(p))
-  fs.writeFileSync(`${outDir}/attendance.json`, JSON.stringify({ people, bots: bots.map(b => b.name) }, null, 2))
-  console.log(`  attendance.json     ${humans.length} people (+${bots.length} bot)`)
+  // The host is in Zoom's participant report like anybody else, so counting him
+  // inflated every show rate by one. October went out as 21 of 30 (70%) when the
+  // honest figure was 20 of 30 (67%). Zoom gives an email for the host and
+  // usually nobody else, so match on that first and fall back to the name.
+  const HOST = /rossi@tricktionary|michi\s*rossmeier/i
+  const hosts = people.filter(p => HOST.test(p.name) || HOST.test(p.email || ''))
+  const humans = people.filter(p => !bots.includes(p) && !hosts.includes(p))
+  fs.writeFileSync(`${outDir}/attendance.json`, JSON.stringify(
+    { people, bots: bots.map(b => b.name), hosts: hosts.map(h => h.name), attended: humans.length }, null, 2))
+  console.log(`  attendance.json     ${humans.length} attendees (+${hosts.length} host, +${bots.length} bot)`)
 
   // --- recording files --------------------------------------------------
   const rec = await (await fetch(

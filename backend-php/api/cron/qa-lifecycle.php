@@ -83,4 +83,42 @@ foreach ($sessions as $session) {
     echo "Invite sent for session {$session['id']} to $sent audience members\n";
 }
 
+// ---------------------------------------------------------------------------
+// Aftercare: a finished session with no replay is invisible to everything else.
+// ---------------------------------------------------------------------------
+// Every pre-session step runs itself; every post-session step waited on somebody
+// remembering. Nothing in the codebase noticed a Q&A had ended, so a forgotten
+// replay means the registrants never hear again and the "watch the previous
+// sessions" line on the live page quietly stops being true.
+//
+// One nudge a day until replay_url is set, ledgered so the hourly cron does not
+// mail every hour. Three hours of grace so it never lands during the call or
+// right after it.
+$stale = $db->query("
+    SELECT *, DATEDIFF(CURDATE(), DATE(scheduled_at)) AS days_since
+      FROM qa_sessions
+     WHERE status = 'past'
+       AND replay_url IS NULL
+       AND scheduled_at < NOW() - INTERVAL 3 HOUR
+       AND scheduled_at > NOW() - INTERVAL 14 DAY
+")->fetchAll();
+
+foreach ($stale as $s) {
+    if ($dry) {
+        echo "[dry] would nudge about session {$s['id']} ({$s['scheduled_at']}), day {$s['days_since']}\n";
+        continue;
+    }
+    $claim = $db->prepare('INSERT IGNORE INTO qa_aftercare_log (session_id, sent_on) VALUES (?, CURDATE())');
+    $claim->execute([$s['id']]);
+    if ($claim->rowCount() === 0) continue;   // already nudged today
+
+    $reg = (int) $db->query("SELECT COUNT(*) FROM qa_signups WHERE session_id = " . (int) $s['id'])->fetchColumn();
+    try {
+        sendQaAftercareNudge($s, (int) $s['days_since'], $reg);
+        echo "Aftercare nudge for session {$s['id']} (day {$s['days_since']}, $reg registered)\n";
+    } catch (\Throwable $e) {
+        error_log('QA aftercare nudge failed: ' . $e->getMessage());
+    }
+}
+
 if ($dry) echo "[dry] done\n";

@@ -16,7 +16,7 @@ fix this file in the same change.
 | 1. Prepare | any time | session rows exist through Dec 2026 | check `qa-offers.json` |
 | 2. Promote | T-7 to T-0 | invite, all reminders, live email | Instagram post, WhatsApp, newsletter send |
 | 3. Run | on the night | recording, page flips to live | host it, drive the companion |
-| 4. Post-process | T+1 | nothing until `replay_url` is set | pull, build, publish, then it emails itself |
+| 4. Post-process | T+1 | a daily nudge until the replay is up | pull, build, publish, then it emails itself |
 | 5. Repurpose | T+1 onward | nothing yet | Opus Clip, blog, newsletter |
 
 ---
@@ -205,7 +205,12 @@ the room a few minutes early or people wait outside. Recording is automatic
 
 ## Phase 4: Post-process
 
-**Nothing happens on its own here.** The replay email fires only when
+**One thing now does.** A finished session with no `replay_url` raises one
+email a day to Michi from the hourly lifecycle cron, carrying the exact commands,
+and stops the moment `replay_url` is set. Nothing used to notice a Q&A had ended
+at all, so a forgotten replay meant the registrants never heard again.
+
+Everything else here still needs a human: The replay email fires only when
 `replay_url` is set, and setting it is the trigger, so do it last.
 
 **Recordings live on Vimeo, never on the web server.** Both the August and

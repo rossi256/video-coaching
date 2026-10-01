@@ -2,94 +2,120 @@
   "people": [
     {
       "name": "Michi Rossmeier",
+      "email": "rossi@tricktionary.net",
       "minutes": 73
     },
     {
       "name": "cecilalf",
+      "email": "",
       "minutes": 70
     },
     {
       "name": "Wingfamily",
+      "email": "",
       "minutes": 68
     },
     {
       "name": "MF",
+      "email": "",
       "minutes": 68
     },
     {
       "name": "Anne-Sofie",
+      "email": "",
       "minutes": 67
     },
     {
       "name": "Richard",
+      "email": "",
       "minutes": 66
     },
     {
       "name": "Peter",
+      "email": "",
       "minutes": 65
     },
     {
       "name": "CQ Productions",
+      "email": "",
       "minutes": 64
     },
     {
       "name": "Yevgeny Mezentsev",
+      "email": "",
       "minutes": 64
     },
     {
       "name": "Robin Vincent Bölsterli",
+      "email": "",
       "minutes": 57
     },
     {
       "name": "iPhone / Sandra",
+      "email": "",
       "minutes": 55
     },
     {
       "name": "franz stuffer",
+      "email": "",
       "minutes": 53
     },
     {
       "name": "Fiora",
+      "email": "",
       "minutes": 51
     },
     {
       "name": "iPhone di Alexander",
+      "email": "",
       "minutes": 46
     },
     {
       "name": "Marcus",
+      "email": "",
       "minutes": 38
     },
     {
       "name": "Tom",
+      "email": "",
       "minutes": 38
     },
     {
       "name": "Severin",
+      "email": "",
       "minutes": 32
     },
     {
       "name": "Carl S",
+      "email": "",
       "minutes": 25
     },
     {
       "name": "iPhone de ALBOR",
+      "email": "",
       "minutes": 20
     },
     {
       "name": "Paolo Consolmagno",
+      "email": "",
       "minutes": 6
     },
     {
       "name": "marc",
+      "email": "",
       "minutes": 5
     },
     {
       "name": "Fireflies.ai Notetaker Anne-Sofie Furuhaug",
+      "email": "",
       "minutes": 4
     }
   ],
   "bots": [
     "Fireflies.ai Notetaker Anne-Sofie Furuhaug"
-  ]
+  ],
+  "hosts": [
+    "Michi Rossmeier"
+  ],
+  "attended": 20
 }
