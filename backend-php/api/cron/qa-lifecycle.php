@@ -84,6 +84,46 @@ foreach ($sessions as $session) {
 }
 
 // ---------------------------------------------------------------------------
+// Veto window expiry: publish what Michi did not stop.
+// ---------------------------------------------------------------------------
+// qa-autobuild.mjs builds the replay and sets publish_after. If that moment
+// passes and nothing has been held, the replay goes live here. Setting
+// replay_url is what sends the replay email, and it happens in exactly one
+// place on purpose.
+$due = $db->query("
+    SELECT * FROM qa_sessions
+     WHERE status = 'past'
+       AND replay_url IS NULL
+       AND publish_held = 0
+       AND publish_after IS NOT NULL
+       AND publish_after <= NOW()
+")->fetchAll();
+
+foreach ($due as $s) {
+    $ym  = date('Y-m', strtotime($s['scheduled_at']));
+    $url = "https://events.tricktionary.com/live-qa/replay/$ym/?r=1";
+    if ($dry) {
+        echo "[dry] would publish session {$s['id']} -> $url\n";
+        continue;
+    }
+    // Last look before it goes: the page must still be up. Cheap, and it
+    // catches a deploy that removed it between the build and now.
+    $ch = curl_init("https://events.tricktionary.com/live-qa/replay/$ym/");
+    curl_setopt_array($ch, [CURLOPT_NOBODY => true, CURLOPT_TIMEOUT => 10, CURLOPT_RETURNTRANSFER => true]);
+    curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if ($code !== 200) {
+        error_log("QA autopublish: session {$s['id']} page returned $code, not publishing");
+        echo "Session {$s['id']}: page returned $code, held back\n";
+        continue;
+    }
+    $db->prepare('UPDATE qa_sessions SET replay_url = ?, publish_after = NULL WHERE id = ?')
+       ->execute([$url, $s['id']]);
+    echo "Published session {$s['id']} -> $url (replay email follows on the next pass)\n";
+}
+
+// ---------------------------------------------------------------------------
 // Aftercare: a finished session with no replay is invisible to everything else.
 // ---------------------------------------------------------------------------
 // Every pre-session step runs itself; every post-session step waited on somebody
@@ -99,6 +139,7 @@ $stale = $db->query("
       FROM qa_sessions
      WHERE status = 'past'
        AND replay_url IS NULL
+       AND publish_after IS NULL
        AND scheduled_at < NOW() - INTERVAL 3 HOUR
        AND scheduled_at > NOW() - INTERVAL 14 DAY
 ")->fetchAll();

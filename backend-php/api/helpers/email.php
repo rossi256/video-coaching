@@ -1213,3 +1213,56 @@ HTML;
     $mail->Body = riderEmailWrap($body);
     $mail->send();
 }
+
+/** The signed stop link for an automatic replay publish. */
+function qaHoldToken(int $sessionId): string {
+    return substr(hash_hmac('sha256', 'hold-' . $sessionId, qaLinkSecret()), 0, 20);
+}
+
+/**
+ * "Built and publishing at X unless you stop it."
+ *
+ * The veto window. Everything mechanical has already run and the preflight has
+ * confirmed the embed actually plays; this is Michi's chance to read the page
+ * before the registrants do. Silence publishes it, which is the point: a normal
+ * month costs him nothing.
+ */
+function sendQaReadyToPublish(array $session, string $pageUrl, int $registered, string $publishAt): void {
+    $mail = getMailer('Tricktionary Q&A');
+    $mail->addAddress(NOTIFY_EMAIL);
+    $id   = (int) $session['id'];
+    $date = date('j F', strtotime($session['scheduled_at']));
+    $when = date('H:i', strtotime($publishAt));
+    $hold = 'https://coaching.tricktionary.com/video-coaching/api/qa-hold?s=' . $id
+          . '&t=' . qaHoldToken($id);
+
+    $mail->Subject = "Replay $date is built. Publishing at $when unless you stop it.";
+    $mail->isHTML(true);
+
+    $ePage = htmlspecialchars($pageUrl);
+    $eHold = htmlspecialchars($hold);
+    $body = <<<HTML
+    <h2 style="color:#0c1929;margin:0 0 12px;font-size:20px;">Session $id, $date</h2>
+    <p style="color:#334155;">
+      The replay is built and the page is live. Unless you stop it, it publishes at
+      <strong>$when</strong> and the $registered people who registered get the email.
+    </p>
+    <p style="color:#334155;">
+      The chapters and the written answers were drafted from the recording, so they
+      are worth a skim. The transcript is machine made and sometimes mangles names
+      and German.
+    </p>
+    <p style="text-align:center;margin:26px 0 14px;">
+      <a href="$ePage" style="display:inline-block;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;padding:14px 30px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">Read the page &rarr;</a>
+    </p>
+    <p style="text-align:center;margin:0 0 20px;">
+      <a href="$eHold" style="color:#b45309;font-size:14px;font-weight:600;text-decoration:none;">Stop it, I want to change something</a>
+    </p>
+    <p style="color:#64748b;font-size:13px;">
+      One tap on that stops it for good. Nothing retries, and you get the usual
+      daily reminder until you publish it yourself.
+    </p>
+HTML;
+    $mail->Body = riderEmailWrap($body);
+    $mail->send();
+}

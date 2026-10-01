@@ -205,7 +205,25 @@ the room a few minutes early or people wait outside. Recording is automatic
 
 ## Phase 4: Post-process
 
-**One thing now does.** A finished session with no `replay_url` raises one
+**It now builds and publishes itself.** Two hours after a session,
+`qa-autobuild.mjs` (cron, hourly at :20) pulls everything off Zoom, uploads the
+recording, renders the poster and the email thumbnail, drafts the title, summary,
+chapters and FAQ from the transcript through the Forge Claude gateway, builds and
+deploys the page, and checks the video actually plays. Then it emails Michi
+"publishing at HH:MM unless you stop it" with a one-tap hold link, and
+`qa-lifecycle.php` sets `replay_url` when that moment passes, which is what sends
+the replay to the registrants.
+
+Silence publishes. One tap on the hold link stops it for good and falls back to
+the daily nudge.
+
+**The model's timestamps are never trusted.** Every chapter and FAQ entry has to
+carry a verbatim quote from the transcript; the quote is located mechanically and
+the timestamp moved to where it really is, and anything unverifiable is dropped.
+This matters: on the first real run 8 of 22 chapters and 4 of 6 FAQ entries were
+mistimed, one by nine minutes, which would have sent readers to the wrong moment.
+
+**One thing also does.** A finished session with no `replay_url` raises one
 email a day to Michi from the hourly lifecycle cron, carrying the exact commands,
 and stops the moment `replay_url` is set. Nothing used to notice a Q&A had ended
 at all, so a forgotten replay meant the registrants never heard again.
