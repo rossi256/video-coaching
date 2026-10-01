@@ -1132,49 +1132,84 @@ HTML;
  * Nudge Michi that a finished session still has no replay.
  *
  * Everything before a session runs itself. Everything after it waited on
- * somebody remembering: nothing in either repo noticed a Q&A had ended. If it
- * is forgotten, the registrants silently never get a replay and the "every
- * session is recorded, watch the previous ones" promise on the live page quietly
- * goes stale.
+ * somebody remembering: nothing in either repo noticed a Q&A had ended.
  *
- * One mail a day, escalating in tone, until replay_url is set. Deliberately
- * carries the exact commands so there is nothing to look up.
+ * It reports what is ACTUALLY still missing rather than printing a flat
+ * checklist. The first version listed all seven steps regardless, so the very
+ * first nudge told Michi to do six things that were already done, which is the
+ * same fault as the campaign pack asserting a reminder had been sent.
+ *
+ * One mail a day, stopping the moment replay_url is set.
  */
 function sendQaAftercareNudge(array $session, int $daysSince, int $registered): void {
-    $mail = getMailer('Tricktionary Q&A');
-    $mail->addAddress(NOTIFY_EMAIL);
-    $date = date('j F', strtotime($session['scheduled_at']));
     $id   = (int) $session['id'];
+    $date = date('j F', strtotime($session['scheduled_at']));
     $iso  = date('Y-m-d', strtotime($session['scheduled_at']));
     $ym   = date('Y-m', strtotime($session['scheduled_at']));
 
-    $urgency = $daysSince >= 3
-        ? 'This is day ' . $daysSince . '. The longer it sits the less the replay is worth.'
-        : 'No rush tonight, but it is the one step nothing can do for you.';
+    // Read the real state off disk and the live site. A step that is done must
+    // not be asked for again.
+    $repo  = '/home/coaching/public_html/video-coaching';
+    $thumb = is_readable("$repo/static/replay/qa-$iso-thumb.jpg");
+    $video = is_readable("$repo/static/replay/qa-$iso.mp4");
 
-    $mail->Subject = $daysSince <= 1
-        ? "Q&A $date is done. Replay still to publish."
-        : "Q&A $date: replay still not published (day $daysSince)";
+    $pageUrl = "https://events.tricktionary.com/live-qa/replay/$ym/";
+    $pageUp  = false;
+    $ch = curl_init($pageUrl);
+    curl_setopt_array($ch, [CURLOPT_NOBODY => true, CURLOPT_TIMEOUT => 8, CURLOPT_RETURNTRANSFER => true]);
+    curl_exec($ch);
+    $pageUp = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE) === 200;
+    curl_close($ch);
+
+    $steps = [
+        ['done' => $video,  'label' => 'Recording pulled from Zoom',
+         'cmd'  => "node backend-php/api/cron/qa-postprocess.mjs $id --vimeo"],
+        ['done' => $thumb,  'label' => 'Email thumbnail uploaded',
+         'cmd'  => "python3 backend-php/api/cron/qa-make-thumb.py $iso --at 2400 --upload"],
+        ['done' => $pageUp, 'label' => "Replay page built and live",
+         'cmd'  => "write data/$ym.json, then build-replays.py and deploy-events.sh site"],
+    ];
+    $todo = array_values(array_filter($steps, fn($s) => !$s['done']));
+
+    $mail = getMailer('Tricktionary Q&A');
+    $mail->addAddress(NOTIFY_EMAIL);
     $mail->isHTML(true);
 
-    $body = <<<HTML
-    <h2 style="color:#0c1929;margin:0 0 12px;font-size:20px;">Session $id, $date</h2>
-    <p style="color:#334155;">
-      $registered people registered and are waiting on the replay.
-      <strong>replay_url is still empty</strong>, so nothing has gone out. $urgency
-    </p>
-    <p style="color:#0c1929;font-weight:600;margin:18px 0 6px;font-size:14px;">The whole thing, in order</p>
-    <pre style="background:#f1f5f9;border-radius:8px;padding:14px;font-size:12.5px;line-height:1.7;color:#33414f;overflow-x:auto;">node backend-php/api/cron/qa-postprocess.mjs $id --vimeo
-python3 backend-php/api/cron/qa-make-thumb.py $iso --at 2400 --upload
-# write events-site/live-qa/replay/data/$ym.json
-cd ../events-site/live-qa/replay &amp;&amp; python3 build-replays.py
-cd ../.. &amp;&amp; bash deploy-events.sh site
-node backend-php/api/cron/qa-preflight.mjs
-# then set replay_url in the admin. That sends the email.</pre>
-    <p style="color:#64748b;font-size:13px;">
-      This stops the moment replay_url is set. Nothing else chases it.
-    </p>
+    if (!$todo) {
+        // Everything mechanical is done; only the decision is left.
+        $mail->Subject = "Q&A $date is ready to publish";
+        $body = <<<HTML
+        <h2 style="color:#0c1929;margin:0 0 12px;font-size:20px;">Session $id, $date</h2>
+        <p style="color:#334155;">
+          Everything is built and the page is live. The only thing left is your
+          look at it, then setting <strong>replay_url</strong>, which emails the
+          $registered people who registered.
+        </p>
+        <p style="text-align:center;margin:24px 0;">
+          <a href="$pageUrl" style="display:inline-block;background:#1063a0;background-image:linear-gradient(135deg,#1580c4,#0b4f80);color:#ffffff;padding:13px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">Review the replay page &rarr;</a>
+        </p>
+        <p style="color:#64748b;font-size:13px;">Held on purpose: nothing goes to those $registered people until you set it.</p>
 HTML;
+    } else {
+        $rows = '';
+        foreach ($steps as $s) {
+            $mark = $s['done'] ? '&#10003;' : '&middot;';
+            $col  = $s['done'] ? '#15803d' : '#b45309';
+            $rows .= '<tr><td style="padding:4px 10px 4px 0;color:' . $col . ';font-weight:700;">' . $mark . '</td>'
+                   . '<td style="padding:4px 0;color:#334155;font-size:14px;">' . htmlspecialchars($s['label'])
+                   . ($s['done'] ? '' : '<br><code style="font-size:12px;color:#64748b;">' . htmlspecialchars($s['cmd']) . '</code>')
+                   . '</td></tr>';
+        }
+        $n = count($todo);
+        $mail->Subject = "Q&A $date: $n step" . ($n === 1 ? '' : 's') . " left on the replay"
+                       . ($daysSince >= 3 ? " (day $daysSince)" : '');
+        $body = <<<HTML
+        <h2 style="color:#0c1929;margin:0 0 12px;font-size:20px;">Session $id, $date</h2>
+        <p style="color:#334155;">$registered registered and waiting. Here is where it stands:</p>
+        <table style="border-collapse:collapse;margin:14px 0;">$rows</table>
+        <p style="color:#64748b;font-size:13px;">Then set replay_url in the admin, which sends the email. This stops when you do.</p>
+HTML;
+    }
     $mail->Body = riderEmailWrap($body);
     $mail->send();
 }
