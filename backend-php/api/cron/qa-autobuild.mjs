@@ -221,7 +221,14 @@ const main = async () => {
 
   // 3. poster and the email thumbnail
   log('rendering poster and thumbnail...')
-  const num = Number(sql(`SELECT COUNT(*) n FROM qa_sessions WHERE status='past' AND scheduled_at <= '${s.scheduled_at}'`)[0].n)
+  // Replay numbers count the LIBRARY, not every session ever held. There have
+  // been 9 past sessions but the library starts at August 2026, so counting
+  // sessions labelled tonight's page "Replay #9" against a shelf of three.
+  const existing = fs.readdirSync(`${REPLAY}/data`).filter(f => /^20\d\d-\d\d\.json$/.test(f))
+  const already = existing.find(f => f === `${ym}.json`)
+  const num = already
+    ? JSON.parse(fs.readFileSync(`${REPLAY}/data/${ym}.json`, 'utf8')).number
+    : existing.length + 1
   execSync(`python3 ${HERE}/qa-make-poster.py --number ${num} --date ${date} --minutes ${s.duration_minutes}`, { stdio: 'inherit' })
   const dur = `${Math.floor(s.duration_minutes / 60)}:${String(s.duration_minutes % 60).padStart(2, '0')}:00`
   execSync(`python3 ${HERE}/qa-make-thumb.py ${date} --at 2400 --duration "${dur}" --upload`, { stdio: 'inherit' })
