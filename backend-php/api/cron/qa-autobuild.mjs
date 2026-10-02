@@ -225,7 +225,15 @@ const main = async () => {
     'coaching-server:/home/coaching/public_html/video-coaching/static/replay/'])
 
   // 3. poster and the email thumbnail
+  // Never clobber a poster that already exists. A rebuild regenerated one with
+  // the wrong number burned into the pixels AND a different photo, because the
+  // background rotates on the session number. Michi had picked that image. The
+  // data file and the page were still correct, so nothing caught it: the error
+  // only existed inside a JPEG.
   log('rendering poster and thumbnail...')
+  const posterPath = `${REPLAY}/img/qa-${date}-poster.jpg`
+  const posterExists = fs.existsSync(posterPath)
+  if (posterExists) log(`poster already exists, keeping it (delete it to regenerate)`)
   // Replay numbers count the LIBRARY, not every session ever held. There have
   // been 9 past sessions but the library starts at August 2026, so counting
   // sessions labelled tonight's page "Replay #9" against a shelf of three.
@@ -234,7 +242,9 @@ const main = async () => {
   const num = already
     ? JSON.parse(fs.readFileSync(`${REPLAY}/data/${ym}.json`, 'utf8')).number
     : existing.length + 1
-  execSync(`python3 ${HERE}/qa-make-poster.py --number ${num} --date ${date} --minutes ${s.duration_minutes}`, { stdio: 'inherit' })
+  if (!posterExists) {
+    execSync(`python3 ${HERE}/qa-make-poster.py --number ${num} --date ${date} --minutes ${s.duration_minutes}`, { stdio: 'inherit' })
+  }
   const dur = `${Math.floor(s.duration_minutes / 60)}:${String(s.duration_minutes % 60).padStart(2, '0')}:00`
   execSync(`python3 ${HERE}/qa-make-thumb.py ${date} --at 2400 --duration "${dur}" --upload`, { stdio: 'inherit' })
 

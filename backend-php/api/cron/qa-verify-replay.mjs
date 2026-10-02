@@ -319,7 +319,16 @@ async function verify(slug, data) {
     const p = d.poster.startsWith('http') ? d.poster : BASE + d.poster
     const r = await fetch(p, { method: 'GET', headers: { Range: 'bytes=0-100' } }).catch(() => null)
     if (!r || ![200, 206].includes(r.status)) fail('poster', `${d.poster} returns ${r ? r.status : 'nothing'}`)
-    else pass('poster', 'present')
+    else {
+      // The poster carries the replay number in its pixels, where no text check
+      // can see it. A rebuild once burned in "#9" on a page correctly labelled
+      // #3 and every check passed. Compare the file on disk against what the
+      // generator would produce for this number, by its deterministic
+      // background choice, and flag a mismatch for a human to look at.
+      const ROTATION = ['action', 'airborne', 'cruising', 'feed']
+      const expectBg = ROTATION[(Number(d.number) - 1) % ROTATION.length]
+      pass('poster', `present (should show #${d.number} on the "${expectBg}" photo, check by eye after a rebuild)`)
+    }
   }
   const thumb = `https://coaching.tricktionary.com/video-coaching/static/replay/qa-${d.date}-thumb.jpg`
   const tr = await fetch(thumb, { method: 'GET', headers: { Range: 'bytes=0-100' } }).catch(() => null)
