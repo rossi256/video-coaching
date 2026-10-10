@@ -211,6 +211,7 @@ function attachQaIcs(PHPMailer $mail, array $session): void {
 function sendAdminNotification(string $name, string $email): void {
     $mail = getMailer();
     $mail->addAddress(NOTIFY_EMAIL);
+    $mail->addReplyTo($email, $name);
     $mail->Subject = "New WingCoach payment: $name";
     $mail->Body = "New payment received!\n\nName: $name\nEmail: $email\n\nLogin to admin to view the submission:\n" . BASE_URL . '/admin';
     $mail->send();
@@ -220,6 +221,7 @@ function sendAdminNotification(string $name, string $email): void {
 function sendSubmissionNotification(string $name, string $email, $submissionId, ?array $sub): void {
     $mail = getMailer();
     $mail->addAddress(NOTIFY_EMAIL);
+    $mail->addReplyTo($email, $name);
     $mail->Subject = "New coaching submission from $name";
     $mail->isHTML(true);
 
@@ -486,6 +488,7 @@ function eventInquiryKind(string $slug): array {
 function sendEventInquiryNotification(int $inquiryId, string $name, string $email, string $slug, string $eventName, string $level, string $message, string $whatsapp = '', bool $qaSignup = false): void {
     $mail = getMailer('Tricktionary Events');
     $mail->addAddress(NOTIFY_EMAIL);
+    $mail->addReplyTo($email, $name);
     [$kindLabel, $kindPrefix, $kindColour, $isLead] = eventInquiryKind($slug);
     // A lead needs a reply; a capture is an FYI. Say so in the subject so the
     // inbox can be scanned without opening anything.
@@ -627,6 +630,7 @@ HTML;
 function sendQaSignupNotification(string $name, string $email, array $session, string $message): void {
     $mail = getMailer('Tricktionary Events');
     $mail->addAddress(NOTIFY_EMAIL);
+    $mail->addReplyTo($email, $name);
     $mail->Subject = "Q&A Signup: $name — " . $session['title'];
     $mail->isHTML(true);
 
@@ -988,6 +992,7 @@ HTML;
 
     $admin = getMailer('Tricktionary Coaching');
     $admin->addAddress(NOTIFY_EMAIL);
+    $admin->addReplyTo($email, $name);
     $admin->Subject = 'Coaching sale: ' . $product['label'] . ' - ' . ($name ?: $email ?: 'unknown');
     $admin->isHTML(true);
     $eEmail = htmlspecialchars($email ?: '-');
@@ -1010,6 +1015,11 @@ function sendCreditRedemptionNotification(
     $isCall = $kind === 'call';
     $mail = getMailer('Tricktionary Coaching');
     $mail->addAddress(NOTIFY_EMAIL);
+    // $credit['email'] can be empty on an older record, and PHPMailer throws
+    // on an invalid address rather than skipping it.
+    if (!empty($credit['email'])) {
+        $mail->addReplyTo($credit['email'], (string) ($credit['name'] ?? ''));
+    }
     $mail->Subject = ($isCall ? '1:1 call booked: ' : 'Video review in: ')
         . ($credit['name'] ?: $credit['email'] ?: 'unknown');
     $mail->isHTML(true);
@@ -1050,6 +1060,11 @@ function sendCreditRedemptionNotification(
 function sendQuestionToCoach(array $sub, int $questionId, string $question, int $left): void {
     $mail = getMailer('WingCoach');
     $mail->addAddress(NOTIFY_EMAIL);
+    // $sub['email'] can be empty on an older record, and PHPMailer throws
+    // on an invalid address rather than skipping it.
+    if (!empty($sub['email'])) {
+        $mail->addReplyTo($sub['email'], (string) ($sub['name'] ?? ''));
+    }
     $who = $sub['name'] ?: $sub['email'] ?: ('submission #' . $sub['id']);
     $mail->Subject = 'Question from ' . $who . ' on their coaching video';
     $mail->isHTML(true);
