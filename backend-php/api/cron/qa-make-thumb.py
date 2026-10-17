@@ -88,9 +88,10 @@ def main():
     ap.add_argument("--at", type=int, default=2400, help="second to grab (default 2400)")
     ap.add_argument("--duration", default="", help='overlay text, e.g. "1:16:23"')
     ap.add_argument("--upload", action="store_true", help="scp both to the server")
+    ap.add_argument("--video", default="", help="local MP4 to grab from; recordings live on Vimeo now, not the server")
     args = ap.parse_args()
 
-    video = f"{BASE}/qa-{args.date}.mp4"
+    video = args.video or f"{BASE}/qa-{args.date}.mp4"
     tmp = Path(tempfile.mkdtemp())
     poster = tmp / f"qa-{args.date}-poster.jpg"
     thumb = tmp / f"qa-{args.date}-thumb.jpg"

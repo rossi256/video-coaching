@@ -1,0 +1,38 @@
+[
+  {
+    "number": 1,
+    "session_id": 11,
+    "date": "2026-08-04",
+    "vimeo_id": "1229998431",
+    "vimeo_hash": "8c40ab518c",
+    "duration_s": 3747,
+    "width": 1920,
+    "height": 1028,
+    "title": "Live Q&A #1 - 4 August 2026 - The first one",
+    "verified_at": "2026-10-17T19:14:34.245Z"
+  },
+  {
+    "number": 2,
+    "session_id": 12,
+    "date": "2026-09-01",
+    "vimeo_id": "1229997994",
+    "vimeo_hash": "ed1e7d240c",
+    "duration_s": 4583,
+    "width": 640,
+    "height": 360,
+    "title": "Live Q&A #2 - 1 September 2026 - Pumping, jibes and Tarifa",
+    "verified_at": "2026-10-17T19:14:46.785Z"
+  },
+  {
+    "number": 3,
+    "session_id": 15,
+    "date": "2026-10-01",
+    "vimeo_id": "1236873129",
+    "vimeo_hash": "86ddeeb818",
+    "duration_s": 4363,
+    "width": 640,
+    "height": 360,
+    "title": "Live Q&A #3 - 1 October 2026 - Palau grip, footstraps and the 2027 gear",
+    "verified_at": "2026-10-17T19:16:32.152Z"
+  }
+]

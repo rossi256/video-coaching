@@ -171,7 +171,7 @@ const main = async () => {
     `registered     ${s.reg}`,
     `attended       ${humans.length}`,
     `show_rate      ${Math.round(humans.length / s.reg * 100)}%`,
-    `video          https://coaching.tricktionary.com/video-coaching/static/replay/qa-${date}.mp4`,
+    `video          Vimeo only (qa-vimeo-upload.mjs), never the web server`,
     '',
     'attended, longest first:',
     ...humans.map(p => `  ${String(p.minutes).padStart(3)} min  ${p.name}`),
@@ -194,7 +194,9 @@ const main = async () => {
       process.stdout.write(out)
       const id = (out.match(/vimeo id\s+(\d+)/) || [])[1]
       const hash = (out.match(/privacy hash\s+([a-z0-9]+)/i) || [])[1]
-      if (id) vimeoLine = `  "vimeo_id": "${id}",\n  "vimeo_hash": "${hash || ''}",`
+      const dims = (out.match(/dimensions\s+(\d+)x(\d+)/) || [])
+      if (id) vimeoLine = `  "vimeo_id": "${id}",\n  "vimeo_hash": "${hash || ''}",` +
+        (dims[1] ? `\n  "vimeo_w": ${dims[1]}, "vimeo_h": ${dims[2]},` : '')
     }
   }
 

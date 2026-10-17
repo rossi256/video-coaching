@@ -11,3 +11,8 @@ uploads/*
 *.log
 .DS_Store
 backend-php/api/config.local.php
+
+# Zoom recordings are pulled into docs/qa-*/ and go to Vimeo, never into git
+docs/qa-*/*.mp4
+docs/qa-*/*.m4a
+__pycache__/

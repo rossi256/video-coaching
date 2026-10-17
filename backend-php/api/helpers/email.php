@@ -1201,6 +1201,33 @@ HTML;
  *
  * One mail a day, stopping the moment replay_url is set.
  */
+/**
+ * Is this session's recording on Vimeo and done transcoding? qa-vimeo-upload.mjs
+ * titles every one "Live Q&A #N - 1 October 2026 - ...", so the date names it.
+ * Any failure reads as "not there yet", which only means one more nudge.
+ */
+function qaRecordingOnVimeo(string $iso): bool {
+    if (!defined('VIMEO_TOKEN') || !VIMEO_TOKEN) return false;
+    $pretty = date('j F Y', strtotime($iso));
+    $ch = curl_init('https://api.vimeo.com/me/videos?per_page=25&fields=name,transcode.status&query='
+        . rawurlencode($pretty));
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10,
+        CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . VIMEO_TOKEN,
+                               'Accept: application/vnd.vimeo.*+json;version=3.4'],
+    ]);
+    $raw = curl_exec($ch);
+    $ok  = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE) === 200;
+    curl_close($ch);
+    if (!$ok) return false;
+    foreach ((json_decode((string) $raw, true)['data'] ?? []) as $v) {
+        $name = (string) ($v['name'] ?? '');
+        if (str_starts_with($name, 'Live Q&A') && str_contains($name, $pretty)
+            && ($v['transcode']['status'] ?? '') === 'complete') return true;
+    }
+    return false;
+}
+
 function sendQaAftercareNudge(array $session, int $daysSince, int $registered): void {
     $id   = (int) $session['id'];
     $date = date('j F', strtotime($session['scheduled_at']));
@@ -1211,7 +1238,9 @@ function sendQaAftercareNudge(array $session, int $daysSince, int $registered): 
     // not be asked for again.
     $repo  = '/home/coaching/public_html/video-coaching';
     $thumb = is_readable("$repo/static/replay/qa-$iso-thumb.jpg");
-    $video = is_readable("$repo/static/replay/qa-$iso.mp4");
+    // Recordings live on Vimeo now. A file in static/replay only counts for the
+    // sessions from before the move.
+    $video = is_readable("$repo/static/replay/qa-$iso.mp4") || qaRecordingOnVimeo($iso);
 
     $pageUrl = "https://events.tricktionary.com/live-qa/replay/$ym/";
     $pageUp  = false;
@@ -1222,7 +1251,7 @@ function sendQaAftercareNudge(array $session, int $daysSince, int $registered): 
     curl_close($ch);
 
     $steps = [
-        ['done' => $video,  'label' => 'Recording pulled from Zoom',
+        ['done' => $video,  'label' => 'Recording pulled from Zoom and on Vimeo',
          'cmd'  => "node backend-php/api/cron/qa-postprocess.mjs $id --vimeo"],
         ['done' => $thumb,  'label' => 'Email thumbnail uploaded',
          'cmd'  => "python3 backend-php/api/cron/qa-make-thumb.py $iso --at 2400 --upload"],

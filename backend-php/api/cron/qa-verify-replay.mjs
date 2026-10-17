@@ -309,9 +309,19 @@ async function verify(slug, data) {
   if (!src) { fail('player', 'the page has no player'); return }
   try {
     const clean = src.replace(/&amp;/g, '&')
-    const r = await fetch(clean, { headers: { Range: 'bytes=0-200' } })
+    // The Q&A videos only embed on our own domains, so ask the way a browser
+    // on this page asks, with the page as Referer. Without it Vimeo answers 403
+    // for a video that plays fine for every member.
+    const r = await fetch(clean, { headers: { Range: 'bytes=0-200', Referer: url } })
     if (![200, 206].includes(r.status)) fail('player', `video returns ${r.status}`)
     else pass('player', `video ${r.status}`)
+    // And the other direction: a replay behind the email gate must not play on
+    // somebody else's site. A whitelist that lets everything through fails here.
+    if (clean.includes('player.vimeo.com')) {
+      const away = await fetch(clean, { headers: { Referer: 'https://example.org/' } })
+      if (away.status !== 403) fail('embed lock', `the Vimeo embed answers ${away.status} on a foreign site, expected 403`)
+      else pass('embed lock', 'refused (403) outside our domains')
+    }
   } catch (e) { fail('player', `video unreachable: ${e.message}`) }
 
   // ---- 10. the images the page and the email depend on --------------------

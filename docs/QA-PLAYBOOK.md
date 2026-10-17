@@ -207,9 +207,10 @@ the room a few minutes early or people wait outside. Recording is automatic
 
 **It now builds and publishes itself.** Two hours after a session,
 `qa-autobuild.mjs` (cron, hourly at :20) pulls everything off Zoom, uploads the
-recording, renders the poster and the email thumbnail, drafts the title, summary,
+recording to Vimeo, renders the poster and the email thumbnail, drafts the title, summary,
 chapters and FAQ from the transcript through the Forge Claude gateway, builds and
-deploys the page, and checks the video actually plays. Then it emails Michi
+deploys the page, and checks the video actually plays. Once that gate passes it
+deletes the local MP4, because Vimeo is now the copy. Then it emails Michi
 "publishing at HH:MM unless you stop it" with a one-tap hold link, and
 `qa-lifecycle.php` sets `replay_url` when that moment passes, which is what sends
 the replay to the registrants.
@@ -233,9 +234,24 @@ Everything else here still needs a human: The replay email fires only when
 
 **Recordings live on Vimeo, never on the web server.** Both the August and
 September replays were destroyed by `deploy_website`'s `rsync --delete` because
-they sat under `website/static/replay/`. The account is Vimeo Pro with about
-3.8 TB free, so a 500 MB session a month is nothing, and riders get adaptive
-streaming instead of a half-gigabyte progressive download.
+they sat under `website/static/replay/`. The account is Vimeo Pro
+(`tricktionarygenius`, 4 TiB, 238 GB used on 17 Oct 2026), so a 500 MB session a
+month is nothing, and riders get adaptive streaming instead of a half-gigabyte
+progressive download.
+
+Every recording lands in the **Live Q&A Recordings** folder, titled
+`Live Q&A #N - 1 October 2026 - <topic>`. Zoom titles every session "Wingfoil
+Q&A with Michi", so the library number is the only thing telling them apart.
+Embedding is limited to events.tricktionary.com, coaching.tricktionary.com and
+tricktionary.com; anywhere else Vimeo answers 403, so a replay behind the email
+gate cannot be re-embedded elsewhere. `docs/qa-recordings.json` is the manifest:
+one row per session with number, session id, date, Vimeo id, hash and duration.
+The uploader writes it.
+
+The token is `VIMEO_TOKEN` in `api/config.local.php` on coaching-server, never
+in `config.php`: the backend deploy overwrites `config.php`, which is how the
+token was lost on 25 September and why session #3 sat on the web server until
+17 October. The same token is on the Mac at `~/.config/ho/vimeo-token`.
 
 ```bash
 # 1. everything off Zoom (needs the cloud_recording + report scopes, added 2 Sep)
@@ -243,9 +259,16 @@ streaming instead of a half-gigabyte progressive download.
 #    wider one, so never ask for more than a month at a time.
 node projects/video-coaching/backend-php/api/cron/qa-postprocess.mjs <session_id>
 
-# 1b. put it on Vimeo and note the id AND the privacy hash it prints
+# 1b. put it on Vimeo and note the id AND the privacy hash it prints. It waits
+#     for the transcode, locks the embed, files it, writes the manifest, and
+#     exits non-zero unless the video verifies as playable. Only then delete
+#     the local MP4.
 node projects/video-coaching/backend-php/api/cron/qa-vimeo-upload.mjs \
-  docs/qa-YYYY-MM-DD/qa-YYYY-MM-DD.mp4 --session <session_id>
+  docs/qa-YYYY-MM-DD/qa-YYYY-MM-DD.mp4 --session <session_id> --topic "<title>"
+
+# a video already on Vimeo: same rules, no upload
+node projects/video-coaching/backend-php/api/cron/qa-vimeo-upload.mjs \
+  --existing <vimeo_id> --session <session_id> --topic "<title>"
 
 # 2. write the session data file, this is the judgement step, CC does it
 #    projects/events-site/live-qa/replay/data/YYYY-MM.json
@@ -262,10 +285,12 @@ cd projects/events-site && bash deploy-events.sh site
 The data file takes `vimeo_id` and `vimeo_hash`. With `privacy.view = disable`
 the embed only plays when the URL carries that hash, so an id on its own renders
 a "private video" box. The pre-flight compares the hash on the page against the
-one Vimeo expects and fails if they differ.
+one Vimeo expects and fails if they differ. The player check sends the page as
+Referer, because the domain lock answers 403 without one, and it also asks from a
+foreign site and fails unless that is refused.
 
 A session with only a `video` URL and no `vimeo_id` still renders a self-hosted
-player, so nothing old breaks.
+player, but since 17 October no session uses one.
 
 The replay pages are generated, never hand-edited. Editing
 `2026-09/index.html` directly is pointless: the next build overwrites it.
@@ -283,11 +308,16 @@ questions are sitting in two transcripts.
 
 ### Opus Clip
 
-The replay MP4 is publicly reachable, so it goes straight in:
+The recordings are no longer public files. Ask Vimeo for a source link, which
+works for the owner even with downloads off and expires after about a day:
 
 ```bash
-bash skills/opus-pro/scripts/opus-pro.sh submit \
-  "https://coaching.tricktionary.com/video-coaching/static/replay/qa-2026-09-01.mp4" \
+# prints the 1080p (or best) progressive link for a Vimeo id
+T=$(ssh coaching-server "/usr/bin/php8.4 -r 'require \"/home/coaching/public_html/video-coaching/api/config.php\"; echo VIMEO_TOKEN;'")
+curl -s -H "Authorization: Bearer $T" "https://api.vimeo.com/videos/<vimeo_id>?fields=download" \
+  | python3 -c 'import json,sys;d=json.load(sys.stdin)["download"];print(max(d,key=lambda f:f.get("size") or 0)["link"])'
+
+bash skills/opus-pro/scripts/opus-pro.sh submit "<that link>" \
   --confirm --max-credits 90
 bash skills/opus-pro/scripts/opus-pro.sh clips <projectId> --out ./clips
 ```

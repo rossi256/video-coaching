@@ -215,14 +215,11 @@ const main = async () => {
   log('pulling from Zoom...')
   execSync(`node ${HERE}/qa-postprocess.mjs ${s.id}`, { stdio: 'inherit' })
 
-  // 2. the recording has to be reachable before anything else is worth doing
+  // 2. nothing else is worth doing without the recording. It goes to Vimeo in
+  // step 4, never to the web server: a deploy's rsync --delete destroyed the
+  // August and September files there.
   const mp4 = `${outDir}/qa-${date}.mp4`
   if (!fs.existsSync(mp4)) throw new Error('no MP4 was downloaded, stopping')
-  log('uploading the recording...')
-  execFileSync('ssh', ['coaching-server',
-    'mkdir -p /home/coaching/public_html/video-coaching/static/replay'])
-  execFileSync('scp', ['-q', mp4,
-    'coaching-server:/home/coaching/public_html/video-coaching/static/replay/'])
 
   // 3. poster and the email thumbnail
   // Never clobber a poster that already exists. A rebuild regenerated one with
@@ -246,7 +243,7 @@ const main = async () => {
     execSync(`python3 ${HERE}/qa-make-poster.py --number ${num} --date ${date} --minutes ${s.duration_minutes}`, { stdio: 'inherit' })
   }
   const dur = `${Math.floor(s.duration_minutes / 60)}:${String(s.duration_minutes % 60).padStart(2, '0')}:00`
-  execSync(`python3 ${HERE}/qa-make-thumb.py ${date} --at 2400 --duration "${dur}" --upload`, { stdio: 'inherit' })
+  execSync(`python3 ${HERE}/qa-make-thumb.py ${date} --at 2400 --duration "${dur}" --video ${JSON.stringify(mp4)} --upload`, { stdio: 'inherit' })
 
   // 4. the judgement bits, drafted from the recording
   log('drafting chapters and FAQ...')
@@ -259,6 +256,25 @@ const main = async () => {
   const att = JSON.parse(fs.readFileSync(`${outDir}/attendance.json`, 'utf8'))
   const reg = Number(sql(`SELECT COUNT(*) n FROM qa_signups WHERE session_id = ${s.id}`)[0].n)
 
+  // 4b. onto Vimeo, titled with the number and the drafted topic. The uploader
+  // waits for the transcode, limits embedding to our domains, files it in the
+  // Live Q&A Recordings folder, writes the manifest, and exits non-zero unless
+  // the video verifies as playable.
+  // A rerun after a failed gate (--force) reuses the video the manifest already
+  // has for this session instead of uploading a second copy.
+  const manifestPath = `${VC}/docs/qa-recordings.json`
+  const prior = fs.existsSync(manifestPath)
+    ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')).find(r => r.session_id === Number(s.id))
+    : null
+  log(prior ? `re-checking Vimeo ${prior.vimeo_id} from the manifest...` : 'uploading the recording to Vimeo...')
+  const up = execFileSync('node', [`${HERE}/qa-vimeo-upload.mjs`, mp4,
+    ...(prior ? ['--existing', prior.vimeo_id] : []),
+    '--session', String(s.id), '--number', String(num), '--topic', d.title],
+    { encoding: 'utf8', maxBuffer: 16 << 20 })
+  const vimeo = JSON.parse((up.match(/^@@VIMEO (.+)$/m) || [])[1] || 'null')
+  if (!vimeo?.id || !vimeo.hash) throw new Error('the Vimeo upload printed no id and hash, stopping')
+  log(`vimeo ${vimeo.id}, ${vimeo.w}x${vimeo.h}`)
+
   const data = {
     slug: ym, number: num, date,
     duration_min: Number(s.duration_minutes),
@@ -266,7 +282,10 @@ const main = async () => {
     attended: att.attended ?? (att.people.length - (att.bots || []).length),
     title: d.title,
     summary: d.summary,
-    video: `https://coaching.tricktionary.com/video-coaching/static/replay/qa-${date}.mp4`,
+    vimeo_id: vimeo.id,
+    vimeo_hash: vimeo.hash,
+    vimeo_w: vimeo.w,
+    vimeo_h: vimeo.h,
     poster: `/live-qa/replay/img/qa-${date}-poster.jpg`,
     chapters: d.chapters,
     faq: d.faq,
@@ -310,6 +329,11 @@ echo "marked";`)
     throw new Error(`${failed.length} check(s) failed: ` + failed.map(r => r.name).join(', '))
   }
   log(`verification passed, ${(verdict.results || []).length} checks`)
+
+  // The Vimeo copy verified as playable in 4b and the live page now plays it,
+  // so the local MP4 is only taking disk. Transcript, chat and attendance stay.
+  fs.unlinkSync(mp4)
+  log(`deleted the local ${path.basename(mp4)}, Vimeo ${vimeo.id} is the copy`)
 
   // 7. arm the window. qa-lifecycle.php does the actual publish.
   const publishAt = new Date(Date.now() + VETO_HOURS * 3600_000)
