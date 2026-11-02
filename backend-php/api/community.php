@@ -104,6 +104,25 @@ function cmResolveSession(PDO $db, string $want): ?array {
     return $row;
 }
 
+/** Call number = position among real sessions since the first one in August 2026. */
+function cmCallNo(PDO $db, string $scheduledAt): int {
+    $n = $db->prepare("SELECT COUNT(*) FROM qa_sessions WHERE type <> 'kickoff' AND scheduled_at >= '2026-08-01' AND scheduled_at <= ?");
+    $n->execute([$scheduledAt]);
+    return (int) $n->fetchColumn();
+}
+
+/** Past real calls, newest first: for "answered on an earlier call" and for replay links. */
+function cmPastSessions(PDO $db): array {
+    $rows = $db->query("SELECT id, title, scheduled_at, replay_url FROM qa_sessions
+                        WHERE type <> 'kickoff' AND scheduled_at >= '2026-08-01' AND scheduled_at < NOW()
+                        ORDER BY scheduled_at DESC LIMIT 24")->fetchAll();
+    $out = [];
+    foreach ($rows as $r) {
+        $out[(int) $r['id']] = ['id' => (int) $r['id'], 'call_no' => cmCallNo($db, $r['scheduled_at']), 'date' => substr($r['scheduled_at'], 0, 10), 'replay_url' => $r['replay_url'] ?: null];
+    }
+    return $out;
+}
+
 function cmMember(PDO $db, string $name, string $email, string $source): array {
     $email = mb_strtolower(trim($email));
     $name = cmClean($name, CM_NAME_MAX);
@@ -152,7 +171,7 @@ function cmQuestions(PDO $db, ?int $sessionId, ?string $k, bool $admin): array {
     $where = $sessionId ? '(q.session_id = ? OR q.session_id IS NULL)' : 'q.session_id IS NULL';
     $params = $sessionId ? [$sessionId] : [];
     if (!$admin) $where .= " AND q.status <> 'hidden'";
-    $sql = "SELECT q.id, q.session_id, q.body, q.status, q.source, q.pinned, q.answered_at, q.answer_t,
+    $sql = "SELECT q.id, q.session_id, q.body, q.status, q.source, q.pinned, q.answered_at, q.answer_t, q.answered_session_id,
                    q.created_at, q.voter_key, m.display_name,
                    (SELECT COUNT(*) FROM cm_metoo v WHERE v.question_id = q.id) AS metoo,
                    TIMESTAMPDIFF(SECOND, q.created_at, NOW()) AS age_s
@@ -188,15 +207,27 @@ function cmQuestions(PDO $db, ?int $sessionId, ?string $k, bool $admin): array {
         ];
     }
 
+    $past = null;   // loaded only when some question was answered on an earlier call
     $out = [];
     foreach ($rows as $r) {
         $id = (int) $r['id'];
+        $answeredOn = null;
+        if ($r['answered_session_id']) {
+            if ($past === null) $past = cmPastSessions($db);
+            $ps = $past[(int) $r['answered_session_id']] ?? null;
+            if ($ps) {
+                $answeredOn = $ps;
+                if ($ps['replay_url']) $answeredOn['watch_url'] = $ps['replay_url'] . ($r['answer_t'] !== null ? '#t=' . (int) $r['answer_t'] : '');
+            }
+        }
         $out[] = [
             'id' => $id, 'body' => $r['body'], 'status' => $r['status'], 'source' => $r['source'],
             'pinned' => (bool) $r['pinned'], 'display_name' => $r['display_name'],
             'metoo' => (int) $r['metoo'], 'metoo_mine' => isset($mine[$id]),
             'mine' => $k !== null && $r['voter_key'] === $k,
-            'age_s' => (int) $r['age_s'], 'answered_at' => $r['answered_at'], 'answer_t' => $r['answer_t'] !== null ? (int) $r['answer_t'] : null,
+            'age_s' => (int) $r['age_s'], 'created_at' => $r['created_at'],
+            'answered_at' => $r['answered_at'], 'answer_t' => $r['answer_t'] !== null ? (int) $r['answer_t'] : null,
+            'answered_on' => $answeredOn,
             'replies' => $replies[$id] ?? [],
         ];
     }
@@ -242,6 +273,7 @@ if ($method === 'GET' && $action === 'wall') {
         'admin_enabled' => defined('COMMUNITY_ADMIN_KEY') && COMMUNITY_ADMIN_KEY !== '',
         'questions' => $questions,
         'counts' => $counts,
+        'past_sessions' => $admin ? array_values(cmPastSessions($db)) : null,
     ]);
 }
 
@@ -362,9 +394,17 @@ if ($method === 'POST' && $action === 'status') {
         }
         $db->prepare("UPDATE cm_questions SET status = 'answering', answer_t = COALESCE(answer_t, ?), answered_at = NULL WHERE id = ?")->execute([$t, $qid]);
     } elseif ($status === 'answered') {
-        $db->prepare("UPDATE cm_questions SET status = 'answered', answered_at = COALESCE(answered_at, NOW()) WHERE id = ?")->execute([$qid]);
+        // Optional: answered on an EARLIER call (answered_session_id) at answer_t seconds into that replay.
+        $asid = isset($d['answered_session_id']) && $d['answered_session_id'] !== '' ? (int) $d['answered_session_id'] : null;
+        $at = isset($d['answer_t']) && $d['answer_t'] !== '' && $d['answer_t'] !== null ? max(0, (int) $d['answer_t']) : null;
+        if ($asid) {
+            if (!isset(cmPastSessions($db)[$asid])) jsonResponse(['error' => 'That call is not in the list.'], 400);
+            $db->prepare("UPDATE cm_questions SET status = 'answered', answered_session_id = ?, answer_t = ?, answered_at = COALESCE(answered_at, NOW()) WHERE id = ?")->execute([$asid, $at, $qid]);
+        } else {
+            $db->prepare("UPDATE cm_questions SET status = 'answered', answered_at = COALESCE(answered_at, NOW()) WHERE id = ?")->execute([$qid]);
+        }
     } elseif ($status === 'open') {
-        $db->prepare("UPDATE cm_questions SET status = 'open', answered_at = NULL, answer_t = NULL WHERE id = ?")->execute([$qid]);
+        $db->prepare("UPDATE cm_questions SET status = 'open', answered_at = NULL, answer_t = NULL, answered_session_id = NULL WHERE id = ?")->execute([$qid]);
     } else {
         $db->prepare("UPDATE cm_questions SET status = 'hidden' WHERE id = ?")->execute([$qid]);
     }
