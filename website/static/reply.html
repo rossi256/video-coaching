@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://vjs.zencdn.net/8.16.1/video-js.css">
-  <link rel="stylesheet" href="{{BASE_PATH}}/static/player/skin.css">
+  <link rel="stylesheet" href="{{BASE_PATH}}/static/player/skin.css?v=3">
   <style>
     body { font-family: 'Inter', sans-serif; }
 
@@ -161,7 +161,7 @@
 <!-- video.js + landscape-fullscreen (same versions as the Tricktionary mobile app) -->
 <script src="https://vjs.zencdn.net/8.16.1/video.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/videojs-landscape-fullscreen@12.2.0/dist/videojs-landscape-fullscreen.min.js"></script>
-<script src="https://player.vimeo.com/api/player.js"></script>
+<script src="{{BASE_PATH}}/static/player/wing-player.js?v=1"></script>
 
 <script>
 const BP = '{{BASE_PATH}}';
@@ -218,19 +218,31 @@ function showState(id) {
 }
 
 // ── Video.js player init (mirrors the setup in tricktionary-apps VideoPlayer.vue) ──
-function initPlayer(idx, videoUrl) {
+// `src` is a file URL (uploaded MP4) or a sources array (Vimeo HLS + MP4 fallback).
+// opts: poster, aspectRatio ('16:9'), mirror (false hides the button).
+function initPlayer(idx, src, opts = {}) {
   const el = document.getElementById('vid-' + idx);
-  if (!el) return;
+  if (!el) return null;
 
-  const player = videojs(el, {
+  const options = {
     controls: true,
     preload: 'metadata',
     playsinline: true,
     fluid: true,
-    playbackRates: [0.25, 0.5, 1, 1.5, 2],
-    sources: [{ src: videoUrl, type: 'video/mp4' }]
-  }, function onReady() {
-    // Mirror button (copied from tricktionary-apps/frontend/src/components/VideoPlayer.vue)
+    playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2],
+    controlBar: { skipButtons: { backward: WingPlayer.SKIP, forward: WingPlayer.SKIP } },
+    userActions: { hotkeys: WingPlayer.hotkeys },
+    sources: typeof src === 'string' ? [{ src, type: 'video/mp4' }] : src
+  };
+  if (opts.poster) options.poster = opts.poster;
+  if (opts.aspectRatio) options.aspectRatio = opts.aspectRatio;
+
+  const player = videojs(el, options, function onReady() {
+    WingPlayer.enhance(this);
+
+    // Mirror button (copied from tricktionary-apps/frontend/src/components/VideoPlayer.vue).
+    // Not on coach videos: they carry Michi's picture-in-picture, which would flip too.
+    if (opts.mirror !== false) {
     const mirrorBtn = document.createElement('button');
     mirrorBtn.className = 'vjs-mirror-button';
     mirrorBtn.type = 'button';
@@ -243,6 +255,7 @@ function initPlayer(idx, videoUrl) {
       mirrorBtn.classList.toggle('vjs-mirror-active', !mirrored);
     });
     this.el().appendChild(mirrorBtn);
+    }
 
     // Landscape fullscreen on device rotate (iOS + Android)
     if (typeof this.landscapeFullscreen === 'function') {
@@ -258,6 +271,7 @@ function initPlayer(idx, videoUrl) {
   });
 
   players[idx] = player;
+  return player;
 }
 
 function pauseAllPlayers() {
@@ -355,23 +369,15 @@ function buildItems(items, token) {
         <div class="bg-[#080f1c] border border-white/10 rounded-2xl overflow-hidden">
           ${descHtml}
           <div class="${item.description ? 'px-4 pb-4 sm:px-6 sm:pb-6' : 'p-4 sm:p-6'}">
-            <div style="position:relative;padding-top:56.25%;background:#000;border-radius:12px;overflow:hidden">
-              <iframe id="vimeo-${vIdx}" src="https://player.vimeo.com/video/${vimeoId}?dnt=1&title=0&byline=0&portrait=0" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+            <div id="vslot-${vIdx}">
+              <video id="vid-${vIdx}" class="video-js vjs-default-skin vjs-big-play-centered" playsinline preload="metadata"></video>
             </div>
+            <p class="mt-3 text-slate-500 text-xs">Tip: double-tap left or right (or press ← →) to jump 10 s - slow it down with the speed button.</p>
           </div>
         </div>
       `;
       container.appendChild(wrap);
-      // The same shape video.js players have, so chapter links and the tabs drive it unchanged.
-      try {
-        const vp = new Vimeo.Player(wrap.querySelector('iframe'));
-        players[vIdx] = {
-          ready: (cb) => { vp.ready().then(cb).catch(() => {}); },
-          currentTime: (s) => vp.setCurrentTime(s),
-          play: () => vp.play(),
-          pause: () => vp.pause(),
-        };
-      } catch (err) {}
+      mountVimeoItem(vIdx, item, vimeoId);
 
     } else if (item.type === 'text') {
       // Coach Studio can deliver HTML here (the "Chapters" item is <p><a data-t>...).
@@ -397,6 +403,69 @@ function buildItems(items, token) {
   });
 
   bindChapterLinks();
+}
+
+// ── Vimeo items in our own player ────────────────────────────────────────────
+// The server hands out fresh direct stream links per page load (they expire after
+// about a day). If that ever fails, the item falls back to Vimeo's own embed, so a
+// coaching video always plays.
+async function fetchPlaySources(itemId, fresh) {
+  const url = `${BP}/api/reply/${encodeURIComponent(token)}/play/${itemId}${fresh ? '?fresh=1' : ''}`;
+  const r = await fetch(url, { cache: 'no-store' });
+  if (!r.ok) throw new Error('play ' + r.status);
+  const d = await r.json();
+  const sources = [];
+  if (d.hls) sources.push({ src: d.hls, type: 'application/x-mpegURL' });
+  const mp4 = (d.mp4 || []).find(m => m.height <= 1080) || (d.mp4 || [])[0];
+  if (mp4) sources.push({ src: mp4.src, type: 'video/mp4' });
+  if (!sources.length) throw new Error('no sources');
+  return { sources, poster: d.poster, width: d.width, height: d.height };
+}
+
+async function mountVimeoItem(vIdx, item, vimeoId) {
+  try {
+    const d = await fetchPlaySources(item.id);
+    const player = initPlayer(vIdx, d.sources, {
+      poster: d.poster,
+      aspectRatio: d.width && d.height ? `${d.width}:${d.height}` : '16:9',
+      mirror: false
+    });
+    if (player) {
+      WingPlayer.refreshOnExpiry(player, () => fetchPlaySources(item.id, true).then(x => x.sources));
+    }
+  } catch (err) {
+    mountVimeoEmbed(vIdx, vimeoId);
+  }
+}
+
+function loadVimeoApi() {
+  if (window.Vimeo) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://player.vimeo.com/api/player.js';
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+// Fallback: Vimeo's embed, shimmed to the video.js shape chapter links and tabs use.
+function mountVimeoEmbed(vIdx, vimeoId) {
+  const slot = document.getElementById('vslot-' + vIdx);
+  if (!slot) return;
+  slot.innerHTML = `
+    <div style="position:relative;padding-top:56.25%;background:#000;border-radius:12px;overflow:hidden">
+      <iframe id="vimeo-${vIdx}" src="https://player.vimeo.com/video/${vimeoId}?dnt=1&title=0&byline=0&portrait=0" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+    </div>`;
+  loadVimeoApi().then(() => {
+    const vp = new Vimeo.Player(slot.querySelector('iframe'));
+    players[vIdx] = {
+      ready: (cb) => { vp.ready().then(cb).catch(() => {}); },
+      currentTime: (s) => vp.setCurrentTime(s),
+      play: () => vp.play(),
+      pause: () => vp.pause(),
+    };
+  }).catch(() => {});
 }
 
 // ── Chapter links: a[data-t] seeks the player ────────────────────────────────

@@ -80,3 +80,50 @@
 /* Keep tab styling the existing page uses */
 .tab-btn { border-bottom: 2px solid transparent; transition: all 0.2s; }
 .tab-btn.active { border-bottom-color: #0ea5e9; color: #0ea5e9; }
+
+/* ── Own player additions (±10 s, double-tap, small screens) ───────────── */
+
+/* No double-tap page zoom on phones - the second tap is a skip. */
+.video-js { touch-action: manipulation; }
+
+/* Bubble shown on a skip, on the side that was tapped. */
+.wc-skip-flash {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font: 600 15px/1 'Inter', sans-serif;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 5;
+}
+.wc-skip-flash.left { left: 8%; }
+.wc-skip-flash.right { right: 8%; }
+.wc-skip-flash.show { animation: wc-skip-fade 0.7s ease-out; }
+@keyframes wc-skip-fade {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Selected playback rate in the brand colour. */
+.video-js .vjs-menu li.vjs-selected,
+.video-js .vjs-menu li.vjs-selected:hover {
+  background-color: #0ea5e9;
+  color: #fff;
+}
+
+/* Phones: keep the bar to what matters - play, ±10, time, progress, speed, fullscreen. */
+@media (max-width: 480px) {
+  .video-js .vjs-picture-in-picture-control,
+  .video-js .vjs-volume-panel { display: none; }
+  .video-js .vjs-control { width: 2.6em; }
+  .video-js .vjs-remaining-time { width: auto; padding: 0 0.4em; }
+  .video-js .vjs-playback-rate { width: 3em; }
+}

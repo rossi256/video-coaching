@@ -54,6 +54,9 @@ RewriteRule ^reply/([^/]+)/rating$ reply.php?token=$1&_action=rating [L,QSA]
 # /api/reply/TOKEN/question → reply.php?token=TOKEN&_action=question (POST, capped follow-up)
 RewriteRule ^reply/([^/]+)/question$ reply.php?token=$1&_action=question [L,QSA]
 
+# /api/reply/TOKEN/play/ITEMID → reply.php?token=TOKEN&_action=play&itemId=ITEMID (own player)
+RewriteRule ^reply/([^/]+)/play/(\d+)$ reply.php?token=$1&_action=play&itemId=$2 [L,QSA]
+
 # /api/reply/TOKEN → reply.php?token=TOKEN
 RewriteRule ^reply/([^/]+)$ reply.php?token=$1 [L,QSA]
 

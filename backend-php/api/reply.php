@@ -3,6 +3,7 @@
  * WingCoach — Reply endpoint (token-gated)
  * GET  /api/reply/:token              — JSON data for reply page
  * GET  /api/reply/:token/video/:fn    — serve reply video with Range support
+ * GET  /api/reply/:token/play/:itemId — fresh direct play links for a Vimeo reply item
  * POST /api/reply/:token/rating       — {rating 1-5, comment?}; a second post replaces the first
  * POST /api/reply/:token/question     — {text}; QUESTION_CAP per submission
  *
@@ -24,6 +25,23 @@ if (!$sub) jsonResponse(['error' => 'Not found'], 404);
 
 $action = $_GET['_action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
+
+// --- GET /api/reply/:token/play/:itemId ---
+// Fresh direct links for a Vimeo reply item, for our own player. Only items of this
+// submission, only type vimeo. ?fresh=1 skips the cache when a held link has expired.
+if ($action === 'play') {
+    $itemId = (int) ($_GET['itemId'] ?? 0);
+    $st = $db->prepare("SELECT content FROM reply_items WHERE id = ? AND submission_id = ? AND type = 'vimeo'");
+    $st->execute([$itemId, $sub['id']]);
+    $vimeoId = preg_replace('/\D/', '', (string) $st->fetchColumn());
+    if (!$vimeoId) jsonResponse(['error' => 'Not found'], 404);
+
+    require_once __DIR__ . '/helpers/vimeo-play.php';
+    $links = vimeoPlayLinks($vimeoId, !empty($_GET['fresh']));
+    if (!$links) jsonResponse(['error' => 'Video not playable right now'], 503);
+    header('Cache-Control: private, no-store');
+    jsonResponse($links);
+}
 
 // --- POST /api/reply/:token/rating and /question ---
 if ($action === 'rating' || $action === 'question') {
